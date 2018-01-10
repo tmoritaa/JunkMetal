@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Tank : MonoBehaviour
 {
     private Rigidbody2D body;
+    private BoxCollider2D boxCollider;
 
     [SerializeField]
     private float powerIncPerTS = 0.1f;
@@ -22,24 +24,26 @@ public class Tank : MonoBehaviour
     {
         get { return powerDeterPerTS; }
     }
-
-    [SerializeField]
-    private float width = 50f;
-
+    
     [SerializeField]
     private float maxForcePerTS = 10000f;
 
     private WheelPart leftWheel;
     private WheelPart rightWheel;
+    private BodyPart bodyPart;
 
     void Awake() {
         body = this.GetComponent<Rigidbody2D>();
+        boxCollider = this.GetComponent<BoxCollider2D>();
 
         Debug.Log("LeftWheel");
         leftWheel = TankPartFactory.CreateWheelPart(this, KeyCode.W, KeyCode.S);
 
         Debug.Log("RightWheel");
         rightWheel = TankPartFactory.CreateWheelPart(this, KeyCode.I, KeyCode.K);
+
+        bodyPart = TankPartFactory.CreateBodyPart(new Vector2(50, 50));
+        boxCollider.size = bodyPart.Size;
     }
 
     void FixedUpdate() {
@@ -52,6 +56,8 @@ public class Tank : MonoBehaviour
     }
 
     private void handleMovement() {
+        float width = bodyPart.Size.x;
+
         // Calculate rotation
         Vector2 leftVec = (new Vector2(-width / 2, leftWheel.CurPower)).Rotate(this.body.rotation);
         Vector2 rightVec = (new Vector2(width / 2, rightWheel.CurPower)).Rotate(this.body.rotation);

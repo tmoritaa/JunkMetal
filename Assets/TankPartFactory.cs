@@ -15,4 +15,8 @@ public class TankPartFactory
     public static WheelPart CreateWheelPart(Tank tank, KeyCode forwardKey, KeyCode backKey) {
         return new WheelPart(tank, forwardKey, backKey);
     }
+
+    public static BodyPart CreateBodyPart(Vector2 size) {
+        return new BodyPart(size);
+    }
 }
