@@ -36,10 +36,10 @@ public class Tank : MonoBehaviour
         body = this.GetComponent<Rigidbody2D>();
 
         Debug.Log("LeftWheel");
-        leftWheel = TankPartFactory.CreateWheelPart(this);
+        leftWheel = TankPartFactory.CreateWheelPart(this, KeyCode.W, KeyCode.S);
 
         Debug.Log("RightWheel");
-        rightWheel = TankPartFactory.CreateWheelPart(this);
+        rightWheel = TankPartFactory.CreateWheelPart(this, KeyCode.I, KeyCode.K);
     }
 
     void FixedUpdate() {
@@ -53,18 +53,18 @@ public class Tank : MonoBehaviour
 
     private void handleMovement() {
         // Calculate rotation
-        Vector2 leftVec = new Vector2(-width / 2, leftWheel.CurPower);
-        Vector2 rightVec = new Vector2(width / 2, rightWheel.CurPower);
+        Vector2 leftVec = (new Vector2(-width / 2, leftWheel.CurPower)).Rotate(this.body.rotation);
+        Vector2 rightVec = (new Vector2(width / 2, rightWheel.CurPower)).Rotate(this.body.rotation);
 
         Vector2 diffVec = rightVec - leftVec;
         Vector2 perpUnitVec = new Vector2(-diffVec.y, diffVec.x).normalized;
 
-        float finalAngle = Vector2.SignedAngle(new Vector2(0, 1.0f), perpUnitVec);
+        float finalAngle = Vector2.SignedAngle((new Vector2(0, 1.0f)).Rotate(this.body.rotation), perpUnitVec);
         this.body.rotation += finalAngle;
 
         // Calculate forward velocity
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
         float finalVel = (leftWheel.CurPower + rightWheel.CurPower) / 2f * maxForcePerTS;
-        this.body.AddForce(forwardVec.normalized * finalVel, ForceMode2D.Force);
+        this.body.AddForce(forwardVec.normalized * finalVel);
     }
 }
