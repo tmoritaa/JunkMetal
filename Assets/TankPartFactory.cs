@@ -19,4 +19,8 @@ public class TankPartFactory
     public static BodyPart CreateBodyPart(Vector2 size) {
         return new BodyPart(size);
     }
+
+    public static MainWeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, KeyCode shootKey) {
+        return new MainWeaponPart(tank, shootingForce, reloadTime, shootKey);
+    }
 }

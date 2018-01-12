@@ -8,7 +8,11 @@ using UnityEngine.UI;
 
 public class Tank : MonoBehaviour
 {
-    private Rigidbody2D body;
+    public Rigidbody2D Body
+    {
+        get; private set;
+    }
+
     private BoxCollider2D boxCollider;
 
     [SerializeField]
@@ -28,12 +32,19 @@ public class Tank : MonoBehaviour
     [SerializeField]
     private float maxForcePerTS = 10000f;
 
+    [SerializeField]
+    private float shootingForce = 25000f;
+
+    [SerializeField]
+    private float reloadTime = 1;
+
     private WheelPart leftWheel;
     private WheelPart rightWheel;
     private BodyPart bodyPart;
+    private MainWeaponPart mainWeapon;
 
     void Awake() {
-        body = this.GetComponent<Rigidbody2D>();
+        Body = this.GetComponent<Rigidbody2D>();
         boxCollider = this.GetComponent<BoxCollider2D>();
 
         Debug.Log("LeftWheel");
@@ -44,33 +55,38 @@ public class Tank : MonoBehaviour
 
         bodyPart = TankPartFactory.CreateBodyPart(new Vector2(50, 50));
         boxCollider.size = bodyPart.Size;
+
+        mainWeapon = TankPartFactory.CreateMainWeaponPart(this, shootingForce, reloadTime, KeyCode.P);
     }
 
     void FixedUpdate() {
         handleMovement();
+
+        mainWeapon.PerformFixedUpdate();
     }
 
     void Update() {
         leftWheel.HandleInput();
         rightWheel.HandleInput();
+        mainWeapon.HandleInput();
     }
 
     private void handleMovement() {
         float width = bodyPart.Size.x;
 
         // Calculate rotation
-        Vector2 leftVec = (new Vector2(-width / 2, leftWheel.CurPower)).Rotate(this.body.rotation);
-        Vector2 rightVec = (new Vector2(width / 2, rightWheel.CurPower)).Rotate(this.body.rotation);
+        Vector2 leftVec = (new Vector2(-width / 2, leftWheel.CurPower)).Rotate(this.Body.rotation);
+        Vector2 rightVec = (new Vector2(width / 2, rightWheel.CurPower)).Rotate(this.Body.rotation);
 
         Vector2 diffVec = rightVec - leftVec;
         Vector2 perpUnitVec = new Vector2(-diffVec.y, diffVec.x).normalized;
 
-        float finalAngle = Vector2.SignedAngle((new Vector2(0, 1.0f)).Rotate(this.body.rotation), perpUnitVec);
-        this.body.rotation += finalAngle;
+        float finalAngle = Vector2.SignedAngle((new Vector2(0, 1.0f)).Rotate(this.Body.rotation), perpUnitVec);
+        this.Body.rotation += finalAngle;
 
         // Calculate forward velocity
-        Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
+        Vector2 forwardVec = new Vector2(0, 1).Rotate(this.Body.rotation);
         float finalVel = (leftWheel.CurPower + rightWheel.CurPower) / 2f * maxForcePerTS;
-        this.body.AddForce(forwardVec.normalized * finalVel);
+        this.Body.AddForce(forwardVec.normalized * finalVel);
     }
 }
