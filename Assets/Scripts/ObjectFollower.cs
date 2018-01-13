@@ -7,8 +7,7 @@ using UnityEngine;
 
 public class ObjectFollower : MonoBehaviour 
 {
-    [SerializeField]
-    GameObject objToFollow;
+    GameObject objToFollow = null;
 
     void Update() {
         if (objToFollow != null) {
@@ -16,5 +15,9 @@ public class ObjectFollower : MonoBehaviour
             newPos.z = this.transform.position.z;
             this.transform.position = newPos;
         }    
+    }
+
+    public void SetObjToFollow(GameObject obj) {
+        objToFollow = obj;
     }
 }

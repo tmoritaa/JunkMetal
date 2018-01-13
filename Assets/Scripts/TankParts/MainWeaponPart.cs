@@ -40,9 +40,9 @@ public class MainWeaponPart
         }
 
         if (Input.GetKey(leftTurnKey)) {
-            rotDir = -1.0f;
-        } else if (Input.GetKey(rightTurnKey)) {
             rotDir = 1.0f;
+        } else if (Input.GetKey(rightTurnKey)) {
+            rotDir = -1.0f;
         } else {
             rotDir = 0;
         }

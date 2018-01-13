@@ -18,7 +18,7 @@ public class Bullet : MonoBehaviour
 
     void Update() {
         // TODO: replace Camera.main with something that doesn't trigger search every time.
-        Vector3 screenPos = Camera.main.WorldToScreenPoint(this.transform.position);
+        Vector3 screenPos = GameManager.Instance.MainCamera.WorldToScreenPoint(this.transform.position);
         
         if (!isBeingDestroyed && 
             (screenPos.x < 0 || screenPos.x > Screen.width) &&
