@@ -6,13 +6,15 @@ using UnityEngine;
 
 public class TankPartFactory
 {
-    public static WheelPart CreateWheelPart(Tank tank) {
-        KeyCode forwardKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
-        KeyCode backKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
-        return CreateWheelPart(tank, forwardKey, backKey);
-    }
+    public static WheelPart CreateWheelPart(Tank tank, KeyCode forwardKey=KeyCode.None, KeyCode backKey=KeyCode.None) {
+        if (forwardKey == KeyCode.None) {
+            forwardKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
 
-    public static WheelPart CreateWheelPart(Tank tank, KeyCode forwardKey, KeyCode backKey) {
+        if (backKey == KeyCode.None) {
+            backKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
+        
         return new WheelPart(tank, forwardKey, backKey);
     }
 
@@ -20,7 +22,23 @@ public class TankPartFactory
         return new BodyPart(size);
     }
 
-    public static MainWeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, KeyCode shootKey) {
-        return new MainWeaponPart(tank, shootingForce, reloadTime, shootKey);
+    public static MainWeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, float rotPerTimeStep,
+        KeyCode shootKey=KeyCode.None, 
+        KeyCode leftTurnKey=KeyCode.None, 
+        KeyCode rightTurnKey=KeyCode.None) 
+    {
+        if (shootKey == KeyCode.None) {
+            shootKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
+
+        if (leftTurnKey == KeyCode.None) {
+            leftTurnKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
+
+        if (rightTurnKey == KeyCode.None) {
+            rightTurnKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
+
+        return new MainWeaponPart(tank, shootingForce, reloadTime, rotPerTimeStep, shootKey, leftTurnKey, rightTurnKey);
     }
 }

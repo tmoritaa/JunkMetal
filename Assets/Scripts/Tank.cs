@@ -38,6 +38,18 @@ public class Tank : MonoBehaviour
     [SerializeField]
     private float reloadTime = 1;
 
+    [SerializeField]
+    private float rotPerTS = 0.1f;
+
+    [SerializeField]
+    private GameObject cannonGO;
+    public GameObject CannonGO
+    {
+        get {
+            return cannonGO;
+        }
+    }
+
     private WheelPart leftWheel;
     private WheelPart rightWheel;
     private BodyPart bodyPart;
@@ -47,16 +59,13 @@ public class Tank : MonoBehaviour
         Body = this.GetComponent<Rigidbody2D>();
         boxCollider = this.GetComponent<BoxCollider2D>();
 
-        Debug.Log("LeftWheel");
         leftWheel = TankPartFactory.CreateWheelPart(this, KeyCode.W, KeyCode.S);
-
-        Debug.Log("RightWheel");
         rightWheel = TankPartFactory.CreateWheelPart(this, KeyCode.I, KeyCode.K);
 
         bodyPart = TankPartFactory.CreateBodyPart(new Vector2(50, 50));
         boxCollider.size = bodyPart.Size;
 
-        mainWeapon = TankPartFactory.CreateMainWeaponPart(this, shootingForce, reloadTime, KeyCode.P);
+        mainWeapon = TankPartFactory.CreateMainWeaponPart(this, shootingForce, reloadTime, rotPerTS, KeyCode.P, KeyCode.T, KeyCode.Y);
     }
 
     void FixedUpdate() {
