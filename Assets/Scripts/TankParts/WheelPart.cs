@@ -29,15 +29,15 @@ public class WheelPart
 
         // Add power increase and clamp based on key input.
         if (Input.GetKey(forwardKey)) {
-            CurPower += owningTank.PowerIncPerTS;
+            CurPower += owningTank.EnginePart.WheelEnergyInc;
             handled = true;
         }
         if (Input.GetKey(backwardKey)) {
-            CurPower -= owningTank.PowerIncPerTS;
+            CurPower -= owningTank.EnginePart.WheelEnergyInc;
             handled = true;
         }
         if (!handled && Mathf.Abs(CurPower) > 0) {
-            CurPower = Mathf.Sign(CurPower) * (Mathf.Abs(CurPower) - owningTank.PowerDeterPerTS);
+            CurPower = Mathf.Sign(CurPower) * (Mathf.Abs(CurPower) - owningTank.EnginePart.WheelEnergyDec);
         }
         CurPower = Mathf.Clamp(CurPower, -1.0f, 1.0f);
 

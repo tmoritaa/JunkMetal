@@ -22,23 +22,6 @@ public class Tank : MonoBehaviour
     private BoxCollider2D boxCollider;
 
     [SerializeField]
-    private float powerIncPerTS = 0.1f;
-    public float PowerIncPerTS
-    {
-        get { return powerIncPerTS; }
-    }
-
-    [SerializeField]
-    private float powerDeterPerTS = 0.05f;
-    public float PowerDeterPerTS
-    {
-        get { return powerDeterPerTS; }
-    }
-    
-    [SerializeField]
-    private float maxForcePerTS = 10000f;
-
-    [SerializeField]
     private GameObject cannonGO;
     public GameObject CannonGO
     {
@@ -47,10 +30,30 @@ public class Tank : MonoBehaviour
         }
     }
 
-    private WheelPart leftWheel;
-    private WheelPart rightWheel;
-    private BodyPart bodyPart;
-    private MainWeaponPart mainWeapon;
+    public WheelPart LeftWheel
+    {
+        get; private set;
+    }
+
+    public WheelPart RightWheel
+    {
+        get; private set;
+    }
+
+    public BodyPart BodyPart
+    {
+        get; private set;
+    }
+
+    public MainWeaponPart MainWeapon
+    {
+        get; private set;
+    }
+
+    public EnginePart EnginePart
+    {
+        get; private set;
+    }
 
     private int curArmour;
 
@@ -59,26 +62,27 @@ public class Tank : MonoBehaviour
     void FixedUpdate() {
         if (initialized) {
             handleMovement();
-            mainWeapon.PerformFixedUpdate();
+            MainWeapon.PerformFixedUpdate();
         }
     }
 
     void Update() {
         if (initialized) {
-            leftWheel.HandleInput();
-            rightWheel.HandleInput();
-            mainWeapon.HandleInput();
+            LeftWheel.HandleInput();
+            RightWheel.HandleInput();
+            MainWeapon.HandleInput();
         }
     }
 
-    public void Init(BodyPart _body, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
+    public void Init(BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
 
-        bodyPart = _body;
-        leftWheel = _leftWheel;
-        rightWheel = _rightWheel;
-        mainWeapon = _mainWeapon;
+        BodyPart = _body;
+        LeftWheel = _leftWheel;
+        RightWheel = _rightWheel;
+        MainWeapon = _mainWeapon;
+        EnginePart = _enginePart;
 
-        boxCollider.size = bodyPart.Size;
+        boxCollider.size = BodyPart.Size;
 
         ResetState();
 
@@ -86,15 +90,15 @@ public class Tank : MonoBehaviour
     }
 
     public void ResetState() {
-        curArmour = bodyPart.Armour;
+        curArmour = BodyPart.Armour;
     }
 
     private void handleMovement() {
-        float width = bodyPart.Size.x;
+        float width = BodyPart.Size.x;
 
         // Calculate rotation
-        Vector2 leftVec = (new Vector2(-width / 2, leftWheel.CurPower)).Rotate(this.body.rotation);
-        Vector2 rightVec = (new Vector2(width / 2, rightWheel.CurPower)).Rotate(this.body.rotation);
+        Vector2 leftVec = (new Vector2(-width / 2, LeftWheel.CurPower)).Rotate(this.body.rotation);
+        Vector2 rightVec = (new Vector2(width / 2, RightWheel.CurPower)).Rotate(this.body.rotation);
 
         Vector2 diffVec = rightVec - leftVec;
         Vector2 perpUnitVec = new Vector2(-diffVec.y, diffVec.x).normalized;
@@ -104,7 +108,7 @@ public class Tank : MonoBehaviour
 
         // Calculate forward velocity
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
-        float finalVel = (leftWheel.CurPower + rightWheel.CurPower) / 2f * maxForcePerTS;
+        float finalVel = (LeftWheel.CurPower + RightWheel.CurPower) / 2f * EnginePart.MoveForce;
         this.body.AddForce(forwardVec.normalized * finalVel);
     }
 }

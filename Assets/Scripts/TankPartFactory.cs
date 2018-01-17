@@ -41,4 +41,8 @@ public class TankPartFactory
 
         return new MainWeaponPart(tank, shootingForce, reloadTime, rotPerTimeStep, shootKey, leftTurnKey, rightTurnKey);
     }
+
+    public static EnginePart CreateEnginePart(float moveForce, float wheelEnergyInc, float wheelEnergyDec) {
+        return new EnginePart(moveForce, wheelEnergyInc, wheelEnergyDec);
+    }
 }
