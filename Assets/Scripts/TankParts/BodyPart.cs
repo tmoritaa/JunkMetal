@@ -11,7 +11,13 @@ public class BodyPart
         get; private set;
     }
 
-    public BodyPart(Vector2 size) {
+    public int Armour
+    {
+        get; private set;
+    }
+
+    public BodyPart(int armour, Vector2 size) {
+        Armour = armour;
         Size = size;
     }
 }

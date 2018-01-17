@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
         playerTank.transform.position = new Vector3();
 
         playerTank.Init(
-            TankPartFactory.CreateBodyPart(new Vector2(50, 50)),
+            TankPartFactory.CreateBodyPart(100, new Vector2(50, 50)),
             TankPartFactory.CreateMainWeaponPart(playerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
             TankPartFactory.CreateWheelPart(playerTank, KeyCode.W, KeyCode.S),
             TankPartFactory.CreateWheelPart(playerTank, KeyCode.I, KeyCode.K));

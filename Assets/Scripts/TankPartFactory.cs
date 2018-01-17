@@ -18,8 +18,8 @@ public class TankPartFactory
         return new WheelPart(tank, forwardKey, backKey);
     }
 
-    public static BodyPart CreateBodyPart(Vector2 size) {
-        return new BodyPart(size);
+    public static BodyPart CreateBodyPart(int armour, Vector2 size) {
+        return new BodyPart(armour, size);
     }
 
     public static MainWeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, float rotPerTimeStep,

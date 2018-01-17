@@ -52,6 +52,8 @@ public class Tank : MonoBehaviour
     private BodyPart bodyPart;
     private MainWeaponPart mainWeapon;
 
+    private int curArmour;
+
     private bool initialized = false;
 
     void FixedUpdate() {
@@ -72,13 +74,19 @@ public class Tank : MonoBehaviour
     public void Init(BodyPart _body, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
 
         bodyPart = _body;
-        boxCollider.size = bodyPart.Size;
-
         leftWheel = _leftWheel;
         rightWheel = _rightWheel;
         mainWeapon = _mainWeapon;
 
+        boxCollider.size = bodyPart.Size;
+
+        ResetState();
+
         initialized = true;
+    }
+
+    public void ResetState() {
+        curArmour = bodyPart.Armour;
     }
 
     private void handleMovement() {
