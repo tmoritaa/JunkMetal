@@ -43,12 +43,30 @@ public class GameManager : MonoBehaviour
         playerTank.transform.position = new Vector3();
 
         playerTank.Init(
+            Tank.PlayerTypes.AI,
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(20000f, 0.1f, 0.05f),
+            TankPartFactory.CreateEnginePart(15000f, 0.1f, 0.05f),
             TankPartFactory.CreateMainWeaponPart(playerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
             TankPartFactory.CreateWheelPart(playerTank, KeyCode.W, KeyCode.S),
             TankPartFactory.CreateWheelPart(playerTank, KeyCode.I, KeyCode.K));
 
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(playerTank.gameObject);
+    }
+
+    void Update() {
+        if (Input.GetMouseButton(0)) {
+            playerTank.TargetPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        }
+    }
+
+    void OnDrawGizmos() {
+        if (Application.isPlaying) {
+            Color color = Gizmos.color;
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(playerTank.TargetPos, 30);
+
+            Gizmos.color = color;
+        }
     }
 }

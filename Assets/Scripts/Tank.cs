@@ -1,13 +1,22 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
-using UnityEngine.UI;
 
-public class Tank : MonoBehaviour
+public partial class Tank : MonoBehaviour
 {
+    public enum PlayerTypes
+    {
+        Human,
+        AI,
+    }
+
+    public PlayerTypes PlayerType
+    {
+        get; protected set;
+    }
+
     [SerializeField]
     private Rigidbody2D body;
 
@@ -68,31 +77,41 @@ public class Tank : MonoBehaviour
         get; private set;
     }
 
-    private int curArmour;
+    private int curArmour = 0;
+
+    private float totalMass = 0;
+
+    private float totalDrag = 0;
 
     private bool initialized = false;
 
-    void Awake() {
+    private void Awake() {
         leftWheelBody = leftWheelGO.GetComponent<Rigidbody2D>();
         rightWheelBody = rightWheelGO.GetComponent<Rigidbody2D>();
     }
 
-    void FixedUpdate() {
+    private void FixedUpdate() {
         if (initialized) {
             handleMovement();
             MainWeapon.PerformFixedUpdate();
         }
     }
 
-    void Update() {
+    private void Update() {
         if (initialized) {
-            LeftWheel.HandleInput();
-            RightWheel.HandleInput();
-            MainWeapon.HandleInput();
+            if (PlayerType == PlayerTypes.Human) {
+                LeftWheel.HandleInput();
+                RightWheel.HandleInput();
+                MainWeapon.HandleInput();
+            } else if (PlayerType == PlayerTypes.AI) {
+                performMovement();
+            }
         }
     }
 
-    public void Init(BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
+    public void Init(PlayerTypes _playerType, BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
+        PlayerType = _playerType;
+
         BodyPart = _body;
         LeftWheel = _leftWheel;
         RightWheel = _rightWheel;
@@ -108,6 +127,9 @@ public class Tank : MonoBehaviour
         rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(BodyPart.Size.x / 2f, 0, 0);
         rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(BodyPart.Size.x / 2f, 0);
 
+        totalMass = calculateMass();
+        totalDrag = calculateDrag();
+
         ResetState();
 
         initialized = true;
@@ -117,9 +139,29 @@ public class Tank : MonoBehaviour
         curArmour = BodyPart.Armour;
     }
 
+    private float calculateMass() {
+        float mass = 0;
+
+        mass += body.mass;
+        mass += leftWheelBody.mass;
+        mass += rightWheelBody.mass;
+
+        return mass;
+    }
+
+    private float calculateDrag() {
+        float drag = 0;
+
+        drag += body.drag;
+        drag += leftWheelBody.drag;
+        drag += rightWheelBody.drag;
+
+        return drag;
+    }
+
     private void handleMovement() {
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
-        this.leftWheelBody.AddForce(forwardVec * LeftWheel.CurPower * (EnginePart.MoveForce / 2f)) ;
+        this.leftWheelBody.AddForce(forwardVec * LeftWheel.CurPower * (EnginePart.MoveForce / 2f));
         this.rightWheelBody.AddForce(forwardVec * RightWheel.CurPower * (EnginePart.MoveForce / 2f));
     }
 }

@@ -25,14 +25,28 @@ public class WheelPart
     }
 
     public void HandleInput() {
-        bool handled = false;
+        int changeDir = 0;
 
         // Add power increase and clamp based on key input.
         if (Input.GetKey(forwardKey)) {
+            changeDir += 1;
+        }
+        if (Input.GetKey(backwardKey)) {
+            changeDir -= 1;
+        }
+
+        PerformPowerChange(changeDir);
+    }
+
+    public void PerformPowerChange(int changeDir) {
+        bool handled = false;
+
+        // Add power increase and clamp based on key input.
+        if (changeDir > 0) {
             CurPower += owningTank.EnginePart.WheelEnergyInc;
             handled = true;
         }
-        if (Input.GetKey(backwardKey)) {
+        if (changeDir < 0) {
             CurPower -= owningTank.EnginePart.WheelEnergyInc;
             handled = true;
         }
@@ -45,5 +59,6 @@ public class WheelPart
         if (Mathf.Abs(CurPower) < 0.001f) {
             CurPower = 0;
         }
+
     }
 }
