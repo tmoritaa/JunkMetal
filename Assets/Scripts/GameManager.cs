@@ -60,17 +60,17 @@ public class GameManager : MonoBehaviour
     void Awake() {
         instance = this;
 
-        //playerTank = Instantiate(tankPrefab);
-        //playerTank.transform.SetParent(canvasRoot.transform, false);
-        //playerTank.transform.position = new Vector3(0, -100, 0);
+        playerTank = Instantiate(tankPrefab);
+        playerTank.transform.SetParent(canvasRoot.transform, false);
+        playerTank.transform.position = new Vector3(0, -100, 0);
 
-        //playerTank.Init(
-        //    Tank.PlayerTypes.Human,
-        //    TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-        //    TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
-        //    TankPartFactory.CreateMainWeaponPart(playerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
-        //    TankPartFactory.CreateWheelPart(playerTank, KeyCode.W, KeyCode.S),
-        //    TankPartFactory.CreateWheelPart(playerTank, KeyCode.I, KeyCode.K));
+        playerTank.Init(
+            Tank.PlayerTypes.Human,
+            TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
+            TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
+            TankPartFactory.CreateMainWeaponPart(playerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
+            TankPartFactory.CreateWheelPart(playerTank, KeyCode.W, KeyCode.S),
+            TankPartFactory.CreateWheelPart(playerTank, KeyCode.I, KeyCode.K));
 
         aiTank = Instantiate(tankPrefab);
         aiTank.transform.SetParent(canvasRoot.transform, false);

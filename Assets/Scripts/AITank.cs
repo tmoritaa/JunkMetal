@@ -157,7 +157,8 @@ public partial class Tank : MonoBehaviour
 
         // If Collision, then take into account desired Dir and see if risk of collision
         const int WallBit = 8;
-        const int LayerMask = 1 << WallBit;
+        const int PlayerBit = 9;
+        const int LayerMask = 1 << WallBit | 1 << PlayerBit;
         const float SideRatio = 1.0f;
         const float DiagRatio = 0.6f;
         

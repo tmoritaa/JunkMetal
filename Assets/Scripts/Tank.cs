@@ -112,6 +112,10 @@ public partial class Tank : MonoBehaviour
     public void Init(PlayerTypes _playerType, BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
         PlayerType = _playerType;
 
+        if (PlayerType == PlayerTypes.Human) {
+            this.gameObject.layer = 9; // Player layer
+        }
+
         BodyPart = _body;
         LeftWheel = _leftWheel;
         RightWheel = _rightWheel;
