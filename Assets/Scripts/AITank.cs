@@ -29,11 +29,11 @@ public partial class Tank : MonoBehaviour
         float sqrMaxVelocityMag = this.EnginePart.MoveForce / this.totalDrag;
         float sqrCurVelocity = this.body.velocity.sqrMagnitude;
 
-        const float minRatioCutOff = 0.2f;
-        const float maxRatioCutoff = 0.6f; // TODO: later probably make a serialized field for easier tweaking
+        const float minRatioCutOff = 0.4f;
+        const float maxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking
         float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, minRatioCutOff, maxRatioCutoff);
 
-        const float startingBackwardArcAngle = 135f; // TODO: later probably make a serialized field for easier tweaking
+        const float startingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking
         const float startingForwardArcAngle = 360f - startingBackwardArcAngle;
 
         float curBackwardArcAngle = ratio * startingBackwardArcAngle;
@@ -156,77 +156,69 @@ public partial class Tank : MonoBehaviour
         Vector2 TRCorner = (Vector2)this.transform.position + forwardVec * yAdd + rightVec * xAdd;
 
         // If Collision, then take into account desired Dir and see if risk of collision
-        float maxDistance = Mathf.Max(this.body.velocity.magnitude, 50f);
-
         const int WallBit = 8;
         const int LayerMask = 1 << WallBit;
-        const float SideRatio = 0.8f;
-        float ratio = Mathf.Min((float)successiveCollisions / 250f, 0.8f);
-
-        const float ForwardFanRatio = 0.8f;
+        const float SideRatio = 1.0f;
+        const float DiagRatio = 0.6f;
+        
+        const float ForwardFanRatio = 0.7f;
         const float BackwardFanRatio = 1.0f - ForwardFanRatio;
 
-        RaycastHit2D[] hitResult = new RaycastHit2D[3];
-        hitResult[0] = Physics2D.Raycast(TopCenter, forwardVec, maxDistance, LayerMask);
-        //hitResult[1] = Physics2D.Raycast(TLCorner, (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + leftVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized, maxDistance * SideRatio, LayerMask);
-        //hitResult[2] = Physics2D.Raycast(TRCorner, (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + rightVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized, maxDistance * SideRatio, LayerMask);
-        hitResult[1] = Physics2D.Raycast(TopCenter, (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + leftVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized, maxDistance * SideRatio, LayerMask);
-        hitResult[2] = Physics2D.Raycast(TopCenter, (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + rightVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized, maxDistance * SideRatio, LayerMask);
+        float maxDistance = Mathf.Max(this.body.velocity.magnitude, 150f);
+
+        float fanRatio = Mathf.Min((float)successiveCollisions / 250f, 0.8f);
+        RaycastHit2D[] hitResult = new RaycastHit2D[4];
+        hitResult[0] = Physics2D.Raycast(TopCenter, (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized, maxDistance * SideRatio, LayerMask);
+        hitResult[1] = Physics2D.Raycast(TopCenter, (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + rightVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized, maxDistance * SideRatio, LayerMask);
+        hitResult[2] = Physics2D.Raycast(TLCorner, (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized, maxDistance * DiagRatio, LayerMask);
+        hitResult[3] = Physics2D.Raycast(TRCorner, (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + rightVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized, maxDistance * DiagRatio, LayerMask);
 
         if (Application.isEditor && GameManager.Instance.AvoidWallsDebugOn) {
-            Debug.DrawLine(TopCenter, TopCenter + forwardVec * maxDistance, Color.blue);
-            //Debug.DrawLine(TLCorner, TLCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + leftVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized * maxDistance * SideRatio, Color.blue);
-            //Debug.DrawLine(TRCorner, TRCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + rightVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized * maxDistance * SideRatio, Color.blue);
-            Debug.DrawLine(TopCenter, TLCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + leftVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized * maxDistance * SideRatio, Color.blue);
-            Debug.DrawLine(TopCenter, TRCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * ratio) + rightVec * (BackwardFanRatio + ForwardFanRatio * ratio)).normalized * maxDistance * SideRatio, Color.blue);
+            Debug.DrawLine(TopCenter, TopCenter + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * SideRatio, Color.blue);
+            Debug.DrawLine(TopCenter, TopCenter + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + rightVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * SideRatio, Color.blue);
+            Debug.DrawLine(TLCorner, TLCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * DiagRatio, Color.blue);
+            Debug.DrawLine(TRCorner, TRCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + rightVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * DiagRatio, Color.blue);
         }
 
-        bool centerHit = hitResult[0].collider != null;
-        bool leftHit = hitResult[1].collider != null;
-        bool rightHit = hitResult[2].collider != null;
+        bool leftSideHit = hitResult[0].collider != null;
+        bool rightSideHit = hitResult[1].collider != null;
+        bool leftCornerHit = hitResult[2].collider != null;
+        bool rightCornerHit = hitResult[3].collider != null;
+        bool leftHit = leftSideHit || leftCornerHit;
+        bool rightHit = rightSideHit || rightCornerHit;
 
-        if (centerHit || leftHit || rightHit) {
+        if (leftHit || rightHit) {
             successiveCollisions += 1;
             prevCollisionTime = Time.time;
         }
 
         Vector2 newDesiredDir = new Vector2();
 
-        const float MinBlend = 0.1f;
-        const float MaxBlend = 0.5f;
+        const float MinBlend = 0.05f;
+        const float MaxBlend = 0.4f;
 
-        if (leftHit && !rightHit) {
-            float minHitDist = hitResult[1].distance;
+        if (leftHit) {
+            float minHitDist = 9999;
+            if (leftSideHit) {
+                minHitDist = Mathf.Min(hitResult[0].distance, minHitDist);
+            } else {
+                minHitDist = Mathf.Min(hitResult[2].distance, minHitDist);
+            }
 
             float blendRatio = Mathf.Clamp(minHitDist / maxDistance, MinBlend, MaxBlend);
-
             newDesiredDir = (blendRatio * desiredDir + (1.0f - blendRatio) * rightVec).normalized;
-        } else if (rightHit && !leftHit) {
-            float minHitDist = hitResult[2].distance;
+        } else if (rightHit) {
+            float minHitDist = 9999;
+            if (rightSideHit) {
+                minHitDist = Mathf.Min(hitResult[1].distance, minHitDist);
+            } else {
+                minHitDist = Mathf.Min(hitResult[3].distance, minHitDist);
+            }
 
             float blendRatio = Mathf.Clamp(minHitDist / maxDistance, MinBlend, MaxBlend);
             newDesiredDir = (blendRatio * desiredDir + (1.0f - blendRatio) * leftVec).normalized;
-        //} else if (centerHit) {
-        //    float minHitDist = 99999;
-
-        //    if (leftHit) {
-        //        minHitDist = Mathf.Min(minHitDist, hitResult[1].distance);
-        //    }
-        //    if (rightHit) {
-        //        minHitDist = Mathf.Min(minHitDist, hitResult[2].distance);
-        //    }
-
-        //    float blendRatio = Mathf.Clamp(minHitDist / maxDistance, MinBlend, MaxBlend);
-        //    float angle = Vector2.SignedAngle(forwardVec, desiredDir);
-        //    if (Mathf.Sign(angle) > 0) {
-        //        newDesiredDir = (blendRatio * desiredDir + (1.0f - blendRatio) * rightVec).normalized;
-        //    } else {
-        //        newDesiredDir = (blendRatio * desiredDir + (1.0f - blendRatio) * leftVec).normalized;
-        //    }
-        } else if (!centerHit && !rightHit && !leftHit){            
-            if (Time.time - prevCollisionTime >= 0.5f) {
-                successiveCollisions = 0;
-            }
+        } else if (!rightHit && !leftHit){            
+            successiveCollisions = 0;
 
             newDesiredDir = desiredDir;
         }
