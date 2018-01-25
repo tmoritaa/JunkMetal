@@ -7,6 +7,12 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour 
 {
+    [SerializeField]
+    private float mapWidth = 500;
+
+    [SerializeField]
+    private float mapHeight = 500;
+
     private static GameManager instance;
     public static GameManager Instance
     {
@@ -28,79 +34,88 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField]
-    private float debugMoveForce = 15000f;
-
-    [SerializeField]
-    private bool actuationDebugOn = true;
-    public bool ActuationDebugOn
-    {
-        get {
-            return actuationDebugOn;
-        }
-    }
-
-    [SerializeField]
-    private bool avoidWallsDebugOn = true;
-    public bool AvoidWallsDebugOn
-    {
-        get {
-            return avoidWallsDebugOn;
-        }
-    }
-
-    [SerializeField]
     private Tank tankPrefab;
+
+    [SerializeField]
+    private GameObject wallPrefab;
+
+    [SerializeField]
+    private Transform wallsRoot;
 
     [SerializeField]
     private GameObject canvasRoot;
 
-    private Tank playerTank;
-    private Tank aiTank;
+    public Tank PlayerTank
+    {
+        get; private set;
+    }
+
+    public Tank AiTank
+    {
+        get; private set;
+    }
 
     void Awake() {
         instance = this;
 
-        playerTank = Instantiate(tankPrefab);
-        playerTank.transform.SetParent(canvasRoot.transform, false);
-        playerTank.transform.position = new Vector3(0, -100, 0);
+        PlayerTank = Instantiate(tankPrefab);
+        PlayerTank.transform.SetParent(canvasRoot.transform, false);
+        PlayerTank.transform.position = new Vector3(0, -100, 0);
 
-        playerTank.Init(
+        PlayerTank.Init(
             Tank.PlayerTypes.Human,
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
-            TankPartFactory.CreateMainWeaponPart(playerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
-            TankPartFactory.CreateWheelPart(playerTank, KeyCode.W, KeyCode.S),
-            TankPartFactory.CreateWheelPart(playerTank, KeyCode.I, KeyCode.K));
+            TankPartFactory.CreateEnginePart(DebugManager.Instance.DebugMoveForce, 0.1f, 0.05f),
+            TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
+            TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.W, KeyCode.S),
+            TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.I, KeyCode.K));
 
-        aiTank = Instantiate(tankPrefab);
-        aiTank.transform.SetParent(canvasRoot.transform, false);
-        aiTank.transform.position = new Vector3();
+        AiTank = Instantiate(tankPrefab);
+        AiTank.transform.SetParent(canvasRoot.transform, false);
+        AiTank.transform.position = new Vector3();
 
-        aiTank.Init(
+        AiTank.Init(
             Tank.PlayerTypes.AI,
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
-            TankPartFactory.CreateMainWeaponPart(aiTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
-            TankPartFactory.CreateWheelPart(aiTank, KeyCode.W, KeyCode.S),
-            TankPartFactory.CreateWheelPart(aiTank, KeyCode.I, KeyCode.K));
+            TankPartFactory.CreateEnginePart(DebugManager.Instance.DebugMoveForce, 0.1f, 0.05f),
+            TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
+            TankPartFactory.CreateWheelPart(AiTank, KeyCode.W, KeyCode.S),
+            TankPartFactory.CreateWheelPart(AiTank, KeyCode.I, KeyCode.K));
 
-        MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(aiTank.gameObject);
+        MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(AiTank.gameObject);
+
+        generateMapBounds();
     }
 
-    void Update() {
-        if (Input.GetMouseButton(0)) {
-            aiTank.TargetPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    private void generateMapBounds() {
+        const float defaultVal = 100;
+
+        for (int x = -1; x <= 1; x += 2) {
+            float xPos = x * mapWidth / 2f + x * defaultVal / 2f;
+
+            GameObject wall = Instantiate(wallPrefab);
+            wall.transform.SetParent(wallsRoot, false);
+
+            wall.transform.localPosition = new Vector3(xPos, 0, 0);
+
+            Vector2 size = new Vector2(defaultVal, mapHeight + defaultVal * 2f);
+
+            wall.GetComponent<BoxCollider2D>().size = size;
+            wall.GetComponent<RectTransform>().sizeDelta = size; 
         }
-    }
 
-    void OnDrawGizmos() {
-        if (Application.isPlaying) {
-            Color color = Gizmos.color;
+        for (int y = -1; y <= 1; y += 2) {
+            float yPos = y * mapHeight / 2f + y * defaultVal / 2f;
 
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(aiTank.TargetPos, 30);
+            GameObject wall = Instantiate(wallPrefab);
+            wall.transform.SetParent(wallsRoot, false);
 
-            Gizmos.color = color;
+            wall.transform.localPosition = new Vector3(0, yPos, 0);
+
+            Vector2 size = new Vector2(mapWidth + defaultVal * 2f, defaultVal);
+
+            wall.GetComponent<BoxCollider2D>().size = size;
+            wall.GetComponent<RectTransform>().sizeDelta = size;
         }
     }
 }

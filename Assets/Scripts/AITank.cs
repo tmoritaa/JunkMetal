@@ -40,7 +40,7 @@ public partial class Tank : MonoBehaviour
         float curForwardArcAngle = ratio * startingForwardArcAngle;
 
         // Debug stuff
-        if (Application.isEditor && GameManager.Instance.ActuationDebugOn)
+        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn)
         {
             Vector2 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
             Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
@@ -108,7 +108,7 @@ public partial class Tank : MonoBehaviour
         }
 
         // Debug
-        if (Application.isEditor && GameManager.Instance.ActuationDebugOn) {
+        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
             Vector3 leftWheelPos = this.leftWheelGO.transform.position;
             Vector3 rightWheelPos = this.rightWheelGO.transform.position;
 
@@ -174,7 +174,7 @@ public partial class Tank : MonoBehaviour
         hitResult[2] = Physics2D.Raycast(TLCorner, (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized, maxDistance * DiagRatio, LayerMask);
         hitResult[3] = Physics2D.Raycast(TRCorner, (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + rightVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized, maxDistance * DiagRatio, LayerMask);
 
-        if (Application.isEditor && GameManager.Instance.AvoidWallsDebugOn) {
+        if (Application.isEditor && DebugManager.Instance.AvoidWallsDebugOn) {
             Debug.DrawLine(TopCenter, TopCenter + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * SideRatio, Color.blue);
             Debug.DrawLine(TopCenter, TopCenter + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + rightVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * SideRatio, Color.blue);
             Debug.DrawLine(TLCorner, TLCorner + (forwardVec * (ForwardFanRatio - ForwardFanRatio * fanRatio) + leftVec * (BackwardFanRatio + ForwardFanRatio * fanRatio)).normalized * maxDistance * DiagRatio, Color.blue);
