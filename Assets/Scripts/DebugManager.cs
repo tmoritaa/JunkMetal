@@ -16,15 +16,6 @@ public class DebugManager : MonoBehaviour
     }
 
     [SerializeField]
-    private float debugMoveForce = 15000f;
-    public float DebugMoveForce
-    {
-        get {
-            return debugMoveForce;
-        }
-    }
-
-    [SerializeField]
     private bool actuationDebugOn = true;
     public bool ActuationDebugOn
     {
@@ -60,6 +51,22 @@ public class DebugManager : MonoBehaviour
             Gizmos.DrawWireSphere(GameManager.Instance.AiTank.TargetPos, 30);
 
             Gizmos.color = color;
+
+            // Draw Map
+            TileMap map = GameManager.Instance.Map;
+            for (int x = 0; x < map.Cols; ++x) {
+                for (int y = 0; y < map.Rows; ++y) {
+                    char value = map.GetValueAtIdx(x, y);
+                    Vector2 pos = map.IdxToPosition(x, y);
+
+                    Color tmp = Gizmos.color;
+
+                    Gizmos.color = value == 0 ? Color.green : Color.red;
+                    Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
+
+                    Gizmos.color = tmp;
+                }
+            }
         }
     }
 }

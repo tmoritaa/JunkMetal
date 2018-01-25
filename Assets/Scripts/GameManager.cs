@@ -13,6 +13,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private float mapHeight = 500;
 
+    [SerializeField]
+    private float tileDim = 25;
+
     private static GameManager instance;
     public static GameManager Instance
     {
@@ -45,6 +48,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject canvasRoot;
 
+    [SerializeField]
+    private float debugMoveForce = 15000f;
+
     public Tank PlayerTank
     {
         get; private set;
@@ -55,29 +61,34 @@ public class GameManager : MonoBehaviour
         get; private set;
     }
 
+    public TileMap Map
+    {
+        get; private set;
+    }
+
     void Awake() {
         instance = this;
 
         PlayerTank = Instantiate(tankPrefab);
         PlayerTank.transform.SetParent(canvasRoot.transform, false);
-        PlayerTank.transform.position = new Vector3(0, -100, 0);
+        PlayerTank.transform.position = new Vector3(0, -500, 0);
 
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(DebugManager.Instance.DebugMoveForce, 0.1f, 0.05f),
+            TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
             TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
             TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.W, KeyCode.S),
             TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.I, KeyCode.K));
 
         AiTank = Instantiate(tankPrefab);
         AiTank.transform.SetParent(canvasRoot.transform, false);
-        AiTank.transform.position = new Vector3();
+        AiTank.transform.position = new Vector3(0, -200, 0);
 
         AiTank.Init(
             Tank.PlayerTypes.AI,
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(DebugManager.Instance.DebugMoveForce, 0.1f, 0.05f),
+            TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
             TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
             TankPartFactory.CreateWheelPart(AiTank, KeyCode.W, KeyCode.S),
             TankPartFactory.CreateWheelPart(AiTank, KeyCode.I, KeyCode.K));
@@ -85,6 +96,17 @@ public class GameManager : MonoBehaviour
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(AiTank.gameObject);
 
         generateMapBounds();
+        generateTileMap();
+    }
+
+    private void generateTileMap() {
+        // Note that this is temporary. Once map loading is implemented, we can just keep the walls generated in a list during map generation, and go through those.
+        List<Transform> walls = new List<Transform>();
+        for (int i = 0; i < wallsRoot.childCount; ++i) {
+            walls.Add(wallsRoot.GetChild(i));
+        }
+
+        Map = new TileMap(mapWidth, mapHeight, tileDim, walls);
     }
 
     private void generateMapBounds() {
