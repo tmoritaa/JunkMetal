@@ -38,10 +38,12 @@ public partial class Tank : MonoBehaviour
         // TODO: don't forget path smoothing later.
         if (path.Count > 0 && ((Vector2)this.transform.position - GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistForDistSigma) {
             path.RemoveAt(0);
+            smoothPath();
         }
 
         if (path.Count < 1) {
             path = GameManager.Instance.Map.FindPath(this.transform.position, DestPos);
+            smoothPath();
         }
 
         Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : DestPos;
@@ -53,6 +55,37 @@ public partial class Tank : MonoBehaviour
         }
 
         performActuation(requestDir);
+    }
+
+    private void smoothPath() {
+        const int WallBit = 8;
+        const int PlayerBit = 9;
+        const int LayerMask = 1 << WallBit | 1 << PlayerBit;
+
+        int removeCount = 0;
+        for (int i = 0; i < path.Count; ++i) {
+            Node node = path[i];
+
+            Vector2 leftVec = new Vector2(0, 1).Rotate(this.body.rotation - 90).normalized;
+            Vector2 rightVec = new Vector2(0, 1).Rotate(this.body.rotation + 90).normalized;
+
+            Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+            Vector2 diffVec = pos - (Vector2)this.transform.position;
+
+            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)this.transform.position + (leftVec * (this.BodyPart.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)this.transform.position + (rightVec * (this.BodyPart.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+
+            // If collision, stop
+            if (leftHit.collider != null || rightHit.collider != null) {
+                break;
+            }
+
+            removeCount = i;
+        }
+
+        if (removeCount > 0) {
+            path.RemoveRange(0, removeCount);
+        }
     }
 
     private Vector2 calcRequestDir(Vector2 target) {
