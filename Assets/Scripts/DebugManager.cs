@@ -39,18 +39,16 @@ public class DebugManager : MonoBehaviour
 
     void Update() {
         if (Input.GetMouseButton(0)) {
-            GameManager.Instance.AiTank.TargetPos = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+            GameManager.Instance.AiTank.DestPos = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
         }
     }
 
     void OnDrawGizmos() {
         if (Application.isPlaying) {
-            Color color = Gizmos.color;
+            Color origColor = Gizmos.color;
 
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(GameManager.Instance.AiTank.TargetPos, 30);
-
-            Gizmos.color = color;
+            Gizmos.DrawWireSphere(GameManager.Instance.AiTank.DestPos, 30);
 
             // Draw Map
             TileMap map = GameManager.Instance.Map;
@@ -59,14 +57,19 @@ public class DebugManager : MonoBehaviour
                     char value = map.GetValueAtIdx(x, y);
                     Vector2 pos = map.IdxToPosition(x, y);
 
-                    Color tmp = Gizmos.color;
-
                     Gizmos.color = value == 0 ? Color.green : Color.red;
                     Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
-
-                    Gizmos.color = tmp;
                 }
             }
+
+            Gizmos.color = Color.blue;
+            
+            foreach (Node node in GameManager.Instance.AiTank.Path) {
+                Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+                Gizmos.DrawWireSphere(pos, 15);
+            }
+
+            Gizmos.color = origColor;
         }
     }
 }

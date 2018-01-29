@@ -6,16 +6,47 @@ using UnityEngine;
 
 public partial class Tank : MonoBehaviour
 {
-    public Vector2 TargetPos
+    public Vector2 DestPos
     {
         get; set;
     }
 
+    [SerializeField]
+    private float sqrDistForDistSigma = 2500;
+
     private int successiveCollisions = 0;
     private float prevCollisionTime = 0;
 
+    private List<Node> path = new List<Node>();
+    public List<Node> Path
+    {
+        get {
+            return path;
+        }
+    }
+
+    private void initAI() {
+        DestPos = this.transform.position;
+    }
+
     private void performMovement() {
-        Vector2 requestDir = calcRequestDir().normalized;
+        // If already at desired position, do nothing.
+        if (((Vector2)this.transform.position - DestPos).sqrMagnitude < sqrDistForDistSigma) {
+            return;
+        }
+
+        // TODO: don't forget path smoothing later.
+        if (path.Count > 0 && ((Vector2)this.transform.position - GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistForDistSigma) {
+            path.RemoveAt(0);
+        }
+
+        if (path.Count < 1) {
+            path = GameManager.Instance.Map.FindPath(this.transform.position, DestPos);
+        }
+
+        Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : DestPos;
+
+        Vector2 requestDir = calcRequestDir(target).normalized;
 
         if (Application.isEditor) {
             Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(requestDir * 50), Color.red);
@@ -24,104 +55,9 @@ public partial class Tank : MonoBehaviour
         performActuation(requestDir);
     }
 
-    private void performActuation(Vector2 requestDir) {
-        // First calculate forward and backwards arc angle based on speed
-        float sqrMaxVelocityMag = this.EnginePart.MoveForce / this.totalDrag;
-        float sqrCurVelocity = this.body.velocity.sqrMagnitude;
-
-        const float minRatioCutOff = 0.4f;
-        const float maxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking
-        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, minRatioCutOff, maxRatioCutoff);
-
-        const float startingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking
-        const float startingForwardArcAngle = 360f - startingBackwardArcAngle;
-
-        float curBackwardArcAngle = ratio * startingBackwardArcAngle;
-        float curForwardArcAngle = ratio * startingForwardArcAngle;
-
-        // Debug stuff
-        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn)
-        {
-            Vector2 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
-
-            Vector2 backwardVec = (new Vector2(0, -1)).Rotate(this.body.rotation);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
-        }
-        
-        float angleDiffFromFront = Vector2.Angle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
-        float angleDiffFromBack = Vector2.Angle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
-
-        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
-
-        // In this case we want the AI to continue accelerating while going towards the requested direction
-        if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
-
-            if (Mathf.Abs(angleToTurn) > sigma) {
-                if (Mathf.Sign(angleToTurn) > 0) {
-                    LeftWheel.PerformPowerChange(0);
-                    RightWheel.PerformPowerChange(1);
-                } else {
-                    LeftWheel.PerformPowerChange(1);
-                    RightWheel.PerformPowerChange(0);
-                }
-            } else {
-                LeftWheel.PerformPowerChange(1);
-                RightWheel.PerformPowerChange(1);
-            }
-
-        // In this case we want the tank to start accelerating backwards
-        } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
-
-            if (Mathf.Abs(angleToTurn) > sigma) {
-                if (Mathf.Sign(angleToTurn) > 0) {
-                    LeftWheel.PerformPowerChange(-1);
-                    RightWheel.PerformPowerChange(0);
-                } else {
-                    LeftWheel.PerformPowerChange(0);
-                    RightWheel.PerformPowerChange(-1);
-                }
-            } else {
-                LeftWheel.PerformPowerChange(-1);
-                RightWheel.PerformPowerChange(-1);
-            }
-
-        // In this case we want the tank to start turning
-        } else {
-            float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
-            float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
-
-            bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
-            float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
-
-            if (Mathf.Sign(angle) >= 0) {
-                LeftWheel.PerformPowerChange(-1);
-                RightWheel.PerformPowerChange(1);
-            } else {
-                LeftWheel.PerformPowerChange(1);
-                RightWheel.PerformPowerChange(-1);
-            }
-        }
-
-        // Debug
-        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector3 leftWheelPos = this.leftWheelGO.transform.position;
-            Vector3 rightWheelPos = this.rightWheelGO.transform.position;
-
-            Vector3 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
-
-            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * LeftWheel.CurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * RightWheel.CurPower), Color.magenta);
-        }
-    }
-
-    private Vector2 calcRequestDir() {
+    private Vector2 calcRequestDir(Vector2 target) {
         // First calculate Seek direction
-        Vector2 desiredVec = Seek(TargetPos).normalized;
+        Vector2 desiredVec = Seek(target).normalized;
         desiredVec = AvoidWalls(desiredVec).normalized;
 
         return desiredVec;
@@ -226,4 +162,99 @@ public partial class Tank : MonoBehaviour
 
         return newDesiredDir;
     }
+
+    private void performActuation(Vector2 requestDir) {
+        // First calculate forward and backwards arc angle based on speed
+        float sqrMaxVelocityMag = this.EnginePart.MoveForce / this.totalDrag;
+        float sqrCurVelocity = this.body.velocity.sqrMagnitude;
+
+        const float minRatioCutOff = 0.4f;
+        const float maxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking
+        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, minRatioCutOff, maxRatioCutoff);
+
+        const float startingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking
+        const float startingForwardArcAngle = 360f - startingBackwardArcAngle;
+
+        float curBackwardArcAngle = ratio * startingBackwardArcAngle;
+        float curForwardArcAngle = ratio * startingForwardArcAngle;
+
+        // Debug stuff
+        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
+            Vector2 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
+            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
+            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
+
+            Vector2 backwardVec = (new Vector2(0, -1)).Rotate(this.body.rotation);
+            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
+            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
+        }
+
+        float angleDiffFromFront = Vector2.Angle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
+        float angleDiffFromBack = Vector2.Angle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
+
+        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
+
+        // In this case we want the AI to continue accelerating while going towards the requested direction
+        if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
+            float angleToTurn = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
+
+            if (Mathf.Abs(angleToTurn) > sigma) {
+                if (Mathf.Sign(angleToTurn) > 0) {
+                    LeftWheel.PerformPowerChange(0);
+                    RightWheel.PerformPowerChange(1);
+                } else {
+                    LeftWheel.PerformPowerChange(1);
+                    RightWheel.PerformPowerChange(0);
+                }
+            } else {
+                LeftWheel.PerformPowerChange(1);
+                RightWheel.PerformPowerChange(1);
+            }
+
+            // In this case we want the tank to start accelerating backwards
+        } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
+            float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
+
+            if (Mathf.Abs(angleToTurn) > sigma) {
+                if (Mathf.Sign(angleToTurn) > 0) {
+                    LeftWheel.PerformPowerChange(-1);
+                    RightWheel.PerformPowerChange(0);
+                } else {
+                    LeftWheel.PerformPowerChange(0);
+                    RightWheel.PerformPowerChange(-1);
+                }
+            } else {
+                LeftWheel.PerformPowerChange(-1);
+                RightWheel.PerformPowerChange(-1);
+            }
+
+            // In this case we want the tank to start turning
+        } else {
+            float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
+            float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
+
+            bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
+            float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
+
+            if (Mathf.Sign(angle) >= 0) {
+                LeftWheel.PerformPowerChange(-1);
+                RightWheel.PerformPowerChange(1);
+            } else {
+                LeftWheel.PerformPowerChange(1);
+                RightWheel.PerformPowerChange(-1);
+            }
+        }
+
+        // Debug
+        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
+            Vector3 leftWheelPos = this.leftWheelGO.transform.position;
+            Vector3 rightWheelPos = this.rightWheelGO.transform.position;
+
+            Vector3 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
+
+            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * LeftWheel.CurPower), Color.magenta);
+            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * RightWheel.CurPower), Color.magenta);
+        }
+    }
+
 }

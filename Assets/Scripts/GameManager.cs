@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
 
         PlayerTank = Instantiate(tankPrefab);
         PlayerTank.transform.SetParent(canvasRoot.transform, false);
-        PlayerTank.transform.position = new Vector3(0, -500, 0);
+        PlayerTank.transform.position = new Vector3(0, -600, 0);
 
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour
 
         AiTank = Instantiate(tankPrefab);
         AiTank.transform.SetParent(canvasRoot.transform, false);
-        AiTank.transform.position = new Vector3(0, -200, 0);
+        AiTank.transform.position = new Vector3(0, -300, 0);
 
         AiTank.Init(
             Tank.PlayerTypes.AI,

@@ -136,6 +136,8 @@ public partial class Tank : MonoBehaviour
 
         ResetState();
 
+        initAI();
+
         initialized = true;
     }
 
