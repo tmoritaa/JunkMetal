@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TankPartFactory
 {
-    public static WheelPart CreateWheelPart(Tank tank, KeyCode leftForwardKey=KeyCode.None, KeyCode leftBackKey=KeyCode.None, 
+    public static WheelPart CreateWheelPart(Tank tank, float energyInc, float energyDec, KeyCode leftForwardKey=KeyCode.None, KeyCode leftBackKey=KeyCode.None, 
         KeyCode rightForwardKey = KeyCode.None, KeyCode rightBackKey = KeyCode.None) {
 
         if (leftForwardKey == KeyCode.None) {
@@ -25,7 +25,7 @@ public class TankPartFactory
             rightBackKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new WheelPart(tank, leftForwardKey, leftBackKey, rightForwardKey, rightBackKey);
+        return new WheelPart(tank, energyInc, energyDec, leftForwardKey, leftBackKey, rightForwardKey, rightBackKey);
     }
 
     public static BodyPart CreateBodyPart(int armour, Vector2 size) {
@@ -52,7 +52,7 @@ public class TankPartFactory
         return new MainWeaponPart(tank, shootingForce, reloadTime, rotPerTimeStep, shootKey, leftTurnKey, rightTurnKey);
     }
 
-    public static EnginePart CreateEnginePart(float moveForce, float wheelEnergyInc, float wheelEnergyDec) {
-        return new EnginePart(moveForce, wheelEnergyInc, wheelEnergyDec);
+    public static EnginePart CreateEnginePart(float moveForce) {
+        return new EnginePart(moveForce);
     }
 }

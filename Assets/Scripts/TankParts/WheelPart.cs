@@ -16,6 +16,16 @@ public class WheelPart
         get; private set;
     }
 
+    public float EnergyInc
+    {
+        get; private set;
+    }
+
+    public float EnergyDec
+    {
+        get; private set;
+    }
+
     private enum Side
     {
         left,
@@ -29,8 +39,12 @@ public class WheelPart
     private KeyCode rightForwardKey;
     private KeyCode rightBackwardKey;
 
-    public WheelPart(Tank _tank, KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) {
+    public WheelPart(Tank _tank, float _energyInc, float _energyDec,KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) {
         owningTank = _tank;
+
+        EnergyInc = _energyInc;
+        EnergyDec = _energyDec;
+
         leftForwardKey = _leftForwardKey;
         leftBackwardKey = _leftBackwardKey;
         rightForwardKey = _rightForwardKey;
@@ -73,15 +87,15 @@ public class WheelPart
 
         // Add power increase and clamp based on key input.
         if (changeDir > 0) {
-            power += owningTank.EnginePart.WheelEnergyInc;
+            power += EnergyInc;
             handled = true;
         } else if (changeDir < 0) {
-            power -= owningTank.EnginePart.WheelEnergyInc;
+            power -= EnergyInc;
             handled = true;
         }
 
         if (!handled && Mathf.Abs(power) > 0) {
-            power = Mathf.Sign(power) * (Mathf.Abs(power) - owningTank.EnginePart.WheelEnergyDec);
+            power = Mathf.Sign(power) * (Mathf.Abs(power) - EnergyDec);
         }
         power = Mathf.Clamp(power, -1.0f, 1.0f);
 
