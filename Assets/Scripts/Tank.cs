@@ -52,12 +52,7 @@ public partial class Tank : MonoBehaviour
     [SerializeField]
     private GameObject bodyGO;
 
-    public WheelPart LeftWheel
-    {
-        get; private set;
-    }
-
-    public WheelPart RightWheel
+    public WheelPart Wheels
     {
         get; private set;
     }
@@ -100,8 +95,7 @@ public partial class Tank : MonoBehaviour
     private void Update() {
         if (initialized) {
             if (PlayerType == PlayerTypes.Human) {
-                LeftWheel.HandleInput();
-                RightWheel.HandleInput();
+                Wheels.HandleInput();
                 MainWeapon.HandleInput();
             } else if (PlayerType == PlayerTypes.AI) {
                 performMovement();
@@ -109,7 +103,7 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    public void Init(PlayerTypes _playerType, BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _leftWheel, WheelPart _rightWheel) {
+    public void Init(PlayerTypes _playerType, BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _wheels) {
         PlayerType = _playerType;
 
         if (PlayerType == PlayerTypes.Human) {
@@ -117,8 +111,7 @@ public partial class Tank : MonoBehaviour
         }
 
         BodyPart = _body;
-        LeftWheel = _leftWheel;
-        RightWheel = _rightWheel;
+        Wheels = _wheels;
         MainWeapon = _mainWeapon;
         EnginePart = _enginePart;
 
@@ -167,7 +160,7 @@ public partial class Tank : MonoBehaviour
 
     private void handleMovement() {
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
-        this.leftWheelBody.AddForce(forwardVec * LeftWheel.CurPower * (EnginePart.MoveForce / 2f));
-        this.rightWheelBody.AddForce(forwardVec * RightWheel.CurPower * (EnginePart.MoveForce / 2f));
+        this.leftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (EnginePart.MoveForce / 2f));
+        this.rightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (EnginePart.MoveForce / 2f));
     }
 }

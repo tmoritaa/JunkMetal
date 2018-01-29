@@ -233,15 +233,12 @@ public partial class Tank : MonoBehaviour
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    LeftWheel.PerformPowerChange(0);
-                    RightWheel.PerformPowerChange(1);
+                    Wheels.PerformPowerChange(0, 1);
                 } else {
-                    LeftWheel.PerformPowerChange(1);
-                    RightWheel.PerformPowerChange(0);
+                    Wheels.PerformPowerChange(1, 0);
                 }
             } else {
-                LeftWheel.PerformPowerChange(1);
-                RightWheel.PerformPowerChange(1);
+                Wheels.PerformPowerChange(1, 1);
             }
 
             // In this case we want the tank to start accelerating backwards
@@ -250,15 +247,12 @@ public partial class Tank : MonoBehaviour
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    LeftWheel.PerformPowerChange(-1);
-                    RightWheel.PerformPowerChange(0);
+                    Wheels.PerformPowerChange(-1, 0);
                 } else {
-                    LeftWheel.PerformPowerChange(0);
-                    RightWheel.PerformPowerChange(-1);
+                    Wheels.PerformPowerChange(0, -1);
                 }
             } else {
-                LeftWheel.PerformPowerChange(-1);
-                RightWheel.PerformPowerChange(-1);
+                Wheels.PerformPowerChange(-1, -1);
             }
 
             // In this case we want the tank to start turning
@@ -270,11 +264,9 @@ public partial class Tank : MonoBehaviour
             float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
 
             if (Mathf.Sign(angle) >= 0) {
-                LeftWheel.PerformPowerChange(-1);
-                RightWheel.PerformPowerChange(1);
+                Wheels.PerformPowerChange(-1, 1);
             } else {
-                LeftWheel.PerformPowerChange(1);
-                RightWheel.PerformPowerChange(-1);
+                Wheels.PerformPowerChange(1, -1);
             }
         }
 
@@ -285,8 +277,8 @@ public partial class Tank : MonoBehaviour
 
             Vector3 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
 
-            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * LeftWheel.CurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * RightWheel.CurPower), Color.magenta);
+            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * Wheels.LeftCurPower), Color.magenta);
+            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * Wheels.RightCurPower), Color.magenta);
         }
     }
 

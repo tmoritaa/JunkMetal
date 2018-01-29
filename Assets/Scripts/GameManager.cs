@@ -78,8 +78,7 @@ public class GameManager : MonoBehaviour
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
             TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
             TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
-            TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.W, KeyCode.S),
-            TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.I, KeyCode.K));
+            TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
 
         AiTank = Instantiate(tankPrefab);
         AiTank.transform.SetParent(canvasRoot.transform, false);
@@ -90,8 +89,7 @@ public class GameManager : MonoBehaviour
             TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
             TankPartFactory.CreateEnginePart(debugMoveForce, 0.1f, 0.05f),
             TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
-            TankPartFactory.CreateWheelPart(AiTank, KeyCode.W, KeyCode.S),
-            TankPartFactory.CreateWheelPart(AiTank, KeyCode.I, KeyCode.K));
+            TankPartFactory.CreateWheelPart(PlayerTank, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
 
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(AiTank.gameObject);
 

@@ -6,16 +6,26 @@ using UnityEngine;
 
 public class TankPartFactory
 {
-    public static WheelPart CreateWheelPart(Tank tank, KeyCode forwardKey=KeyCode.None, KeyCode backKey=KeyCode.None) {
-        if (forwardKey == KeyCode.None) {
-            forwardKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+    public static WheelPart CreateWheelPart(Tank tank, KeyCode leftForwardKey=KeyCode.None, KeyCode leftBackKey=KeyCode.None, 
+        KeyCode rightForwardKey = KeyCode.None, KeyCode rightBackKey = KeyCode.None) {
+
+        if (leftForwardKey == KeyCode.None) {
+            leftForwardKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        if (backKey == KeyCode.None) {
-            backKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        if (leftBackKey == KeyCode.None) {
+            leftBackKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
-        
-        return new WheelPart(tank, forwardKey, backKey);
+
+        if (rightForwardKey == KeyCode.None) {
+            rightForwardKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
+
+        if (rightBackKey == KeyCode.None) {
+            rightBackKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+        }
+
+        return new WheelPart(tank, leftForwardKey, leftBackKey, rightForwardKey, rightBackKey);
     }
 
     public static BodyPart CreateBodyPart(int armour, Vector2 size) {
