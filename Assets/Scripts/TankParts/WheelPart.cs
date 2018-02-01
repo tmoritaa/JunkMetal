@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class WheelPart
 {
+    // Should be between 50 - 200
     public float Weight
     {
         get; private set;

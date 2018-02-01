@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class HullPart
 {
+    // Should be between 100 - 400
     public float Weight
     {
         get; private set;
@@ -21,6 +22,7 @@ public class HullPart
         get; private set;
     }
 
+    // Should be between 500000 - 1000000
     public float MoveForce
     {
         get; private set;

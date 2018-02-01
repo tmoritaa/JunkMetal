@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class TurretPart
 {
+    // Should be between 100 - 300
     public float Weight
     {
         get; private set;
@@ -43,16 +44,6 @@ public class TurretPart
 
     public void AddWeapon(WeaponPart weapon) {
         weapons.Add(weapon);
-    }
-
-    public float GetWeightOfWeapons() {
-        float weight = 0;
-
-        foreach (WeaponPart weapon in weapons) {
-            weight += weapon.Weight;
-        }
-
-        return weight;
     }
 
     public void HandleInput() {

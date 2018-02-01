@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class WeaponPart
 {
+    // Should be between 10 - 100. Only used for weight restrictions on turrets
     public float Weight
     {
         get; private set;

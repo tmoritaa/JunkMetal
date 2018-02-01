@@ -149,8 +149,7 @@ public partial class Tank : MonoBehaviour
         float weight = 0;
 
         weight += Hull.Weight;
-        weight += Turret.Weight;        
-        weight += Turret.GetWeightOfWeapons();
+        weight += Turret.Weight;
         weight += Wheels.Weight;
 
         return weight;
