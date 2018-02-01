@@ -6,6 +6,11 @@ using UnityEngine;
 
 public class TurretPart
 {
+    public float Weight
+    {
+        get; private set;
+    }
+
     public int Armour
     {
         get; private set;
@@ -27,16 +32,27 @@ public class TurretPart
 
     private List<WeaponPart> weapons = new List<WeaponPart>();
 
-    public TurretPart(Tank _tank, float _rotPerTimestep, KeyCode _leftTurnKey, KeyCode _rightTurnKey) {
+    public TurretPart(Tank _tank, float _rotPerTimestep, float _weight, KeyCode _leftTurnKey, KeyCode _rightTurnKey) {
         owningTank = _tank;
         rotPerTimeStep = _rotPerTimestep;
         leftTurnKey = _leftTurnKey;
         rightTurnKey = _rightTurnKey;
+        Weight = _weight;
         ForwardVec = new Vector2(0, 1);
     }
 
     public void AddWeapon(WeaponPart weapon) {
         weapons.Add(weapon);
+    }
+
+    public float GetWeightOfWeapons() {
+        float weight = 0;
+
+        foreach (WeaponPart weapon in weapons) {
+            weight += weapon.Weight;
+        }
+
+        return weight;
     }
 
     public void HandleInput() {

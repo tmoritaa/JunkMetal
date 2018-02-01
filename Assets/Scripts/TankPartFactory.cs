@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TankPartFactory
 {
-    public static WheelPart CreateWheelPart(Tank tank, float energyInc, float energyDec, KeyCode leftForwardKey=KeyCode.None, KeyCode leftBackKey=KeyCode.None, 
+    public static WheelPart CreateWheelPart(Tank tank, float energyInc, float energyDec, float weight, KeyCode leftForwardKey=KeyCode.None, KeyCode leftBackKey=KeyCode.None, 
         KeyCode rightForwardKey = KeyCode.None, KeyCode rightBackKey = KeyCode.None) {
 
         if (leftForwardKey == KeyCode.None) {
@@ -25,14 +25,14 @@ public class TankPartFactory
             rightBackKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new WheelPart(tank, energyInc, energyDec, leftForwardKey, leftBackKey, rightForwardKey, rightBackKey);
+        return new WheelPart(tank, energyInc, energyDec, weight, leftForwardKey, leftBackKey, rightForwardKey, rightBackKey);
     }
 
-    public static HullPart CreateHullPart(int armour, Vector2 size, float moveForce) {
-        return new HullPart(armour, size, moveForce);
+    public static HullPart CreateHullPart(int armour, Vector2 size, float moveForce, float weight) {
+        return new HullPart(armour, size, moveForce, weight);
     }
 
-    public static TurretPart CreateTurretPart(Tank tank, float rotPerTimeStep, KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None) {
+    public static TurretPart CreateTurretPart(Tank tank, float rotPerTimeStep, float weight, KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None) {
         if (leftTurnKey == KeyCode.None) {
             leftTurnKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
@@ -41,15 +41,15 @@ public class TankPartFactory
             rightTurnKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new TurretPart(tank, rotPerTimeStep, leftTurnKey, rightTurnKey);
+        return new TurretPart(tank, rotPerTimeStep, weight, leftTurnKey, rightTurnKey);
     }
 
-    public static WeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, KeyCode shootKey=KeyCode.None) 
+    public static WeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, float weight, KeyCode shootKey=KeyCode.None) 
     {
         if (shootKey == KeyCode.None) {
             shootKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new WeaponPart(tank, shootingForce, reloadTime, shootKey);
+        return new WeaponPart(tank, shootingForce, reloadTime, weight, shootKey);
     }
 }

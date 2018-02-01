@@ -69,8 +69,6 @@ public partial class Tank : MonoBehaviour
 
     private int curArmour = 0;
 
-    private float totalMass = 0;
-
     private float totalDrag = 0;
 
     private bool initialized = false;
@@ -118,8 +116,12 @@ public partial class Tank : MonoBehaviour
         rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(Hull.Size.x / 2f, 0, 0);
         rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(Hull.Size.x / 2f, 0);
 
-        totalMass = calculateMass();
         totalDrag = calculateDrag();
+
+        float totalWeight = calculateTotalWeight();
+        this.body.mass = totalWeight;
+        this.leftWheelBody.mass = totalWeight / 2f;
+        this.rightWheelBody.mass = totalWeight / 2f;
 
         ResetState();
 
@@ -133,16 +135,6 @@ public partial class Tank : MonoBehaviour
         curArmour += Turret.Armour;
     }
 
-    private float calculateMass() {
-        float mass = 0;
-
-        mass += body.mass;
-        mass += leftWheelBody.mass;
-        mass += rightWheelBody.mass;
-
-        return mass;
-    }
-
     private float calculateDrag() {
         float drag = 0;
 
@@ -151,6 +143,17 @@ public partial class Tank : MonoBehaviour
         drag += rightWheelBody.drag;
 
         return drag;
+    }
+
+    private float calculateTotalWeight() {
+        float weight = 0;
+
+        weight += Hull.Weight;
+        weight += Turret.Weight;        
+        weight += Turret.GetWeightOfWeapons();
+        weight += Wheels.Weight;
+
+        return weight;
     }
 
     private void handleMovement() {

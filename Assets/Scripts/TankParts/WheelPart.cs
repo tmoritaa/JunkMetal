@@ -6,6 +6,11 @@ using UnityEngine;
 
 public class WheelPart
 {
+    public float Weight
+    {
+        get; private set;
+    }
+
     public float LeftCurPower
     {
         get; private set;
@@ -39,11 +44,12 @@ public class WheelPart
     private KeyCode rightForwardKey;
     private KeyCode rightBackwardKey;
 
-    public WheelPart(Tank _tank, float _energyInc, float _energyDec,KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) {
+    public WheelPart(Tank _tank, float _energyInc, float _energyDec, float _weight, KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) {
         owningTank = _tank;
 
         EnergyInc = _energyInc;
         EnergyDec = _energyDec;
+        Weight = _weight;
 
         leftForwardKey = _leftForwardKey;
         leftBackwardKey = _leftBackwardKey;

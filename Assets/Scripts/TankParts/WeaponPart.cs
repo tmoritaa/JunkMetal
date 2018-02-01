@@ -6,6 +6,11 @@ using UnityEngine;
 
 public class WeaponPart
 {
+    public float Weight
+    {
+        get; private set;
+    }
+
     private Tank owningTank;
     private float shootForce;
     private float reloadTimeInSec;
@@ -14,12 +19,14 @@ public class WeaponPart
     private float lastShotTime;
     private bool shouldShoot = false;
 
-    public WeaponPart(Tank _tank, float _shootForce, float _reloadTime, KeyCode _shootKey) {
+    public WeaponPart(Tank _tank, float _shootForce, float _reloadTime, float _weight, KeyCode _shootKey) {
         owningTank = _tank;
         shootForce = _shootForce;
         reloadTimeInSec = _reloadTime;
 
         shootKey = _shootKey;
+
+        Weight = _weight;
 
         lastShotTime = -10000;
     }

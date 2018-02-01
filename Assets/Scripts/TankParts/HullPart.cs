@@ -6,6 +6,11 @@ using UnityEngine;
 
 public class HullPart
 {
+    public float Weight
+    {
+        get; private set;
+    }
+
     public Vector2 Size
     {
         get; private set;
@@ -21,9 +26,10 @@ public class HullPart
         get; private set;
     }
 
-    public HullPart(int armour, Vector2 size, float moveForce) {
+    public HullPart(int armour, Vector2 size, float moveForce, float weight) {
         Armour = armour;
         Size = size;
         MoveForce = moveForce;
+        Weight = weight;
     }
 }
