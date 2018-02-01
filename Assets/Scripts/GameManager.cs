@@ -73,20 +73,26 @@ public class GameManager : MonoBehaviour
         PlayerTank.transform.SetParent(canvasRoot.transform, false);
         PlayerTank.transform.position = new Vector3(0, -600, 0);
 
+        TurretPart playerTurret = TankPartFactory.CreateTurretPart(PlayerTank, 1, KeyCode.T, KeyCode.Y);
+        playerTurret.AddWeapon(TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, KeyCode.P));
+
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
             TankPartFactory.CreateHullPart(100, new Vector2(50, 50), debugMoveForce),
-            TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
+            playerTurret,
             TankPartFactory.CreateWheelPart(PlayerTank, 0.1f, 0.05f, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
 
         AiTank = Instantiate(tankPrefab);
         AiTank.transform.SetParent(canvasRoot.transform, false);
         AiTank.transform.position = new Vector3(0, -300, 0);
 
+        TurretPart aiTurret = TankPartFactory.CreateTurretPart(AiTank, 1, KeyCode.T, KeyCode.Y);
+        aiTurret.AddWeapon(TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, KeyCode.P));
+
         AiTank.Init(
             Tank.PlayerTypes.AI,
             TankPartFactory.CreateHullPart(100, new Vector2(50, 50), debugMoveForce),
-            TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
+            aiTurret,
             TankPartFactory.CreateWheelPart(PlayerTank, 0.1f, 0.05f, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
 
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(AiTank.gameObject);

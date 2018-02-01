@@ -41,16 +41,16 @@ public partial class Tank : MonoBehaviour
     private BoxCollider2D boxCollider;
 
     [SerializeField]
-    private GameObject cannonGO;
-    public GameObject CannonGO
+    private GameObject turretGO;
+    public GameObject TurretGO
     {
         get {
-            return cannonGO;
+            return turretGO;
         }
     }
 
     [SerializeField]
-    private GameObject bodyGO;
+    private GameObject hullGO;
 
     public WheelPart Wheels
     {
@@ -62,7 +62,7 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    public MainWeaponPart MainWeapon
+    public TurretPart Turret
     {
         get; private set;
     }
@@ -83,7 +83,7 @@ public partial class Tank : MonoBehaviour
     private void FixedUpdate() {
         if (initialized) {
             handleMovement();
-            MainWeapon.PerformFixedUpdate();
+            Turret.PerformFixedUpdate();
         }
     }
 
@@ -91,14 +91,14 @@ public partial class Tank : MonoBehaviour
         if (initialized) {
             if (PlayerType == PlayerTypes.Human) {
                 Wheels.HandleInput();
-                MainWeapon.HandleInput();
+                Turret.HandleInput();
             } else if (PlayerType == PlayerTypes.AI) {
                 performMovement();
             }
         }
     }
 
-    public void Init(PlayerTypes _playerType, HullPart _body, MainWeaponPart _mainWeapon, WheelPart _wheels) {
+    public void Init(PlayerTypes _playerType, HullPart _body, TurretPart _turret, WheelPart _wheels) {
         PlayerType = _playerType;
 
         if (PlayerType == PlayerTypes.Human) {
@@ -107,10 +107,10 @@ public partial class Tank : MonoBehaviour
 
         Hull = _body;
         Wheels = _wheels;
-        MainWeapon = _mainWeapon;
+        Turret = _turret;
 
         boxCollider.size = Hull.Size;
-        bodyGO.GetComponent<RectTransform>().sizeDelta = new Vector2(Hull.Size.x, Hull.Size.y);
+        hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(Hull.Size.x, Hull.Size.y);
 
         leftWheelGO.transform.localPosition = leftWheelGO.transform.localPosition + new Vector3(-Hull.Size.x / 2f, 0, 0);
         leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-Hull.Size.x / 2f, 0);
@@ -130,6 +130,7 @@ public partial class Tank : MonoBehaviour
 
     public void ResetState() {
         curArmour = Hull.Armour;
+        curArmour += Turret.Armour;
     }
 
     private float calculateMass() {
