@@ -4,7 +4,7 @@ using System.Linq;
 
 using UnityEngine;
 
-public class BodyPart
+public class HullPart
 {
     public Vector2 Size
     {
@@ -16,8 +16,14 @@ public class BodyPart
         get; private set;
     }
 
-    public BodyPart(int armour, Vector2 size) {
+    public float MoveForce
+    {
+        get; private set;
+    }
+
+    public HullPart(int armour, Vector2 size, float moveForce) {
         Armour = armour;
         Size = size;
+        MoveForce = moveForce;
     }
 }

@@ -75,8 +75,7 @@ public class GameManager : MonoBehaviour
 
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
-            TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(debugMoveForce),
+            TankPartFactory.CreateHullPart(100, new Vector2(50, 50), debugMoveForce),
             TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
             TankPartFactory.CreateWheelPart(PlayerTank, 0.1f, 0.05f, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
 
@@ -86,8 +85,7 @@ public class GameManager : MonoBehaviour
 
         AiTank.Init(
             Tank.PlayerTypes.AI,
-            TankPartFactory.CreateBodyPart(100, new Vector2(100, 50)),
-            TankPartFactory.CreateEnginePart(debugMoveForce),
+            TankPartFactory.CreateHullPart(100, new Vector2(50, 50), debugMoveForce),
             TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 1, KeyCode.P, KeyCode.T, KeyCode.Y),
             TankPartFactory.CreateWheelPart(PlayerTank, 0.1f, 0.05f, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
 

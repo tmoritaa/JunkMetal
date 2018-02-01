@@ -57,7 +57,6 @@ public class WheelPart
         int leftChangeDir = 0;
         int rightChangeDir = 0;
 
-        // Add power increase and clamp based on key input.
         if (Input.GetKey(leftForwardKey)) {
             leftChangeDir += 1;
         }

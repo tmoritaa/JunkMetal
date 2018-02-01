@@ -57,17 +57,12 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    public BodyPart BodyPart
+    public HullPart Hull
     {
         get; private set;
     }
 
     public MainWeaponPart MainWeapon
-    {
-        get; private set;
-    }
-
-    public EnginePart EnginePart
     {
         get; private set;
     }
@@ -103,26 +98,25 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    public void Init(PlayerTypes _playerType, BodyPart _body, EnginePart _enginePart, MainWeaponPart _mainWeapon, WheelPart _wheels) {
+    public void Init(PlayerTypes _playerType, HullPart _body, MainWeaponPart _mainWeapon, WheelPart _wheels) {
         PlayerType = _playerType;
 
         if (PlayerType == PlayerTypes.Human) {
             this.gameObject.layer = 9; // Player layer
         }
 
-        BodyPart = _body;
+        Hull = _body;
         Wheels = _wheels;
         MainWeapon = _mainWeapon;
-        EnginePart = _enginePart;
 
-        boxCollider.size = BodyPart.Size;
-        bodyGO.GetComponent<RectTransform>().sizeDelta = new Vector2(BodyPart.Size.x, BodyPart.Size.y);
+        boxCollider.size = Hull.Size;
+        bodyGO.GetComponent<RectTransform>().sizeDelta = new Vector2(Hull.Size.x, Hull.Size.y);
 
-        leftWheelGO.transform.localPosition = leftWheelGO.transform.localPosition + new Vector3(-BodyPart.Size.x / 2f, 0, 0);
-        leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-BodyPart.Size.x / 2f, 0);
+        leftWheelGO.transform.localPosition = leftWheelGO.transform.localPosition + new Vector3(-Hull.Size.x / 2f, 0, 0);
+        leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-Hull.Size.x / 2f, 0);
 
-        rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(BodyPart.Size.x / 2f, 0, 0);
-        rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(BodyPart.Size.x / 2f, 0);
+        rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(Hull.Size.x / 2f, 0, 0);
+        rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(Hull.Size.x / 2f, 0);
 
         totalMass = calculateMass();
         totalDrag = calculateDrag();
@@ -135,7 +129,7 @@ public partial class Tank : MonoBehaviour
     }
 
     public void ResetState() {
-        curArmour = BodyPart.Armour;
+        curArmour = Hull.Armour;
     }
 
     private float calculateMass() {
@@ -160,7 +154,7 @@ public partial class Tank : MonoBehaviour
 
     private void handleMovement() {
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
-        this.leftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (EnginePart.MoveForce / 2f));
-        this.rightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (EnginePart.MoveForce / 2f));
+        this.leftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.MoveForce / 2f));
+        this.rightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.MoveForce / 2f));
     }
 }

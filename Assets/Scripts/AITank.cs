@@ -72,8 +72,8 @@ public partial class Tank : MonoBehaviour
             Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
             Vector2 diffVec = pos - (Vector2)this.transform.position;
 
-            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)this.transform.position + (leftVec * (this.BodyPart.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
-            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)this.transform.position + (rightVec * (this.BodyPart.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)this.transform.position + (leftVec * (this.Hull.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)this.transform.position + (rightVec * (this.Hull.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
 
             // If collision, stop
             if (leftHit.collider != null || rightHit.collider != null) {
@@ -118,8 +118,8 @@ public partial class Tank : MonoBehaviour
             backVec = tmpVec;
         }
 
-        float xAdd = this.BodyPart.Size.x / 2f;
-        float yAdd = this.BodyPart.Size.y / 2f;
+        float xAdd = this.Hull.Size.x / 2f;
+        float yAdd = this.Hull.Size.y / 2f;
         Vector2 TopCenter = (Vector2)this.transform.position + forwardVec * yAdd;
         Vector2 TLCorner = (Vector2)this.transform.position + forwardVec * yAdd + leftVec * xAdd;
         Vector2 TRCorner = (Vector2)this.transform.position + forwardVec * yAdd + rightVec * xAdd;
@@ -198,7 +198,7 @@ public partial class Tank : MonoBehaviour
 
     private void performActuation(Vector2 requestDir) {
         // First calculate forward and backwards arc angle based on speed
-        float sqrMaxVelocityMag = this.EnginePart.MoveForce / this.totalDrag;
+        float sqrMaxVelocityMag = this.Hull.MoveForce / this.totalDrag;
         float sqrCurVelocity = this.body.velocity.sqrMagnitude;
 
         const float minRatioCutOff = 0.4f;
