@@ -19,14 +19,19 @@ public class Bullet : MonoBehaviour
         get; private set;
     }
 
+    public Tank Owner
+    {
+        get; private set;
+    }
+
     private Rigidbody2D body;
-    private Tank owner;
-
+    
     private bool isBeingDestroyed = false;
-
 
     private Vector2 firePos = new Vector2();
     private float range = 0;
+
+    private int damage = 0;
 
     void Awake() {
         this.body = GetComponent<Rigidbody2D>();
@@ -47,18 +52,21 @@ public class Bullet : MonoBehaviour
     }
 
     public void Init(Tank _owner) {
-        owner = _owner;
-        this.gameObject.transform.position = owner.transform.position;
+        Owner = _owner;
+        this.gameObject.transform.position = Owner.transform.position;
     }
 
-    public void Fire(Vector2 forwardVec, float shootForce, float _range) {
+    public void Fire(Vector2 forwardVec, float shootForce, float _range, int _damage) {
         range = _range;
+        damage = _damage;
         firePos = this.transform.position;
         this.body.AddForce(forwardVec.normalized * shootForce);
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
-        if (!isBeingDestroyed && collision.gameObject != owner.gameObject) {
+        if (!isBeingDestroyed && collision.gameObject != Owner.gameObject && collision.GetComponent<Tank>() != null) {
+            Tank tank = collision.GetComponent<Tank>();
+            tank.Damage(damage);
             destroySelf();
         }
     }

@@ -135,6 +135,20 @@ public partial class Tank : MonoBehaviour
         curArmour += Turret.Armour;
     }
 
+    public void Damage(int damage) {
+        Debug.Log("Tank has taken damage");
+
+        curArmour -= damage;
+
+        if (curArmour <= 0) {
+            Dead();
+        }
+    }
+
+    public void Dead() {
+        Debug.Log("Tank is dead");
+    }
+
     private float calculateDrag() {
         float drag = 0;
 
