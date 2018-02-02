@@ -6,8 +6,13 @@ using UnityEngine;
 
 public class WheelPart
 {
-    // Should be between 50 - 200
-    public float Weight
+    private enum Side
+    {
+        left,
+        right,
+    }
+
+    public WheelPartSchematic Schematic
     {
         get; private set;
     }
@@ -22,59 +27,27 @@ public class WheelPart
         get; private set;
     }
 
-    public float EnergyInc
-    {
-        get; private set;
-    }
-
-    public float EnergyDec
-    {
-        get; private set;
-    }
-
-    private enum Side
-    {
-        left,
-        right,
-    }
-
-    private Tank owningTank;
-
-    private KeyCode leftForwardKey;
-    private KeyCode leftBackwardKey;
-    private KeyCode rightForwardKey;
-    private KeyCode rightBackwardKey;
-
-    public WheelPart(Tank _tank, float _energyInc, float _energyDec, float _weight, KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) {
-        owningTank = _tank;
-
-        EnergyInc = _energyInc;
-        EnergyDec = _energyDec;
-        Weight = _weight;
-
-        leftForwardKey = _leftForwardKey;
-        leftBackwardKey = _leftBackwardKey;
-        rightForwardKey = _rightForwardKey;
-        rightBackwardKey = _rightBackwardKey;
-
-        Debug.Log("Wheel keys: Lforward=" + leftForwardKey + " LBackwards=" + leftBackwardKey + " Rforward = " + rightForwardKey + " RBackwards = " + rightBackwardKey);
+    public WheelPart(WheelPartSchematic schematic) {
+        Schematic = schematic;
+        LeftCurPower = 0;
+        RightCurPower = 0;
     }
 
     public void HandleInput() {
         int leftChangeDir = 0;
         int rightChangeDir = 0;
 
-        if (Input.GetKey(leftForwardKey)) {
+        if (Input.GetKey(Schematic.LeftForwardKey)) {
             leftChangeDir += 1;
         }
-        if (Input.GetKey(leftBackwardKey)) {
+        if (Input.GetKey(Schematic.LeftBackwardKey)) {
             leftChangeDir -= 1;
         }
 
-        if (Input.GetKey(rightForwardKey)) {
+        if (Input.GetKey(Schematic.RightForwardKey)) {
             rightChangeDir += 1;
         }
-        if (Input.GetKey(rightBackwardKey)) {
+        if (Input.GetKey(Schematic.RightBackwardKey)) {
             rightChangeDir -= 1;
         }
 
@@ -93,15 +66,15 @@ public class WheelPart
 
         // Add power increase and clamp based on key input.
         if (changeDir > 0) {
-            power += EnergyInc;
+            power += Schematic.EnergyInc;
             handled = true;
         } else if (changeDir < 0) {
-            power -= EnergyInc;
+            power -= Schematic.EnergyInc;
             handled = true;
         }
 
         if (!handled && Mathf.Abs(power) > 0) {
-            power = Mathf.Sign(power) * (Mathf.Abs(power) - EnergyDec);
+            power = Mathf.Sign(power) * (Mathf.Abs(power) - Schematic.EnergyDec);
         }
         power = Mathf.Clamp(power, -1.0f, 1.0f);
 

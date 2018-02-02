@@ -38,9 +38,6 @@ public class Bullet : MonoBehaviour
     }
 
     void Update() {
-        // TODO: replace Camera.main with something that doesn't trigger search every time.
-        Vector3 screenPos = GameManager.Instance.MainCamera.WorldToScreenPoint(this.transform.position);
-
         float travelDistSqr = ((Vector2)this.transform.position - firePos).sqrMagnitude;
 
         bool travelledRange = travelDistSqr > range * range;

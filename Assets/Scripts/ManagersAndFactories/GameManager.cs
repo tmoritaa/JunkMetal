@@ -48,9 +48,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject canvasRoot;
 
-    [SerializeField]
-    private float debugMoveForce = 15000f;
-
     public Tank PlayerTank
     {
         get; private set;
@@ -73,34 +70,28 @@ public class GameManager : MonoBehaviour
         PlayerTank.transform.SetParent(canvasRoot.transform, false);
         PlayerTank.transform.position = new Vector3(0, -600, 0);
 
-        TurretPart playerTurret = TankPartFactory.CreateTurretPart(PlayerTank, 1, 200,
-            new Vector2[] { new Vector2(0, 1), new Vector2(0, -1) },
-            new float[] { 100, 100 },
-            KeyCode.T, KeyCode.Y);
-        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateWeaponPart(PlayerTank, 50000, 1, 500, 50, Bullet.BulletTypes.Normal, 10, KeyCode.P), 0);
-        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateWeaponPart(PlayerTank, 50000, 1, 100, 50, Bullet.BulletTypes.Normal, 10, KeyCode.O), 1);
+        TurretPart playerTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
+        playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
+        playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon2")), 1);
 
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
-            TankPartFactory.CreateHullPart(100, new Vector2(50, 50), debugMoveForce, 250),
+            new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
             playerTurret,
-            TankPartFactory.CreateWheelPart(PlayerTank, 0.1f, 0.05f, 125, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
+            new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
 
         AiTank = Instantiate(tankPrefab);
         AiTank.transform.SetParent(canvasRoot.transform, false);
         AiTank.transform.position = new Vector3(0, -300, 0);
 
-        TurretPart aiTurret = TankPartFactory.CreateTurretPart(PlayerTank, 1, 200,
-            new Vector2[] { new Vector2(0, 1) },
-            new float[] { 100 },
-            KeyCode.T, KeyCode.Y);
-        aiTurret.AddWeaponAtIdx(TankPartFactory.CreateWeaponPart(AiTank, 50000, 1, 500, 50, Bullet.BulletTypes.Normal, 10, KeyCode.P), 0);
+        TurretPart aiTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
+        aiTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
 
         AiTank.Init(
             Tank.PlayerTypes.AI,
-            TankPartFactory.CreateHullPart(100, new Vector2(50, 50), debugMoveForce, 300),
+            new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
             aiTurret,
-            TankPartFactory.CreateWheelPart(PlayerTank, 0.1f, 0.05f, 50, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K));
+            new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
 
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(PlayerTank.gameObject);
 

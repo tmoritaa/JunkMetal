@@ -6,13 +6,7 @@ using UnityEngine;
 
 public class TurretPart
 {
-    // Should be between 100 - 300
-    public float Weight
-    {
-        get; private set;
-    }
-
-    public int Armour
+    public TurretPartSchematic Schematic
     {
         get; private set;
     }
@@ -22,53 +16,41 @@ public class TurretPart
         get; private set;
     }
 
-    public Vector2[] OrigWeaponDirs
-    {
-        get; private set;
-    }
-
-    public float[] WeaponWeightRestrictions
-    {
-        get; private set;
-    }
-
     private Tank owningTank;
-
-    private float rotPerTimeStep;
-
-    private KeyCode leftTurnKey;
-    private KeyCode rightTurnKey;
 
     private float rotDir = 0;
     
     private WeaponPart[] weapons;
 
-    public TurretPart(Tank _tank, float _rotPerTimestep, float _weight, Vector2[] _weaponDirs, float[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey) {
-        owningTank = _tank;
-        rotPerTimeStep = _rotPerTimestep;
-        leftTurnKey = _leftTurnKey;
-        rightTurnKey = _rightTurnKey;
-        Weight = _weight;
+    public TurretPart(TurretPartSchematic schematic) {
+        Schematic = schematic;
+
         Angle = 0;
-
-        OrigWeaponDirs = _weaponDirs;
-        WeaponWeightRestrictions = _weaponWeightRestrict;
-
-        weapons = new WeaponPart[OrigWeaponDirs.Length];
+        weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
         Array.Clear(weapons, 0, weapons.Length);
     }
 
+    public void SetOwner(Tank tank) {
+        owningTank = tank;
+
+        foreach(WeaponPart weapon in weapons) {
+            if (weapon != null) {
+                weapon.SetOwner(tank);
+            }
+        }
+    }
+
     public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
-        if (weapon.Weight <= WeaponWeightRestrictions[idx]) {
+        if (weapon.Schematic.Weight <= Schematic.WeaponWeightRestrictions[idx]) {
             weapon.TurretIdx = idx;
             weapons[idx] = weapon;
         }
     }
 
     public void HandleInput() {
-        if (Input.GetKey(leftTurnKey)) {
+        if (Input.GetKey(Schematic.LeftTurnKey)) {
             rotDir = 1.0f;
-        } else if (Input.GetKey(rightTurnKey)) {
+        } else if (Input.GetKey(Schematic.RightTurnKey)) {
             rotDir = -1.0f;
         } else {
             rotDir = 0;
@@ -82,8 +64,8 @@ public class TurretPart
     }
 
     public void PerformFixedUpdate() {
-        if (Mathf.Abs(rotPerTimeStep) > 0 && Math.Abs(rotDir) > 0) {
-            float angle = rotDir * rotPerTimeStep;
+        if (Mathf.Abs(Schematic.RotPerTimeStep) > 0 && Math.Abs(rotDir) > 0) {
+            float angle = rotDir * Schematic.RotPerTimeStep;
             owningTank.TurretGO.transform.Rotate(new Vector3(0, 0, angle));
             Angle += angle;
         }

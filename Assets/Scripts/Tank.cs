@@ -107,14 +107,17 @@ public partial class Tank : MonoBehaviour
         Wheels = _wheels;
         Turret = _turret;
 
-        boxCollider.size = Hull.Size;
-        hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(Hull.Size.x, Hull.Size.y);
+        Turret.SetOwner(this);
 
-        leftWheelGO.transform.localPosition = leftWheelGO.transform.localPosition + new Vector3(-Hull.Size.x / 2f, 0, 0);
-        leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-Hull.Size.x / 2f, 0);
+        Vector2 hullSize = Hull.Schematic.Size;
+        boxCollider.size = hullSize;
+        hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(hullSize.x, hullSize.y);
 
-        rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(Hull.Size.x / 2f, 0, 0);
-        rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(Hull.Size.x / 2f, 0);
+        leftWheelGO.transform.localPosition = leftWheelGO.transform.localPosition + new Vector3(-hullSize.x / 2f, 0, 0);
+        leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-hullSize.x / 2f, 0);
+
+        rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(hullSize.x / 2f, 0, 0);
+        rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(hullSize.x / 2f, 0);
 
         totalDrag = calculateDrag();
 
@@ -131,8 +134,8 @@ public partial class Tank : MonoBehaviour
     }
 
     public void ResetState() {
-        curArmour = Hull.Armour;
-        curArmour += Turret.Armour;
+        curArmour = Hull.Schematic.Armour;
+        curArmour += Turret.Schematic.Armour;
     }
 
     public void Damage(int damage) {
@@ -162,16 +165,16 @@ public partial class Tank : MonoBehaviour
     private float calculateTotalWeight() {
         float weight = 0;
 
-        weight += Hull.Weight;
-        weight += Turret.Weight;
-        weight += Wheels.Weight;
+        weight += Hull.Schematic.Weight;
+        weight += Turret.Schematic.Weight;
+        weight += Wheels.Schematic.Weight;
 
         return weight;
     }
 
     private void handleMovement() {
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
-        this.leftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.MoveForce / 2f));
-        this.rightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.MoveForce / 2f));
+        this.leftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.Schematic.EnergyPower / 2f));
+        this.rightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.Schematic.EnergyPower / 2f));
     }
 }

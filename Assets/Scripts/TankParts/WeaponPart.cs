@@ -6,8 +6,7 @@ using UnityEngine;
 
 public class WeaponPart
 {
-    // Should be between 10 - 100. Only used for weight restrictions on turrets
-    public float Weight
+    public WeaponPartSchematic Schematic
     {
         get; private set;
     }
@@ -18,44 +17,34 @@ public class WeaponPart
     }
 
     private Tank owningTank;
-    private float shootForce;
-    private float reloadTimeInSec;
-    private float range;
-    private Bullet.BulletTypes bulletType;
-    private int damage;
-
-    private KeyCode shootKey;
-
+    
     private float lastShotTime;
     private bool shouldShoot = false;
 
-    public WeaponPart(Tank _tank, float _shootForce, float _reloadTime, float _range, float _weight, Bullet.BulletTypes _bulletType, int _damage, KeyCode _shootKey) {
-        owningTank = _tank;
-        shootForce = _shootForce;
-        reloadTimeInSec = _reloadTime;
-        Weight = _weight;
-        range = _range;
-        bulletType = _bulletType;
-        damage = _damage;
-        shootKey = _shootKey;
-
+    public WeaponPart(WeaponPartSchematic schematic) {
+        Schematic = schematic;
+        
         lastShotTime = -10000;
         TurretIdx = -1;
     }
 
+    public void SetOwner(Tank tank) {
+        owningTank = tank;
+    }
+
     public void HandleInput() {
-        if (Input.GetKey(shootKey) && (lastShotTime + reloadTimeInSec) <= Time.time) {
+        if (Input.GetKey(Schematic.ShootKey) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
             shouldShoot = true;
         }
     }
     
     public void PerformFixedUpdate() {
         if (shouldShoot) {
-            Bullet bullet = BulletFactory.Instance.CreateBullet(owningTank, bulletType);
+            Bullet bullet = BulletFactory.Instance.CreateBullet(owningTank, Schematic.BulletType);
 
-            Vector2 fireVec = owningTank.Turret.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
+            Vector2 fireVec = owningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
 
-            bullet.Fire(fireVec, shootForce, range, damage);
+            bullet.Fire(fireVec, Schematic.ShootForce, Schematic.Range, Schematic.Damage);
 
             lastShotTime = Time.time;
             shouldShoot = false;
