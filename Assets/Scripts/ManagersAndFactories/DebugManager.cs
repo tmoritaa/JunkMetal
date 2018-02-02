@@ -33,6 +33,9 @@ public class DebugManager : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    private bool mapDisplayDebugOn = true;
+
     void Awake() {
         instance = this;
     }
@@ -50,26 +53,28 @@ public class DebugManager : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(GameManager.Instance.AiTank.DestPos, 30);
 
-            // Draw Map
-            TileMap map = GameManager.Instance.Map;
-            for (int x = 0; x < map.Cols; ++x) {
-                for (int y = 0; y < map.Rows; ++y) {
-                    char value = map.GetValueAtIdx(x, y);
-                    Vector2 pos = map.IdxToPosition(x, y);
+            if (mapDisplayDebugOn) {
+                // Draw Map
+                TileMap map = GameManager.Instance.Map;
+                for (int x = 0; x < map.Cols; ++x) {
+                    for (int y = 0; y < map.Rows; ++y) {
+                        char value = map.GetValueAtIdx(x, y);
+                        Vector2 pos = map.IdxToPosition(x, y);
 
-                    Gizmos.color = value == 0 ? Color.green : Color.red;
-                    Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
+                        Gizmos.color = value == 0 ? Color.green : Color.red;
+                        Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
+                    }
                 }
-            }
 
-            Gizmos.color = Color.blue;
-            
-            foreach (Node node in GameManager.Instance.AiTank.Path) {
-                Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
-                Gizmos.DrawWireSphere(pos, 15);
-            }
+                Gizmos.color = Color.blue;
 
-            Gizmos.color = origColor;
+                foreach (Node node in GameManager.Instance.AiTank.Path) {
+                    Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+                    Gizmos.DrawWireSphere(pos, 15);
+                }
+
+                Gizmos.color = origColor;
+            }
         }
     }
 }
