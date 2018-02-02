@@ -119,31 +119,29 @@ public class GameManager : MonoBehaviour
     }
 
     private void generateMapBounds() {
-        const float defaultVal = 100;
-
         for (int x = -1; x <= 1; x += 2) {
-            float xPos = x * mapWidth / 2f + x * defaultVal / 2f;
+            float xPos = x * mapWidth / 2f - x * tileDim / 2f;
 
             GameObject wall = Instantiate(wallPrefab);
             wall.transform.SetParent(wallsRoot, false);
 
             wall.transform.localPosition = new Vector3(xPos, 0, 0);
 
-            Vector2 size = new Vector2(defaultVal, mapHeight + defaultVal * 2f);
+            Vector2 size = new Vector2(tileDim, mapHeight + tileDim * 2f);
 
             wall.GetComponent<BoxCollider2D>().size = size;
             wall.GetComponent<RectTransform>().sizeDelta = size; 
         }
 
         for (int y = -1; y <= 1; y += 2) {
-            float yPos = y * mapHeight / 2f + y * defaultVal / 2f;
+            float yPos = y * mapHeight / 2f - y * tileDim / 2f;
 
             GameObject wall = Instantiate(wallPrefab);
             wall.transform.SetParent(wallsRoot, false);
 
             wall.transform.localPosition = new Vector3(0, yPos, 0);
 
-            Vector2 size = new Vector2(mapWidth + defaultVal * 2f, defaultVal);
+            Vector2 size = new Vector2(mapWidth + tileDim * 2f, tileDim);
 
             wall.GetComponent<BoxCollider2D>().size = size;
             wall.GetComponent<RectTransform>().sizeDelta = size;

@@ -110,15 +110,26 @@ public class TileMap
             Vector2 size = rect.sizeDelta;
 
             // Note: tiledim is subtracted from x and y s.t. the map will set adjacent tiles as also blocked
-            for (float x = -size.x/2f - TileDim/2f; x <= size.x / 2f + TileDim/2f; x += TileDim) {
-                for (float y = -size.y/2f - TileDim/2f; y <= size.y/2f + TileDim/2f; y += TileDim) {
+            List<Node> markedNodes = new List<Node>();
+            for (float x = -size.x/2f + 1; x < size.x / 2f; x += TileDim / 2f) {
+                for (float y = -size.y/2f + 1; y < size.y/2f; y += TileDim / 2f) {
                     Vector2 pos = (Vector2)trans.localPosition + new Vector2(x, y);
 
                     int[] indices = PositionToIdx(pos);
 
                     if (indices[0] >= 0 && indices[0] < Cols && indices[1] >= 0 && indices[1] < Rows) {
-                        map[indices[0], indices[1]].value = (char)1;
+                        Node node = map[indices[0], indices[1]];
+                        node.value = (char)1;
+                        markedNodes.Add(node);
                     }
+                }
+            }
+            
+            foreach (Node node in markedNodes) {
+                List<Connection> connections = findConnectedNodes(node);
+
+                foreach(Connection connection in connections) {
+                    connection.targetNode.value = (char)1;
                 }
             }
         }
