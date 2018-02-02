@@ -45,12 +45,12 @@ public class PartsManager : MonoBehaviour
             string name = partInfo.Key;
 
             JObject info = (JObject)partInfo.Value;
-            float weight = info.Value<int>("weight");
+            int weight = info.Value<int>("weight");
             int armour = info.Value<int>("armor");
             Vector2 size = new Vector2();
-            size.x = info.Value<int>("width");
-            size.y = info.Value<int>("height");
-            float power = info.Value<float>("engine_pow");
+            size.x = info.Value<float>("width");
+            size.y = info.Value<float>("height");
+            int power = info.Value<int>("engine_pow");
 
             HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, size, power, weight);
 
@@ -67,7 +67,7 @@ public class PartsManager : MonoBehaviour
             string name = partInfo.Key;
 
             JObject info = (JObject)partInfo.Value;
-            float weight = info.Value<int>("weight");
+            int weight = info.Value<int>("weight");
             float energyInc = info.Value<float>("energy_inc");
             float energyDec = info.Value<float>("energy_dec");
 
@@ -87,19 +87,19 @@ public class PartsManager : MonoBehaviour
             string name = partInfo.Key;
 
             JObject info = (JObject)partInfo.Value;
-            float weight = info.Value<int>("weight");
+            int weight = info.Value<int>("weight");
             int armour = info.Value<int>("armor");
             float rotSpeed = info.Value<int>("rot_speed");
 
             List<Vector2> weaponDirs = new List<Vector2>();
-            List<float> weightRestricts = new List<float>();
+            List<int> weightRestricts = new List<int>();
             foreach (JObject jo in info.Value<JArray>("weapons")) {
                 Vector2 dir = new Vector2();
                 dir.x = jo.Value<float>("x_dir");
                 dir.y = jo.Value<float>("y_dir");
                 weaponDirs.Add(dir);
 
-                float weightRestric = jo.Value<float>("restrict");
+                int weightRestric = jo.Value<int>("restrict");
                 weightRestricts.Add(weightRestric);
             }
 
@@ -129,10 +129,10 @@ public class PartsManager : MonoBehaviour
             string name = partInfo.Key;
 
             JObject info = (JObject)partInfo.Value;
-            float weight = info.Value<int>("weight");
-            float force = info.Value<int>("force");
-            float range = info.Value<int>("range");
-            float reloadTime = info.Value<int>("reload_time");
+            int weight = info.Value<int>("weight");
+            float force = info.Value<float>("force");
+            float range = info.Value<float>("range");
+            float reloadTime = info.Value<float>("reload_time");
             int damage = info.Value<int>("damage");
             Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
 

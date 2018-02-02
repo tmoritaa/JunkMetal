@@ -8,7 +8,7 @@ using UnityEngine;
 public class WheelPartSchematic : PartSchematic
 {
     // Should be between 50 - 200
-    public float Weight
+    public int Weight
     {
         get; private set;
     }
@@ -40,7 +40,7 @@ public class WheelPartSchematic : PartSchematic
         get; private set;
     }
 
-    public WheelPartSchematic(string name, float _energyInc, float _energyDec, float _weight, KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) : base(name) {
+    public WheelPartSchematic(string name, float _energyInc, float _energyDec, int _weight, KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) : base(name) {
         Name = name;
         EnergyInc = _energyInc;
         EnergyDec = _energyDec;

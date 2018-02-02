@@ -7,7 +7,7 @@ using UnityEngine;
 public class TurretPartSchematic : PartSchematic
 {
     // Should be between 100 - 300
-    public float Weight
+    public int Weight
     {
         get; private set;
     }
@@ -22,7 +22,7 @@ public class TurretPartSchematic : PartSchematic
         get; private set;
     }
 
-    public float[] WeaponWeightRestrictions
+    public int[] WeaponWeightRestrictions
     {
         get; private set;
     }
@@ -47,7 +47,7 @@ public class TurretPartSchematic : PartSchematic
         get; private set;
     }
 
-    public TurretPartSchematic(string name, int _armour, float _rotPerTimestep, float _weight, Vector2[] _weaponDirs, float[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey, KeyCode[] _shootKeys) : base(name) {
+    public TurretPartSchematic(string name, int _armour, float _rotPerTimestep, int _weight, Vector2[] _weaponDirs, int[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey, KeyCode[] _shootKeys) : base(name) {
         Name = name;
         Armour = _armour;
         RotPerTimeStep = _rotPerTimestep;

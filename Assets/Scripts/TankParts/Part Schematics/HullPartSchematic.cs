@@ -7,7 +7,7 @@ using UnityEngine;
 public class HullPartSchematic : PartSchematic
 {
     // Should be between 100 - 400
-    public float Weight
+    public int Weight
     {
         get; private set;
     }
@@ -23,12 +23,12 @@ public class HullPartSchematic : PartSchematic
     }
 
     // Should be between 500000 - 1000000
-    public float EnergyPower
+    public int EnergyPower
     {
         get; private set;
     }
 
-    public HullPartSchematic(string name, int armour, Vector2 size, float energyPower, float weight) : base(name) {
+    public HullPartSchematic(string name, int armour, Vector2 size, int energyPower, int weight) : base(name) {
 
         Name = name;
         Armour = armour;

@@ -7,7 +7,7 @@ using UnityEngine;
 public class WeaponPartSchematic : PartSchematic
 {
     // Should be between 10 - 100. Only used for weight restrictions on turrets
-    public float Weight
+    public int Weight
     {
         get; private set;
     }
@@ -37,7 +37,7 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
-    public WeaponPartSchematic(string name, float _shootForce, float _reloadTime, float _range, float _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name) {
+    public WeaponPartSchematic(string name, float _shootForce, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name) {
         Name = name;
         ShootForce = _shootForce;
         ReloadTimeInSec = _reloadTime;
