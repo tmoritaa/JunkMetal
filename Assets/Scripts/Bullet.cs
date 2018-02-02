@@ -7,6 +7,18 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D), typeof(Rigidbody2D))]
 public class Bullet : MonoBehaviour
 {
+    public enum BulletTypes
+    {
+        Normal,
+    }
+
+    [SerializeField]
+    private BulletTypes bulletType;
+    public BulletTypes BulletType
+    {
+        get; private set;
+    }
+
     private Rigidbody2D body;
     private Tank owner;
 

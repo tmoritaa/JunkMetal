@@ -7,6 +7,14 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour 
 {
+    private static GameManager instance;
+    public static GameManager Instance
+    {
+        get {
+            return instance;
+        }
+    }
+
     [SerializeField]
     private float mapWidth = 500;
 
@@ -15,14 +23,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private float tileDim = 25;
-
-    private static GameManager instance;
-    public static GameManager Instance
-    {
-        get {
-            return instance;
-        }
-    }
 
     private Camera mainCamera = null;
     public Camera MainCamera
@@ -77,8 +77,8 @@ public class GameManager : MonoBehaviour
             new Vector2[] { new Vector2(0, 1), new Vector2(0, -1) },
             new float[] { 100, 100 },
             KeyCode.T, KeyCode.Y);
-        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 500, 50, KeyCode.P), 0);
-        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 100, 50, KeyCode.O), 1);
+        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateWeaponPart(PlayerTank, 50000, 1, 500, 50, Bullet.BulletTypes.Normal, KeyCode.P), 0);
+        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateWeaponPart(PlayerTank, 50000, 1, 100, 50, Bullet.BulletTypes.Normal, KeyCode.O), 1);
 
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
@@ -94,7 +94,7 @@ public class GameManager : MonoBehaviour
             new Vector2[] { new Vector2(0, 1) },
             new float[] { 100 },
             KeyCode.T, KeyCode.Y);
-        aiTurret.AddWeaponAtIdx(TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 500, 50, KeyCode.P), 0);
+        aiTurret.AddWeaponAtIdx(TankPartFactory.CreateWeaponPart(AiTank, 50000, 1, 500, 50, Bullet.BulletTypes.Normal, KeyCode.P), 0);
 
         AiTank.Init(
             Tank.PlayerTypes.AI,

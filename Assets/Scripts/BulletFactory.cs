@@ -11,7 +11,7 @@ public class BulletFactory : MonoBehaviour
     private Transform bulletsRoot;
 
     [SerializeField]
-    private Bullet bulletPrefab;
+    private PrefabManager prefabManager;
 
     private static BulletFactory instance;
     public static BulletFactory Instance {
@@ -24,8 +24,10 @@ public class BulletFactory : MonoBehaviour
         instance = this;    
     }
 
-    public Bullet CreateBullet(Tank owningTank) {
-        Bullet bullet = GameObject.Instantiate(bulletPrefab);
+    public Bullet CreateBullet(Tank owningTank, Bullet.BulletTypes bType) {
+        Bullet prefab = prefabManager.GetBulletPrefabOfType(bType);
+
+        Bullet bullet = GameObject.Instantiate(prefab);
         bullet.transform.SetParent(bulletsRoot, false);
         bullet.Init(owningTank);
         return bullet;
