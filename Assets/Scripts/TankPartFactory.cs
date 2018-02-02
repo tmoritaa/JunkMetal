@@ -32,7 +32,9 @@ public class TankPartFactory
         return new HullPart(armour, size, moveForce, weight);
     }
 
-    public static TurretPart CreateTurretPart(Tank tank, float rotPerTimeStep, float weight, KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None) {
+    public static TurretPart CreateTurretPart(Tank tank, float rotPerTimeStep, float weight, Vector2[] weaponDirs, float[] weightRestrict, 
+        KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None) {
+
         if (leftTurnKey == KeyCode.None) {
             leftTurnKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
@@ -41,7 +43,7 @@ public class TankPartFactory
             rightTurnKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new TurretPart(tank, rotPerTimeStep, weight, leftTurnKey, rightTurnKey);
+        return new TurretPart(tank, rotPerTimeStep, weight, weaponDirs, weightRestrict, leftTurnKey, rightTurnKey);
     }
 
     public static WeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, float weight, KeyCode shootKey=KeyCode.None) 

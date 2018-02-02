@@ -12,6 +12,11 @@ public class WeaponPart
         get; private set;
     }
 
+    public int TurretIdx
+    {
+        get; set;
+    }
+
     private Tank owningTank;
     private float shootForce;
     private float reloadTimeInSec;
@@ -30,6 +35,7 @@ public class WeaponPart
         Weight = _weight;
 
         lastShotTime = -10000;
+        TurretIdx = -1;
     }
 
     public void HandleInput() {
@@ -42,7 +48,7 @@ public class WeaponPart
         if (shouldShoot) {
             Bullet bullet = BulletFactory.Instance.CreateBullet(owningTank);
 
-            Vector2 fireVec = owningTank.Turret.ForwardVec.Rotate(owningTank.Body.rotation);
+            Vector2 fireVec = owningTank.Turret.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
 
             bullet.Fire(fireVec, shootForce);
 

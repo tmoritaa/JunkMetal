@@ -17,6 +17,21 @@ public class TurretPart
         get; private set;
     }
 
+    public float Angle
+    {
+        get; private set;
+    }
+
+    public Vector2[] OrigWeaponDirs
+    {
+        get; private set;
+    }
+
+    public float[] WeaponWeightRestrictions
+    {
+        get; private set;
+    }
+
     private Tank owningTank;
 
     private float rotPerTimeStep;
@@ -25,25 +40,29 @@ public class TurretPart
     private KeyCode rightTurnKey;
 
     private float rotDir = 0;
+    
+    private WeaponPart[] weapons;
 
-    public Vector2 ForwardVec
-    {
-        get; private set;
-    }
-
-    private List<WeaponPart> weapons = new List<WeaponPart>();
-
-    public TurretPart(Tank _tank, float _rotPerTimestep, float _weight, KeyCode _leftTurnKey, KeyCode _rightTurnKey) {
+    public TurretPart(Tank _tank, float _rotPerTimestep, float _weight, Vector2[] _weaponDirs, float[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey) {
         owningTank = _tank;
         rotPerTimeStep = _rotPerTimestep;
         leftTurnKey = _leftTurnKey;
         rightTurnKey = _rightTurnKey;
         Weight = _weight;
-        ForwardVec = new Vector2(0, 1);
+        Angle = 0;
+
+        OrigWeaponDirs = _weaponDirs;
+        WeaponWeightRestrictions = _weaponWeightRestrict;
+
+        weapons = new WeaponPart[OrigWeaponDirs.Length];
+        Array.Clear(weapons, 0, weapons.Length);
     }
 
-    public void AddWeapon(WeaponPart weapon) {
-        weapons.Add(weapon);
+    public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
+        if (weapon.Weight <= WeaponWeightRestrictions[idx]) {
+            weapon.TurretIdx = idx;
+            weapons[idx] = weapon;
+        }
     }
 
     public void HandleInput() {
@@ -56,7 +75,9 @@ public class TurretPart
         }
 
         foreach (WeaponPart weapon in weapons) {
-            weapon.HandleInput();
+            if (weapon != null) {
+                weapon.HandleInput();
+            }
         }
     }
 
@@ -64,11 +85,13 @@ public class TurretPart
         if (Mathf.Abs(rotPerTimeStep) > 0 && Math.Abs(rotDir) > 0) {
             float angle = rotDir * rotPerTimeStep;
             owningTank.TurretGO.transform.Rotate(new Vector3(0, 0, angle));
-            ForwardVec = ForwardVec.Rotate(angle);
+            Angle += angle;
         }
 
         foreach (WeaponPart weapon in weapons) {
-            weapon.PerformFixedUpdate();
+            if (weapon != null) {
+                weapon.PerformFixedUpdate();
+            }
         }
     }
 }

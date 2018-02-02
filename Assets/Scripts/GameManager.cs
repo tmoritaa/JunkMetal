@@ -73,8 +73,12 @@ public class GameManager : MonoBehaviour
         PlayerTank.transform.SetParent(canvasRoot.transform, false);
         PlayerTank.transform.position = new Vector3(0, -600, 0);
 
-        TurretPart playerTurret = TankPartFactory.CreateTurretPart(PlayerTank, 1, 200, KeyCode.T, KeyCode.Y);
-        playerTurret.AddWeapon(TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 50, KeyCode.P));
+        TurretPart playerTurret = TankPartFactory.CreateTurretPart(PlayerTank, 1, 200,
+            new Vector2[] { new Vector2(0, 1), new Vector2(0, -1) },
+            new float[] { 100, 100 },
+            KeyCode.T, KeyCode.Y);
+        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 50, KeyCode.P), 0);
+        playerTurret.AddWeaponAtIdx(TankPartFactory.CreateMainWeaponPart(PlayerTank, 50000, 1, 50, KeyCode.O), 1);
 
         PlayerTank.Init(
             Tank.PlayerTypes.Human,
@@ -86,8 +90,11 @@ public class GameManager : MonoBehaviour
         AiTank.transform.SetParent(canvasRoot.transform, false);
         AiTank.transform.position = new Vector3(0, -300, 0);
 
-        TurretPart aiTurret = TankPartFactory.CreateTurretPart(AiTank, 1, 200, KeyCode.T, KeyCode.Y);
-        aiTurret.AddWeapon(TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 50, KeyCode.P));
+        TurretPart aiTurret = TankPartFactory.CreateTurretPart(PlayerTank, 1, 200,
+            new Vector2[] { new Vector2(0, 1) },
+            new float[] { 100 },
+            KeyCode.T, KeyCode.Y);
+        aiTurret.AddWeaponAtIdx(TankPartFactory.CreateMainWeaponPart(AiTank, 50000, 1, 50, KeyCode.P), 0);
 
         AiTank.Init(
             Tank.PlayerTypes.AI,
