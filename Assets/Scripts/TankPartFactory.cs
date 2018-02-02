@@ -46,12 +46,12 @@ public class TankPartFactory
         return new TurretPart(tank, rotPerTimeStep, weight, weaponDirs, weightRestrict, leftTurnKey, rightTurnKey);
     }
 
-    public static WeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, float weight, KeyCode shootKey=KeyCode.None) 
+    public static WeaponPart CreateMainWeaponPart(Tank tank, float shootingForce, float reloadTime, float range, float weight, KeyCode shootKey=KeyCode.None) 
     {
         if (shootKey == KeyCode.None) {
             shootKey = (KeyCode)System.Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new WeaponPart(tank, shootingForce, reloadTime, weight, shootKey);
+        return new WeaponPart(tank, shootingForce, reloadTime, range, weight, shootKey);
     }
 }

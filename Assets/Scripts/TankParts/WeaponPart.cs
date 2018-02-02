@@ -22,17 +22,18 @@ public class WeaponPart
     private float reloadTimeInSec;
     private KeyCode shootKey;
 
+    private float range;
+
     private float lastShotTime;
     private bool shouldShoot = false;
 
-    public WeaponPart(Tank _tank, float _shootForce, float _reloadTime, float _weight, KeyCode _shootKey) {
+    public WeaponPart(Tank _tank, float _shootForce, float _reloadTime, float _range, float _weight, KeyCode _shootKey) {
         owningTank = _tank;
         shootForce = _shootForce;
         reloadTimeInSec = _reloadTime;
-
         shootKey = _shootKey;
-
         Weight = _weight;
+        range = _range;
 
         lastShotTime = -10000;
         TurretIdx = -1;
@@ -50,7 +51,7 @@ public class WeaponPart
 
             Vector2 fireVec = owningTank.Turret.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
 
-            bullet.Fire(fireVec, shootForce);
+            bullet.Fire(fireVec, shootForce, range);
 
             lastShotTime = Time.time;
             shouldShoot = false;

@@ -12,6 +12,10 @@ public class Bullet : MonoBehaviour
 
     private bool isBeingDestroyed = false;
 
+
+    private Vector2 firePos = new Vector2();
+    private float range = 0;
+
     void Awake() {
         this.body = GetComponent<Rigidbody2D>();
     }
@@ -19,13 +23,14 @@ public class Bullet : MonoBehaviour
     void Update() {
         // TODO: replace Camera.main with something that doesn't trigger search every time.
         Vector3 screenPos = GameManager.Instance.MainCamera.WorldToScreenPoint(this.transform.position);
-        
-        if (!isBeingDestroyed && 
-            (screenPos.x < 0 || screenPos.x > Screen.width) &&
-            (screenPos.y < 0 || screenPos.y > Screen.height))
+
+        float travelDistSqr = ((Vector2)this.transform.position - firePos).sqrMagnitude;
+
+        bool travelledRange = travelDistSqr > range * range;
+
+        if (!isBeingDestroyed && travelledRange)
         {
-            GameObject.Destroy(this.gameObject, 0.25f);
-            isBeingDestroyed = true;
+            destroySelf();
         }
     }
 
@@ -34,14 +39,20 @@ public class Bullet : MonoBehaviour
         this.gameObject.transform.position = owner.transform.position;
     }
 
-    public void Fire(Vector2 forwardVec, float shootForce) {
+    public void Fire(Vector2 forwardVec, float shootForce, float _range) {
+        range = _range;
+        firePos = this.transform.position;
         this.body.AddForce(forwardVec.normalized * shootForce);
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
         if (!isBeingDestroyed && collision.gameObject != owner.gameObject) {
-            GameObject.Destroy(this.gameObject);
-            isBeingDestroyed = true;
+            destroySelf();
         }
+    }
+
+    private void destroySelf() {
+        GameObject.Destroy(this.gameObject);
+        isBeingDestroyed = true;
     }
 }
