@@ -22,6 +22,8 @@ public class TurretPart
     
     private WeaponPart[] weapons;
 
+    private KeyCode[] shootKeys;
+
     public TurretPart(TurretPartSchematic schematic) {
         Schematic = schematic;
 

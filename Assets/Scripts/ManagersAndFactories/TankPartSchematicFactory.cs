@@ -33,7 +33,13 @@ public class TankParSchematictFactory
     }
 
     public static TurretPartSchematic CreateTurretPartSchematic(string name, int armour, float rotPerTimeStep, float weight, Vector2[] weaponDirs, float[] weightRestrict, 
-        KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None) {
+        KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None, KeyCode[] shootKeys = null) {
+
+        if (shootKeys == null) {
+            for (int i = 0; i < weaponDirs.Length; ++i) {
+                shootKeys[i] = (KeyCode)Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
+            }
+        }
 
         if (leftTurnKey == KeyCode.None) {
             leftTurnKey = (KeyCode)Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
@@ -43,15 +49,11 @@ public class TankParSchematictFactory
             rightTurnKey = (KeyCode)Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new TurretPartSchematic(name, armour, rotPerTimeStep, weight, weaponDirs, weightRestrict, leftTurnKey, rightTurnKey);
+        return new TurretPartSchematic(name, armour, rotPerTimeStep, weight, weaponDirs, weightRestrict, leftTurnKey, rightTurnKey, shootKeys);
     }
 
-    public static WeaponPartSchematic CreateWeaponPartSchematic(string name, float shootingForce, float reloadTime, float range, float weight, Bullet.BulletTypes bulletType, int damage, KeyCode shootKey=KeyCode.None) 
+    public static WeaponPartSchematic CreateWeaponPartSchematic(string name, float shootingForce, float reloadTime, float range, float weight, Bullet.BulletTypes bulletType, int damage) 
     {
-        if (shootKey == KeyCode.None) {
-            shootKey = (KeyCode)Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
-        }
-
-        return new WeaponPartSchematic(name, shootingForce, reloadTime, range, weight, bulletType, damage, shootKey);
+        return new WeaponPartSchematic(name, shootingForce, reloadTime, range, weight, bulletType, damage);
     }
 }

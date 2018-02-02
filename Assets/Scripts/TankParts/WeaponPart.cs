@@ -33,7 +33,9 @@ public class WeaponPart
     }
 
     public void HandleInput() {
-        if (Input.GetKey(Schematic.ShootKey) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
+        KeyCode shootKey = owningTank.Turret.Schematic.ShootKeys[TurretIdx];
+
+        if (Input.GetKey(shootKey) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
             shouldShoot = true;
         }
     }

@@ -103,8 +103,18 @@ public class PartsManager : MonoBehaviour
                 weightRestricts.Add(weightRestric);
             }
 
+            KeyCode[] shootKeys = null;
+
             // TODO: keycodes are for now. Should later be done differently using keyboard schematics
-            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weightRestricts.ToArray(), KeyCode.T, KeyCode.Y);
+            if (weaponDirs.Count == 1) {
+                shootKeys = new KeyCode[] { KeyCode.P };
+            } else if (weaponDirs.Count == 2) {
+                shootKeys = new KeyCode[] { KeyCode.P, KeyCode.O };
+            }
+
+            // TODO: keycodes are for now. Should later be done differently using keyboard schematics
+            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weightRestricts.ToArray(), 
+                KeyCode.T, KeyCode.Y, shootKeys);
 
             partSchematics.Add(part.Name, part);
         }
@@ -126,13 +136,7 @@ public class PartsManager : MonoBehaviour
             int damage = info.Value<int>("damage");
             Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
 
-            // TODO: keycodes are for now. Should later be done differently using keyboard schematics
-            KeyCode code = KeyCode.P;
-            if (name.Equals("Basic Weapon2")) {
-                code = KeyCode.O;
-            }
-
-            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, force, reloadTime, range, weight, bType, damage, code);
+            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, force, reloadTime, range, weight, bType, damage);
 
             partSchematics.Add(part.Name, part);
         }
