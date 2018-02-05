@@ -72,7 +72,15 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    private int curArmour = 0;
+    public int MaxArmour
+    {
+        get; private set;
+    }
+
+    public int CurArmour
+    {
+        get; private set;
+    }
 
     private float totalDrag = 0;
 
@@ -131,6 +139,8 @@ public partial class Tank : MonoBehaviour
         this.LeftWheelBody.mass = totalWeight / 2f;
         this.RightWheelBody.mass = totalWeight / 2f;
 
+        MaxArmour = calculateTotalArmour();
+
         ResetState();
 
         initAI();
@@ -139,22 +149,30 @@ public partial class Tank : MonoBehaviour
     }
 
     public void ResetState() {
-        curArmour = Hull.Schematic.Armour;
-        curArmour += Turret.Schematic.Armour;
+        CurArmour = MaxArmour;
     }
 
     public void Damage(int damage) {
         Debug.Log("Tank has taken damage");
 
-        curArmour -= damage;
+        CurArmour -= damage;
 
-        if (curArmour <= 0) {
+        if (CurArmour <= 0) {
             Dead();
         }
     }
 
     public void Dead() {
         Debug.Log("Tank is dead");
+    }
+
+    private int calculateTotalArmour() {
+        int armour = 0;
+
+        armour = Hull.Schematic.Armour;
+        armour += Turret.Schematic.Armour;
+
+        return armour;
     }
 
     private float calculateDrag() {
