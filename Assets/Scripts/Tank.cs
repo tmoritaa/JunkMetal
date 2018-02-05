@@ -19,7 +19,6 @@ public partial class Tank : MonoBehaviour
 
     [SerializeField]
     private Rigidbody2D body;
-
     public Rigidbody2D Body
     {
         get {
@@ -30,12 +29,18 @@ public partial class Tank : MonoBehaviour
     [SerializeField]
     private GameObject leftWheelGO;
 
-    private Rigidbody2D leftWheelBody;
+    public Rigidbody2D LeftWheelBody
+    {
+        get; private set;
+    }
 
     [SerializeField]
     private GameObject rightWheelGO;
 
-    private Rigidbody2D rightWheelBody;
+    public Rigidbody2D RightWheelBody
+    {
+        get; private set;
+    }
 
     [SerializeField]
     private BoxCollider2D boxCollider;
@@ -74,8 +79,8 @@ public partial class Tank : MonoBehaviour
     private bool initialized = false;
 
     private void Awake() {
-        leftWheelBody = leftWheelGO.GetComponent<Rigidbody2D>();
-        rightWheelBody = rightWheelGO.GetComponent<Rigidbody2D>();
+        LeftWheelBody = leftWheelGO.GetComponent<Rigidbody2D>();
+        RightWheelBody = rightWheelGO.GetComponent<Rigidbody2D>();
     }
 
     private void FixedUpdate() {
@@ -121,10 +126,10 @@ public partial class Tank : MonoBehaviour
 
         totalDrag = calculateDrag();
 
-        float totalWeight = calculateTotalWeight();
+        float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;
-        this.leftWheelBody.mass = totalWeight / 2f;
-        this.rightWheelBody.mass = totalWeight / 2f;
+        this.LeftWheelBody.mass = totalWeight / 2f;
+        this.RightWheelBody.mass = totalWeight / 2f;
 
         ResetState();
 
@@ -156,8 +161,8 @@ public partial class Tank : MonoBehaviour
         float drag = 0;
 
         drag += body.drag;
-        drag += leftWheelBody.drag;
-        drag += rightWheelBody.drag;
+        drag += LeftWheelBody.drag;
+        drag += RightWheelBody.drag;
 
         return drag;
     }
@@ -174,7 +179,7 @@ public partial class Tank : MonoBehaviour
 
     private void handleMovement() {
         Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
-        this.leftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.Schematic.EnergyPower / 2f));
-        this.rightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.Schematic.EnergyPower / 2f));
+        this.LeftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.Schematic.EnergyPower / 2f));
+        this.RightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.Schematic.EnergyPower / 2f));
     }
 }

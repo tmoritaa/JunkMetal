@@ -46,7 +46,7 @@ public class WeaponPart
 
             Vector2 fireVec = owningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
 
-            bullet.Fire(fireVec, Schematic.ShootForce, Schematic.Range, Schematic.Damage);
+            bullet.Fire(fireVec, Schematic.ShootForce, Schematic.ShootBackForce, Schematic.Range, Schematic.Damage);
 
             lastShotTime = Time.time;
             shouldShoot = false;

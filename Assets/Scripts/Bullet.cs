@@ -53,11 +53,15 @@ public class Bullet : MonoBehaviour
         this.gameObject.transform.position = Owner.transform.position;
     }
 
-    public void Fire(Vector2 forwardVec, float shootForce, float _range, int _damage) {
+    public void Fire(Vector2 forwardVec, float shootForce, float shootBackForce, float _range, int _damage) {
         range = _range;
         damage = _damage;
         firePos = this.transform.position;
         this.body.AddForce(forwardVec.normalized * shootForce);
+
+        Vector2 backVec = forwardVec.Rotate(180);
+        Owner.LeftWheelBody.AddForce(backVec.normalized * shootBackForce);
+        Owner.RightWheelBody.AddForce(backVec.normalized * shootBackForce);
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
