@@ -4,7 +4,7 @@ using System.Linq;
 
 using UnityEngine;
 
-public partial class Tank : MonoBehaviour
+public class AITankController : TankController
 {
     public Vector2 DestPos
     {
@@ -24,25 +24,26 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    private void initAI() {
-        DestPos = this.transform.position;
+    public override void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
+        base.Init(startPos, _body, _turret, _wheels);
+
+        DestPos = Tank.transform.position;
     }
 
     private void performMovement() {
         // If already at desired position, stop.
-        if (((Vector2)this.transform.position - DestPos).sqrMagnitude < sqrDistForDistSigma) {
-            Wheels.PerformPowerChange(0, 0);
+        if (((Vector2)Tank.transform.position - DestPos).sqrMagnitude < sqrDistForDistSigma) {
+            Tank.Wheels.PerformPowerChange(0, 0);
             return;
         }
 
-        // TODO: don't forget path smoothing later.
-        if (path.Count > 0 && ((Vector2)this.transform.position - GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistForDistSigma) {
+        if (path.Count > 0 && ((Vector2)Tank.transform.position - GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistForDistSigma) {
             path.RemoveAt(0);
             smoothPath();
         }
 
         if (path.Count < 1) {
-            path = GameManager.Instance.Map.FindPath(this.transform.position, DestPos);
+            path = GameManager.Instance.Map.FindPath(Tank.transform.position, DestPos);
             smoothPath();
         }
 
@@ -51,7 +52,7 @@ public partial class Tank : MonoBehaviour
         Vector2 requestDir = calcRequestDir(target).normalized;
 
         if (Application.isEditor) {
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(requestDir * 50), Color.red);
+            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(requestDir * 50), Color.red);
         }
 
         performActuation(requestDir);
@@ -65,14 +66,14 @@ public partial class Tank : MonoBehaviour
         for (int i = 0; i < path.Count; ++i) {
             Node node = path[i];
 
-            Vector2 leftVec = new Vector2(0, 1).Rotate(this.body.rotation - 90).normalized;
-            Vector2 rightVec = new Vector2(0, 1).Rotate(this.body.rotation + 90).normalized;
+            Vector2 leftVec = new Vector2(0, 1).Rotate(Tank.Body.rotation - 90).normalized;
+            Vector2 rightVec = new Vector2(0, 1).Rotate(Tank.Body.rotation + 90).normalized;
 
             Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
-            Vector2 diffVec = pos - (Vector2)this.transform.position;
+            Vector2 diffVec = pos - (Vector2)Tank.transform.position;
 
-            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)this.transform.position + (leftVec * (this.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
-            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)this.transform.position + (rightVec * (this.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)Tank.transform.position + (leftVec * (Tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)Tank.transform.position + (rightVec * (Tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
 
             // If collision, stop
             if (leftHit.collider != null || rightHit.collider != null) {
@@ -96,12 +97,12 @@ public partial class Tank : MonoBehaviour
     }
 
     private Vector2 Seek(Vector2 targetPos) {
-        Vector2 curPos = this.transform.position;
+        Vector2 curPos = Tank.transform.position;
         return targetPos - curPos;
     }
 
     private Vector2 AvoidWalls(Vector2 desiredDir) {
-        Vector2 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
+        Vector2 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
         Vector2 leftVec = forwardVec.Rotate(-90);
         Vector2 rightVec = forwardVec.Rotate(90);
         Vector2 backVec = forwardVec.Rotate(180);
@@ -117,11 +118,11 @@ public partial class Tank : MonoBehaviour
             backVec = tmpVec;
         }
 
-        float xAdd = this.Hull.Schematic.Size.x / 2f;
-        float yAdd = this.Hull.Schematic.Size.y / 2f;
-        Vector2 TopCenter = (Vector2)this.transform.position + forwardVec * yAdd;
-        Vector2 TLCorner = (Vector2)this.transform.position + forwardVec * yAdd + leftVec * xAdd;
-        Vector2 TRCorner = (Vector2)this.transform.position + forwardVec * yAdd + rightVec * xAdd;
+        float xAdd = Tank.Hull.Schematic.Size.x / 2f;
+        float yAdd = Tank.Hull.Schematic.Size.y / 2f;
+        Vector2 TopCenter = (Vector2)Tank.transform.position + forwardVec * yAdd;
+        Vector2 TLCorner = (Vector2)Tank.transform.position + forwardVec * yAdd + leftVec * xAdd;
+        Vector2 TRCorner = (Vector2)Tank.transform.position + forwardVec * yAdd + rightVec * xAdd;
 
         // If Collision, then take into account desired Dir and see if risk of collision
         const int WallBit = 8;
@@ -129,11 +130,11 @@ public partial class Tank : MonoBehaviour
         const int LayerMask = 1 << WallBit | 1 << PlayerBit;
         const float SideRatio = 1.0f;
         const float DiagRatio = 0.6f;
-        
+
         const float ForwardFanRatio = 0.7f;
         const float BackwardFanRatio = 1.0f - ForwardFanRatio;
 
-        float maxDistance = Mathf.Max(this.body.velocity.magnitude, 150f);
+        float maxDistance = Mathf.Max(Tank.Body.velocity.magnitude, 150f);
 
         float fanRatio = Mathf.Min((float)successiveCollisions / 250f, 0.8f);
         RaycastHit2D[] hitResult = new RaycastHit2D[4];
@@ -185,7 +186,7 @@ public partial class Tank : MonoBehaviour
 
             float blendRatio = Mathf.Clamp(minHitDist / maxDistance, MinBlend, MaxBlend);
             newDesiredDir = (blendRatio * desiredDir + (1.0f - blendRatio) * leftVec).normalized;
-        } else if (!rightHit && !leftHit){            
+        } else if (!rightHit && !leftHit) {
             successiveCollisions = 0;
 
             newDesiredDir = desiredDir;
@@ -196,8 +197,8 @@ public partial class Tank : MonoBehaviour
 
     private void performActuation(Vector2 requestDir) {
         // First calculate forward and backwards arc angle based on speed
-        float sqrMaxVelocityMag = this.Hull.Schematic.EnergyPower / this.totalDrag;
-        float sqrCurVelocity = this.body.velocity.sqrMagnitude;
+        float sqrMaxVelocityMag = Tank.Hull.Schematic.EnergyPower / Tank.TotalDrag;
+        float sqrCurVelocity = Tank.Body.velocity.sqrMagnitude;
 
         const float minRatioCutOff = 0.4f;
         const float maxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking
@@ -211,73 +212,76 @@ public partial class Tank : MonoBehaviour
 
         // Debug stuff
         if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector2 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
+            Vector2 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
+            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
+            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
 
-            Vector2 backwardVec = (new Vector2(0, -1)).Rotate(this.body.rotation);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
+            Vector2 backwardVec = (new Vector2(0, -1)).Rotate(Tank.Body.rotation);
+            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
+            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
         }
 
-        float angleDiffFromFront = Vector2.Angle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
-        float angleDiffFromBack = Vector2.Angle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
+        float angleDiffFromFront = Vector2.Angle((new Vector2(0, 1)).Rotate(Tank.Body.rotation), requestDir);
+        float angleDiffFromBack = Vector2.Angle((new Vector2(0, -1)).Rotate(Tank.Body.rotation), requestDir);
 
         const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
 
         // In this case we want the AI to continue accelerating while going towards the requested direction
         if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
+            float angleToTurn = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(Tank.Body.rotation), requestDir);
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    Wheels.PerformPowerChange(0, 1);
+                    Tank.Wheels.PerformPowerChange(0, 1);
                 } else {
-                    Wheels.PerformPowerChange(1, 0);
+                    Tank.Wheels.PerformPowerChange(1, 0);
                 }
             } else {
-                Wheels.PerformPowerChange(1, 1);
+                Tank.Wheels.PerformPowerChange(1, 1);
             }
 
             // In this case we want the tank to start accelerating backwards
         } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
+            float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(Tank.Body.rotation), requestDir);
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    Wheels.PerformPowerChange(-1, 0);
+                    Tank.Wheels.PerformPowerChange(-1, 0);
                 } else {
-                    Wheels.PerformPowerChange(0, -1);
+                    Tank.Wheels.PerformPowerChange(0, -1);
                 }
             } else {
-                Wheels.PerformPowerChange(-1, -1);
+                Tank.Wheels.PerformPowerChange(-1, -1);
             }
 
             // In this case we want the tank to start turning
         } else {
-            float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.body.rotation), requestDir);
-            float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.body.rotation), requestDir);
+            float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(Tank.Body.rotation), requestDir);
+            float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(Tank.Body.rotation), requestDir);
 
             bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
             float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
 
             if (Mathf.Sign(angle) >= 0) {
-                Wheels.PerformPowerChange(-1, 1);
+                Tank.Wheels.PerformPowerChange(-1, 1);
             } else {
-                Wheels.PerformPowerChange(1, -1);
+                Tank.Wheels.PerformPowerChange(1, -1);
             }
         }
 
         // Debug
         if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector3 leftWheelPos = this.leftWheelGO.transform.position;
-            Vector3 rightWheelPos = this.rightWheelGO.transform.position;
+            Vector3 leftWheelPos = Tank.LeftWheelGO.transform.position;
+            Vector3 rightWheelPos = Tank.RightWheelGO.transform.position;
 
-            Vector3 forwardVec = (new Vector2(0, 1)).Rotate(this.body.rotation);
+            Vector3 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
 
-            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * Wheels.LeftCurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * Wheels.RightCurPower), Color.magenta);
+            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * Tank.Wheels.LeftCurPower), Color.magenta);
+            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * Tank.Wheels.RightCurPower), Color.magenta);
         }
     }
 
+    void Update() {
+        performMovement();
+    }
 }

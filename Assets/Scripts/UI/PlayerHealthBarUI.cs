@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class PlayerHealthBarUI : BarUI 
 {
     [SerializeField]
-    Tank.PlayerTypes DisplayType;
+    TankController.PlayerTypes DisplayType;
 
     [SerializeField]
     Text armourText;
@@ -22,7 +22,7 @@ public class PlayerHealthBarUI : BarUI
 
         armourText.text = getTankOfType().CurArmour + "/" + getTankOfType().MaxArmour;
 
-        nameText.text = (DisplayType == Tank.PlayerTypes.Human) ? "Player" : "AI";
+        nameText.text = (DisplayType == TankController.PlayerTypes.Human) ? "Player" : "AI";
     }
 
     protected override float getFillPercentage() {
@@ -32,6 +32,6 @@ public class PlayerHealthBarUI : BarUI
     }
 
     private Tank getTankOfType() {
-        return (DisplayType == Tank.PlayerTypes.Human) ? GameManager.Instance.PlayerTank : GameManager.Instance.AiTank;
+        return (DisplayType == TankController.PlayerTypes.Human) ? GameManager.Instance.HumanTankController.Tank : GameManager.Instance.HumanTankController.Tank;
     }
 }

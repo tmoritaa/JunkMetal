@@ -42,7 +42,7 @@ public class DebugManager : MonoBehaviour
 
     void Update() {
         if (Input.GetMouseButton(0)) {
-            GameManager.Instance.AiTank.DestPos = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+            GameManager.Instance.AITankController.DestPos = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
         }
     }
 
@@ -51,7 +51,7 @@ public class DebugManager : MonoBehaviour
             Color origColor = Gizmos.color;
 
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(GameManager.Instance.AiTank.DestPos, 30);
+            Gizmos.DrawWireSphere(GameManager.Instance.AITankController.DestPos, 30);
 
             if (mapDisplayDebugOn) {
                 // Draw Map
@@ -68,7 +68,7 @@ public class DebugManager : MonoBehaviour
 
                 Gizmos.color = Color.blue;
 
-                foreach (Node node in GameManager.Instance.AiTank.Path) {
+                foreach (Node node in GameManager.Instance.AITankController.Path) {
                     Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
                     Gizmos.DrawWireSphere(pos, 15);
                 }

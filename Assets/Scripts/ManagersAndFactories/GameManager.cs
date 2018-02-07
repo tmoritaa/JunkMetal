@@ -37,23 +37,29 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField]
-    private Tank tankPrefab;
-
-    [SerializeField]
     private GameObject wallPrefab;
 
     [SerializeField]
     private Transform wallsRoot;
 
     [SerializeField]
-    private GameObject canvasRoot;
+    private Transform canvasRoot;
 
-    public Tank PlayerTank
+    [SerializeField]
+    private Transform tankRoot;
+
+    [SerializeField]
+    private HumanTankController humanTankContPrefab;
+
+    [SerializeField]
+    private AITankController aiTankContPrefab;
+
+    public HumanTankController HumanTankController
     {
         get; private set;
     }
 
-    public Tank AiTank
+    public AITankController AITankController
     {
         get; private set;
     }
@@ -66,34 +72,28 @@ public class GameManager : MonoBehaviour
     void Awake() {
         instance = this;
 
-        PlayerTank = Instantiate(tankPrefab);
-        PlayerTank.transform.SetParent(canvasRoot.transform, false);
-        PlayerTank.transform.position = new Vector3(0, -600, 0);
-
         TurretPart playerTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
         playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
         playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon2")), 1);
 
-        PlayerTank.Init(
-            Tank.PlayerTypes.Human,
+        HumanTankController = Instantiate(humanTankContPrefab, tankRoot, false);
+        HumanTankController.Init(
+            new Vector3(0, -600, 0),
             new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
             playerTurret,
             new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
 
-        AiTank = Instantiate(tankPrefab);
-        AiTank.transform.SetParent(canvasRoot.transform, false);
-        AiTank.transform.position = new Vector3(0, -300, 0);
-
         TurretPart aiTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
         aiTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
 
-        AiTank.Init(
-            Tank.PlayerTypes.AI,
+        AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
+        AITankController.Init(
+            new Vector3(0, -300, 0),
             new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
             aiTurret,
             new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
-
-        MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(PlayerTank.gameObject);
+        
+        MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.Tank.gameObject);
 
         generateMapBounds();
         generateTileMap();

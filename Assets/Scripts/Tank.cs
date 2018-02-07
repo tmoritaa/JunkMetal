@@ -6,17 +6,6 @@ using UnityEngine;
 
 public partial class Tank : MonoBehaviour
 {
-    public enum PlayerTypes
-    {
-        Human,
-        AI,
-    }
-
-    public PlayerTypes PlayerType
-    {
-        get; protected set;
-    }
-
     [SerializeField]
     private Rigidbody2D body;
     public Rigidbody2D Body
@@ -28,14 +17,26 @@ public partial class Tank : MonoBehaviour
 
     [SerializeField]
     private GameObject leftWheelGO;
+    public GameObject LeftWheelGO
+    {
+        get {
+            return leftWheelGO;
+        }
+    }
+
+    [SerializeField]
+    private GameObject rightWheelGO;
+    public GameObject RightWheelGO
+    {
+        get {
+            return rightWheelGO;
+        }
+    }
 
     public Rigidbody2D LeftWheelBody
     {
         get; private set;
     }
-
-    [SerializeField]
-    private GameObject rightWheelGO;
 
     public Rigidbody2D RightWheelBody
     {
@@ -82,7 +83,10 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    private float totalDrag = 0;
+    public float TotalDrag
+    {
+        get; private set;
+    }
 
     private bool initialized = false;
 
@@ -98,24 +102,14 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    private void Update() {
+    public void HandleInput() {
         if (initialized) {
-            if (PlayerType == PlayerTypes.Human) {
-                Wheels.HandleInput();
-                Turret.HandleInput();
-            } else if (PlayerType == PlayerTypes.AI) {
-                performMovement();
-            }
+            Wheels.HandleInput();
+            Turret.HandleInput();
         }
     }
 
-    public void Init(PlayerTypes _playerType, HullPart _body, TurretPart _turret, WheelPart _wheels) {
-        PlayerType = _playerType;
-
-        if (PlayerType == PlayerTypes.Human) {
-            this.gameObject.layer = 9; // Player layer
-        }
-
+    public void Init(HullPart _body, TurretPart _turret, WheelPart _wheels) {
         Hull = _body;
         Wheels = _wheels;
         Turret = _turret;
@@ -132,7 +126,7 @@ public partial class Tank : MonoBehaviour
         rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(hullSize.x / 2f, 0, 0);
         rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(hullSize.x / 2f, 0);
 
-        totalDrag = calculateDrag();
+        TotalDrag = calculateDrag();
 
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;
@@ -142,8 +136,6 @@ public partial class Tank : MonoBehaviour
         MaxArmour = calculateTotalArmour();
 
         ResetState();
-
-        initAI();
 
         initialized = true;
     }
