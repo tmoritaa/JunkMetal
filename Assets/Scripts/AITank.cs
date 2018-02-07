@@ -29,8 +29,9 @@ public partial class Tank : MonoBehaviour
     }
 
     private void performMovement() {
-        // If already at desired position, do nothing.
+        // If already at desired position, stop.
         if (((Vector2)this.transform.position - DestPos).sqrMagnitude < sqrDistForDistSigma) {
+            Wheels.PerformPowerChange(0, 0);
             return;
         }
 
@@ -58,8 +59,7 @@ public partial class Tank : MonoBehaviour
 
     private void smoothPath() {
         const int WallBit = 8;
-        const int PlayerBit = 9;
-        const int LayerMask = 1 << WallBit | 1 << PlayerBit;
+        const int LayerMask = 1 << WallBit;
 
         int removeCount = 0;
         for (int i = 0; i < path.Count; ++i) {
