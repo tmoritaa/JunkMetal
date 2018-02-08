@@ -66,15 +66,34 @@ public class DebugManager : MonoBehaviour
                     }
                 }
 
-                Gizmos.color = Color.blue;
+                if (GameManager.Instance.AITankController.CurGoal.GetType() == typeof(SearchGoal)) {
+                    Gizmos.color = Color.blue;
 
-                foreach (Node node in GameManager.Instance.AITankController.Path) {
-                    Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
-                    Gizmos.DrawWireSphere(pos, 15);
+                    SearchGoal goal = (SearchGoal)GameManager.Instance.AITankController.CurGoal;
+
+                    // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
+                    List<Node> path = goal.Path;
+
+                    foreach (Node node in path) {
+                        Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+                        Gizmos.DrawWireSphere(pos, 15);
+                    }
+
+                    TileMap searchQuads = goal.SearchQuadrants;
+
+                    foreach (Node node in searchQuads.Map) {
+                        if (node.value == 0) {
+                            Gizmos.color = Color.blue;
+                        } else {
+                            Gizmos.color = Color.red;
+                        }
+
+                        Gizmos.DrawWireCube(searchQuads.NodeToPosition(node), new Vector3(searchQuads.TileDim, searchQuads.TileDim, searchQuads.TileDim));
+                    }
                 }
-
-                Gizmos.color = origColor;
             }
+
+            Gizmos.color = origColor;
         }
     }
 }

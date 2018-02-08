@@ -25,6 +25,31 @@ public class Node
     }
 }
 
+public class Connection
+{
+    public Node srcNode
+    {
+        get; private set;
+    }
+
+    public Node targetNode
+    {
+        get; private set;
+    }
+
+    public Connection(Node _srcNode, Node _tgtNode) {
+        srcNode = _srcNode;
+        targetNode = _tgtNode;
+    }
+
+    public float Cost(TileMap map) {
+        Vector2 pos = map.NodeToPosition(srcNode);
+        Vector2 otherPos = map.NodeToPosition(targetNode);
+
+        return (pos - otherPos).sqrMagnitude;
+    }
+}
+
 public class TileMap
 {
     public int Rows
@@ -42,10 +67,21 @@ public class TileMap
         get; private set;
     }
 
-    private float mapWidth;
-    private float mapHeight;
+    public float MapWidth
+    {
+        get; private set;
+    }
+
+    public float MapHeight
+    {
+        get; private set;
+    }
     
-    private Node[,] map;
+    // NOTE: public for debug reasons
+    public Node[,] Map
+    {
+        get; private set;
+    }
 
     private class NodeRecord
     {
@@ -63,84 +99,110 @@ public class TileMap
         }
     }
 
-    private class Connection
-    {
-        public Node srcNode
-        {
-            get; private set;
-        }
-
-        public Node targetNode
-        {
-            get; private set;
-        }
-
-        public Connection(Node _srcNode, Node _tgtNode) {
-            srcNode = _srcNode;
-            targetNode = _tgtNode;
-        }
-
-        public float Cost(TileMap map) {
-            Vector2 pos = map.NodeToPosition(srcNode);
-            Vector2 otherPos = map.NodeToPosition(targetNode);
-
-            return (pos - otherPos).sqrMagnitude;
-        }
-    }
-
-    public TileMap(float _mapWidth, float _mapHeight, float _tileDim, List<Transform> walls) {
-        mapWidth = _mapWidth;
-        mapHeight = _mapHeight;
+    public TileMap(float _mapWidth, float _mapHeight, float _tileDim, List<Transform> walls=null) {
+        MapWidth = _mapWidth;
+        MapHeight = _mapHeight;
         TileDim = _tileDim;
 
         // First generate map array.
-        Rows = Mathf.CeilToInt(mapWidth / TileDim);
-        Cols = Mathf.CeilToInt(mapHeight / TileDim);
+        Rows = Mathf.CeilToInt(MapWidth / TileDim);
+        Cols = Mathf.CeilToInt(MapHeight / TileDim);
 
-        map = new Node[Cols, Rows];
-        for (int x = 0; x < Cols; ++x) {
-            for (int y = 0; y < Rows; ++y) {
-                map[x, y] = new Node(x, y, (char)0);
-            }
-        }
+        initMap();
 
-        foreach (Transform trans in walls) {
-            RectTransform rect = trans.GetComponent<RectTransform>();
+        markWallsOnMap(walls);
+    }
 
-            Vector2 size = rect.sizeDelta;
+    public TileMap(float _mapWidth, float _mapHeight, int numRowsAndCols, List<Transform> walls=null) {
+        MapWidth = _mapWidth;
+        MapHeight = _mapHeight;
+        Rows = numRowsAndCols;
+        Cols = numRowsAndCols;
+        TileDim = MapWidth / (float)Cols;
 
-            // Note: tiledim is subtracted from x and y s.t. the map will set adjacent tiles as also blocked
-            List<Node> markedNodes = new List<Node>();
-            for (float x = -size.x/2f + 1; x < size.x / 2f; x += TileDim / 2f) {
-                for (float y = -size.y/2f + 1; y < size.y/2f; y += TileDim / 2f) {
-                    Vector2 pos = (Vector2)trans.localPosition + new Vector2(x, y);
+        initMap();
 
-                    int[] indices = PositionToIdx(pos);
+        markWallsOnMap(walls);
+    }
 
-                    if (indices[0] >= 0 && indices[0] < Cols && indices[1] >= 0 && indices[1] < Rows) {
-                        Node node = map[indices[0], indices[1]];
-                        node.value = (char)1;
-                        markedNodes.Add(node);
-                    }
-                }
-            }
-            
-            foreach (Node node in markedNodes) {
-                List<Connection> connections = findConnectedNodes(node);
+    public char GetValueAtIdx(int x, int y) {
+        return Map[x, y].value;
+    }
 
-                foreach(Connection connection in connections) {
-                    connection.targetNode.value = (char)1;
-                }
-            }
+    public int[] PositionToIdx(Vector2 position) {
+        int[] indices = new int[2];
+
+        indices[0] = Mathf.FloorToInt((position.x - TileDim / 2f + MapWidth / 2f) / TileDim + 0.5f);
+        indices[1] = Mathf.FloorToInt((-position.y - TileDim / 2f + MapHeight / 2f) / TileDim + 0.5f);
+
+        return indices;
+    }
+
+    public Node PositionToNode(Vector2 position) {
+        int[] indices = PositionToIdx(position);
+        return Map[indices[0], indices[1]];
+    }
+
+    public Vector2 NodeToPosition(Node node) {
+        return IdxToPosition(node.x, node.y);
+    }
+
+    public Vector2 IdxToPosition(int x, int y) {
+        return new Vector2(TileDim / 2f + x * TileDim - MapWidth / 2f, -TileDim / 2f - y * TileDim + MapHeight / 2f);
+    }
+
+    public void ClearNodeValues() {
+        foreach(Node n in Map) {
+            n.value = (char)0;
         }
     }
 
-    public List<Node> FindPath(Vector2 startPos, Vector2 targetPos) {
-        int[] startIdx = PositionToIdx(startPos);
-        NodeRecord startNodeRecord = new NodeRecord(map[startIdx[0], startIdx[1]]);
+    // NOTE: if the specified direction has no valid targets ever, then this function will assert and return the last checked pos.
+    private Vector2 findNonblockedPosInProximity(Vector2 targetPos, int xDir = 0, int yDir = 0) {
+        // If no shift direction specified, just assume up.
+        if (xDir == 0 && yDir == 0) {
+            yDir = 1;
+        }
 
+        Node node = PositionToNode(targetPos);
+
+        if (node.value != 0) {
+            while (true) {
+                List<Connection> connections = FindConnectedNodes(node, true, xDir, yDir);
+
+                if (connections.Count == 0) {
+                    Debug.Assert(false, "FindNonBlockedPosInProximity was unable to find any valid nodes");
+                    break;
+                }
+
+                bool foundSafePos = false;
+                foreach (Connection con in connections) {
+                    if (con.targetNode.value == 0) {
+                        foundSafePos = true;
+                        node = con.targetNode;
+                        break;
+                    }
+                }
+
+                if (foundSafePos) {
+                    break;
+                }
+
+                node = connections[0].targetNode;
+            }
+        }
+
+        return NodeToPosition(node);
+    }
+
+    public List<Node> FindPath(Vector2 startPos, Vector2 _targetPos, int xDir=0, int yDir=0) {
+        int[] startIdx = PositionToIdx(startPos);
+        NodeRecord startNodeRecord = new NodeRecord(Map[startIdx[0], startIdx[1]]);
+
+        Vector2 searchDir = (_targetPos - startPos).normalized;
+        Vector2 targetPos = findNonblockedPosInProximity(_targetPos, (int)Mathf.Sign(searchDir.x), (int)Mathf.Sign(searchDir.y));
         int[] targetIdx = PositionToIdx(targetPos);
-        NodeRecord targetNodeRecord = new NodeRecord(map[targetIdx[0], targetIdx[1]]);
+        NodeRecord targetNodeRecord = new NodeRecord(Map[targetIdx[0], targetIdx[1]]);
 
         startNodeRecord.estimatedTotalCost = heuristicCost(startNodeRecord.node, targetNodeRecord.node);
 
@@ -156,7 +218,7 @@ public class TileMap
                 break;
             }
 
-            List<Connection> connections = findConnectedNodes(current.node);
+            List<Connection> connections = FindConnectedNodes(current.node);
 
             foreach (Connection connection in connections) {
                 Node node = connection.targetNode;
@@ -232,6 +294,35 @@ public class TileMap
         return path;
     }
 
+    public List<Connection> FindConnectedNodes(Node srcNode, bool ignoreValues = false, int xDir = 0, int yDir = 0) {
+        List<Connection> connectedNodes = new List<Connection>();
+
+        int xStart = xDir == 0 ? -1 : xDir;
+        int xEnd = xDir == 0 ? 1 : xDir;
+
+        int yStart = yDir == 0 ? -1 : yDir;
+        int yEnd = yDir == 0 ? 1 : yDir;
+
+        for (int x = xStart; x <= xEnd; ++x) {
+            for (int y = yStart; y <= yEnd; ++y) {
+                if (x == 0 && y == 0) {
+                    continue;
+                }
+
+                int[] indices = new int[] { srcNode.x + x, srcNode.y + y };
+
+                // If idx positions are either invalid or blocked, then not connected, and can be skipped over.
+                if (indices[0] < 0 || indices[0] >= Cols || indices[1] < 0 || indices[1] >= Rows || (!ignoreValues && Map[indices[0], indices[1]].value != 0)) {
+                    continue;
+                }
+
+                connectedNodes.Add(new Connection(srcNode, Map[indices[0], indices[1]]));
+            }
+        }
+
+        return connectedNodes;
+    }
+
     private bool recordListContainsNode(List<NodeRecord> records, Node node) {
         return findRecordNodeWithNode(records, node) != null;
     }
@@ -261,47 +352,48 @@ public class TileMap
         return (pos - targetPos).sqrMagnitude;
     }
 
-    private List<Connection> findConnectedNodes(Node srcNode) {
-        List<Connection> connectedNodes = new List<Connection>();
-
-        for (int x = -1; x <= 1; ++x) {
-            for (int y = -1; y <= 1; ++y) {
-                if (x == 0 && y == 0) {
-                    continue;
-                }
-
-                int[] indices = new int[] { srcNode.x + x, srcNode.y + y };
-
-                // If idx positions are either invalid or blocked, then not connected, and can be skipped over.
-                if (indices[0] < 0 || indices[0] >= Cols || indices[1] < 0 || indices[1] >= Rows || map[indices[0], indices[1]].value != 0) {
-                    continue;
-                }
-
-                connectedNodes.Add(new Connection(srcNode, map[indices[0], indices[1]]));
-            }
+    private void markWallsOnMap(List<Transform> walls) {
+        if (walls == null) {
+            return;
         }
 
-        return connectedNodes;
+        foreach (Transform trans in walls) {
+            RectTransform rect = trans.GetComponent<RectTransform>();
+
+            Vector2 size = rect.sizeDelta;
+
+            // Note: tiledim is subtracted from x and y s.t. the map will set adjacent tiles as also blocked
+            List<Node> markedNodes = new List<Node>();
+            for (float x = -size.x / 2f + 1; x < size.x / 2f; x += TileDim / 2f) {
+                for (float y = -size.y / 2f + 1; y < size.y / 2f; y += TileDim / 2f) {
+                    Vector2 pos = (Vector2)trans.localPosition + new Vector2(x, y);
+
+                    int[] indices = PositionToIdx(pos);
+
+                    if (indices[0] >= 0 && indices[0] < Cols && indices[1] >= 0 && indices[1] < Rows) {
+                        Node node = Map[indices[0], indices[1]];
+                        node.value = (char)1;
+                        markedNodes.Add(node);
+                    }
+                }
+            }
+
+            foreach (Node node in markedNodes) {
+                List<Connection> connections = FindConnectedNodes(node);
+
+                foreach (Connection connection in connections) {
+                    connection.targetNode.value = (char)1;
+                }
+            }
+        }
     }
 
-    public char GetValueAtIdx(int x, int y) {
-        return map[x, y].value;
-    }
-
-    public int[] PositionToIdx(Vector2 position) {
-        int[] indices = new int[2];
-
-        indices[0] = Mathf.FloorToInt((position.x - TileDim/2f + mapWidth/2f) / TileDim + 0.5f);
-        indices[1] = Mathf.FloorToInt((-position.y - TileDim/2f + mapHeight/2f) / TileDim + 0.5f);
-
-        return indices;
-    }
-
-    public Vector2 NodeToPosition(Node node) {
-        return IdxToPosition(node.x, node.y);
-    }
-
-    public Vector2 IdxToPosition(int x, int y) {
-        return new Vector2(TileDim / 2f + x*TileDim - mapWidth / 2f, -TileDim/2f - y*TileDim + mapHeight/2f);
+    private void initMap() {
+        Map = new Node[Cols, Rows];
+        for (int x = 0; x < Cols; ++x) {
+            for (int y = 0; y < Rows; ++y) {
+                Map[x, y] = new Node(x, y, (char)0);
+            }
+        }
     }
 }

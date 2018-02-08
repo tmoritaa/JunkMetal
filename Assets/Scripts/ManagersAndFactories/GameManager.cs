@@ -72,6 +72,9 @@ public class GameManager : MonoBehaviour
     void Awake() {
         instance = this;
 
+        generateMapBounds();
+        generateTileMap();
+
         TurretPart playerTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
         playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
         playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon2")), 1);
@@ -94,9 +97,6 @@ public class GameManager : MonoBehaviour
             new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
         
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.Tank.gameObject);
-
-        generateMapBounds();
-        generateTileMap();
     }
 
     private void generateTileMap() {

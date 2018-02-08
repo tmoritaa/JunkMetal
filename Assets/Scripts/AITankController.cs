@@ -13,52 +13,68 @@ public class AITankController : TankController
 
     [SerializeField]
     private float sqrDistForDistSigma = 2500;
+    public float SqrDistForDistSigma
+    {
+        get {
+            return sqrDistForDistSigma;
+        }
+    }
 
     private int successiveCollisions = 0;
 
-    private List<Node> path = new List<Node>();
-    public List<Node> Path
+    private List<Goal> goals = new List<Goal>();
+
+    private Goal curGoal = null;
+    // NOTE: only for debugging.
+    public Goal CurGoal
     {
-        get {
-            return path;
-        }
+        get { return curGoal; }
+    }
+
+    void Update() {
+        updateGoalsAndPerformActions();
     }
 
     public override void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
         base.Init(startPos, _body, _turret, _wheels);
 
         DestPos = Tank.transform.position;
+
+        // TODO: for now, just manually fill up goals list.
+        goals.Add(new SearchGoal(this));
+        curGoal = null;
     }
 
-    private void performMovement() {
-        // If already at desired position, stop.
-        if (((Vector2)Tank.transform.position - DestPos).sqrMagnitude < sqrDistForDistSigma) {
-            Tank.Wheels.PerformPowerChange(0, 0);
-            return;
+    private void updateGoalsAndPerformActions() {
+        goals.ForEach(g => g.UpdateInsistence());
+
+        bool goalChanged = false;
+
+        // curGoal is null when first run. Placed here since goal init performs game operations and shouldn't actually happen during initialization.
+        if (curGoal == null) {
+            curGoal = goals[0];
+            goalChanged = true;
+        } else {
+            foreach (Goal goal in goals) {
+                if (goal != curGoal && goal.Insistence > curGoal.Insistence) {
+                    curGoal = goal;
+                    goalChanged = true;
+                }
+            }
+        }
+        
+        if (goalChanged) {
+            curGoal.Init();
         }
 
-        if (path.Count > 0 && ((Vector2)Tank.transform.position - GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistForDistSigma) {
-            path.RemoveAt(0);
-            smoothPath();
+        AIAction[] actions = curGoal.CalcActionsToPerform();
+
+        foreach(AIAction action in actions) {
+            action.Perform();
         }
-
-        if (path.Count < 1) {
-            path = GameManager.Instance.Map.FindPath(Tank.transform.position, DestPos);
-            smoothPath();
-        }
-
-        Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : DestPos;
-
-        Vector2 requestDir = calcRequestDir(target).normalized;
-
-        if (Application.isEditor) {
-            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(requestDir * 50), Color.red);
-        }
-
-        performActuation(requestDir);
     }
 
-    private void smoothPath() {
+    public void SmoothPath(List<Node> path) {
         const int WallBit = 8;
         const int LayerMask = 1 << WallBit;
 
@@ -88,20 +104,20 @@ public class AITankController : TankController
         }
     }
 
-    private Vector2 calcRequestDir(Vector2 target) {
+    public Vector2 CalcRequestDir(Vector2 target) {
         // First calculate Seek direction
-        Vector2 desiredVec = Seek(target).normalized;
-        desiredVec = AvoidWalls(desiredVec).normalized;
+        Vector2 desiredVec = seek(target).normalized;
+        desiredVec = avoidWalls(desiredVec).normalized;
 
         return desiredVec;
     }
 
-    private Vector2 Seek(Vector2 targetPos) {
+    private Vector2 seek(Vector2 targetPos) {
         Vector2 curPos = Tank.transform.position;
         return targetPos - curPos;
     }
 
-    private Vector2 AvoidWalls(Vector2 desiredDir) {
+    private Vector2 avoidWalls(Vector2 desiredDir) {
         Vector2 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
         Vector2 leftVec = forwardVec.Rotate(-90);
         Vector2 rightVec = forwardVec.Rotate(90);
@@ -193,95 +209,5 @@ public class AITankController : TankController
         }
 
         return newDesiredDir;
-    }
-
-    private void performActuation(Vector2 requestDir) {
-        // First calculate forward and backwards arc angle based on speed
-        float sqrMaxVelocityMag = Tank.Hull.Schematic.EnergyPower / Tank.TotalDrag;
-        float sqrCurVelocity = Tank.Body.velocity.sqrMagnitude;
-
-        const float minRatioCutOff = 0.4f;
-        const float maxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking
-        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, minRatioCutOff, maxRatioCutoff);
-
-        const float startingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking
-        const float startingForwardArcAngle = 360f - startingBackwardArcAngle;
-
-        float curBackwardArcAngle = ratio * startingBackwardArcAngle;
-        float curForwardArcAngle = ratio * startingForwardArcAngle;
-
-        // Debug stuff
-        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector2 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
-            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
-            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
-
-            Vector2 backwardVec = (new Vector2(0, -1)).Rotate(Tank.Body.rotation);
-            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
-            Debug.DrawLine(Tank.transform.position, Tank.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
-        }
-
-        float angleDiffFromFront = Vector2.Angle((new Vector2(0, 1)).Rotate(Tank.Body.rotation), requestDir);
-        float angleDiffFromBack = Vector2.Angle((new Vector2(0, -1)).Rotate(Tank.Body.rotation), requestDir);
-
-        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
-
-        // In this case we want the AI to continue accelerating while going towards the requested direction
-        if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(Tank.Body.rotation), requestDir);
-
-            if (Mathf.Abs(angleToTurn) > sigma) {
-                if (Mathf.Sign(angleToTurn) > 0) {
-                    Tank.Wheels.PerformPowerChange(0, 1);
-                } else {
-                    Tank.Wheels.PerformPowerChange(1, 0);
-                }
-            } else {
-                Tank.Wheels.PerformPowerChange(1, 1);
-            }
-
-            // In this case we want the tank to start accelerating backwards
-        } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(Tank.Body.rotation), requestDir);
-
-            if (Mathf.Abs(angleToTurn) > sigma) {
-                if (Mathf.Sign(angleToTurn) > 0) {
-                    Tank.Wheels.PerformPowerChange(-1, 0);
-                } else {
-                    Tank.Wheels.PerformPowerChange(0, -1);
-                }
-            } else {
-                Tank.Wheels.PerformPowerChange(-1, -1);
-            }
-
-            // In this case we want the tank to start turning
-        } else {
-            float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(Tank.Body.rotation), requestDir);
-            float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(Tank.Body.rotation), requestDir);
-
-            bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
-            float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
-
-            if (Mathf.Sign(angle) >= 0) {
-                Tank.Wheels.PerformPowerChange(-1, 1);
-            } else {
-                Tank.Wheels.PerformPowerChange(1, -1);
-            }
-        }
-
-        // Debug
-        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector3 leftWheelPos = Tank.LeftWheelGO.transform.position;
-            Vector3 rightWheelPos = Tank.RightWheelGO.transform.position;
-
-            Vector3 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
-
-            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * Tank.Wheels.LeftCurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * Tank.Wheels.RightCurPower), Color.magenta);
-        }
-    }
-
-    void Update() {
-        performMovement();
     }
 }

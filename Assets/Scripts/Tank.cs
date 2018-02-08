@@ -102,13 +102,6 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    public void HandleInput() {
-        if (initialized) {
-            Wheels.HandleInput();
-            Turret.HandleInput();
-        }
-    }
-
     public void Init(HullPart _body, TurretPart _turret, WheelPart _wheels) {
         Hull = _body;
         Wheels = _wheels;
