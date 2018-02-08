@@ -82,7 +82,8 @@ public class SearchGoal : Goal
         Vector2 requestDir = aiTankController.CalcRequestDir(target).normalized;
         actions.Add(new GoInDirAction(requestDir, tankController.Tank));
 
-        // TODO: also implement aim. Also aim in direction of movement
+        // Also aim in direction of movement
+        actions.Add(new AimAction(requestDir.normalized, tankController.Tank));
 
         return actions.ToArray();
     }

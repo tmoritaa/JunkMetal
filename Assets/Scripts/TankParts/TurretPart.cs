@@ -18,7 +18,7 @@ public class TurretPart
 
     private Tank owningTank;
 
-    private float rotDir = 0;
+    private float rotationDir = 0;
     
     private WeaponPart[] weapons;
 
@@ -50,13 +50,14 @@ public class TurretPart
     }
 
     public void HandleInput() {
+        float rotDir = 0;
+
         if (Input.GetKey(Schematic.LeftTurnKey)) {
             rotDir = 1.0f;
         } else if (Input.GetKey(Schematic.RightTurnKey)) {
             rotDir = -1.0f;
-        } else {
-            rotDir = 0;
         }
+        SetRotDir(rotDir);
 
         foreach (WeaponPart weapon in weapons) {
             if (weapon != null) {
@@ -65,9 +66,13 @@ public class TurretPart
         }
     }
 
+    public void SetRotDir(float f) {
+        rotationDir = f;
+    }
+
     public void PerformFixedUpdate() {
-        if (Mathf.Abs(Schematic.RotPerTimeStep) > 0 && Math.Abs(rotDir) > 0) {
-            float angle = rotDir * Schematic.RotPerTimeStep;
+        if (Mathf.Abs(Schematic.RotPerTimeStep) > 0 && Math.Abs(rotationDir) > 0) {
+            float angle = rotationDir * Schematic.RotPerTimeStep;
             owningTank.TurretGO.transform.Rotate(new Vector3(0, 0, angle));
             Angle += angle;
         }
