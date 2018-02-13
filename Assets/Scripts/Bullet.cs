@@ -65,9 +65,11 @@ public class Bullet : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
-        if (!isBeingDestroyed && collision.gameObject != Owner.gameObject && collision.GetComponent<Tank>() != null) {
-            Tank tank = collision.GetComponent<Tank>();
-            tank.Damage(damage);
+        if (!isBeingDestroyed && collision.gameObject != Owner.gameObject) {
+            if (collision.GetComponent<Tank>() != null) {
+                Tank tank = collision.GetComponent<Tank>();
+                tank.Damage(damage);
+            }
             destroySelf();
         }
     }

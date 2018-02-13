@@ -145,6 +145,7 @@ public partial class Tank : MonoBehaviour
         Debug.Log("Tank has taken damage");
 
         CurArmour -= damage;
+        CurArmour = Mathf.Max(0, CurArmour);
 
         if (CurArmour <= 0) {
             Dead();
