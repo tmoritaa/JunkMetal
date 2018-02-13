@@ -24,7 +24,7 @@ public class SearchGoal : Goal
         get { return path; }
     }
 
-    public SearchGoal(TankController tankController) : base(tankController) 
+    public SearchGoal(AITankController tankController) : base(tankController) 
     {}
 
     public override void Init() {
@@ -32,7 +32,7 @@ public class SearchGoal : Goal
 
         searchQuadrants = new TileMap(map.MapWidth, map.MapHeight, 5);
 
-        curDestQuad = searchQuadrants.PositionToNode(tankController.Tank.transform.position);
+        curDestQuad = searchQuadrants.PositionToNode(controller.Tank.transform.position);
         curDestQuad.value = (char)1;
     }
 
@@ -46,9 +46,9 @@ public class SearchGoal : Goal
     public override AIAction[] CalcActionsToPerform() {
         List<AIAction> actions = new List<AIAction>();
 
-        AITankController aiTankController = (AITankController)tankController;
+        AITankController aiTankController = (AITankController)controller;
 
-        Vector2 curPos = tankController.Tank.transform.position;
+        Vector2 curPos = controller.Tank.transform.position;
         Vector2 destPos = searchQuadrants.NodeToPosition(curDestQuad);
         float sqrDistSigma = aiTankController.SqrDistForDistSigma;
 
@@ -73,17 +73,17 @@ public class SearchGoal : Goal
             curDestQuad = connections[GlobalRandom.GetRandomNumber(0, connections.Count)].targetNode;
             destPos = searchQuadrants.NodeToPosition(curDestQuad);
 
-            path = GameManager.Instance.Map.FindPath(tankController.Tank.transform.position, destPos);
+            path = GameManager.Instance.Map.FindPath(controller.Tank.transform.position, destPos);
             aiTankController.SmoothPath(path);
         }
 
         Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : destPos;
 
         Vector2 requestDir = aiTankController.CalcRequestDir(target).normalized;
-        actions.Add(new GoInDirAction(requestDir, tankController.Tank));
+        actions.Add(new GoInDirAction(requestDir, controller));
 
         // Also aim in direction of movement
-        actions.Add(new AimAction(requestDir.normalized, tankController.Tank));
+        actions.Add(new AimAction(requestDir.normalized, controller));
 
         return actions.ToArray();
     }

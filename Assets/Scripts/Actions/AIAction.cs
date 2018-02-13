@@ -5,10 +5,10 @@ using System.Text;
 
 public abstract class AIAction
 {
-    protected Tank tank;
+    protected AITankController controller;
 
-    public AIAction(Tank _tank) {
-        tank = _tank;
+    public AIAction(AITankController _controller) {
+        controller = _controller;
     }
 
     public abstract void Perform();

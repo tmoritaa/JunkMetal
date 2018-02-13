@@ -9,7 +9,7 @@ public class AimWithWeaponAction : AIAction
     private Vector2 aimDir;
     private WeaponPart weapon;
 
-    public AimWithWeaponAction(Vector2 _aimDir, WeaponPart _weapon, Tank tank) : base(tank) {
+    public AimWithWeaponAction(Vector2 _aimDir, WeaponPart _weapon, AITankController controller) : base(controller) {
         aimDir = _aimDir;
         weapon = _weapon;
     }
@@ -18,6 +18,6 @@ public class AimWithWeaponAction : AIAction
         Vector2 curDir = weapon.CalculateFireVec();
 
         float signedAngle = Vector2.SignedAngle(curDir, aimDir);
-        tank.Turret.SetRotDir(Mathf.Sign(signedAngle));
+        controller.Tank.Turret.SetRotDir(Mathf.Sign(signedAngle));
     }
 }

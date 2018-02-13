@@ -8,15 +8,20 @@ public class GoInDirAction : AIAction
 {
     private Vector2 requestDir;
 
-    public GoInDirAction(Vector2 _requestDir, Tank tank) : base(tank) {
+    public GoInDirAction(Vector2 _requestDir, AITankController controller) : base(controller) {
         requestDir = _requestDir;
     }
 
     public override void Perform() {
+        Tank tank = controller.Tank;
+
+        // TODO: Makes sense for now, but later if goals are rewritten to take into account walls, take Avoid Walls from here
+        // Currently has minimal effect with the Attack Goal
+        Vector2 newRequestDir = controller.AvoidWalls(requestDir);
         if (Application.isEditor) {
-            Debug.DrawLine(tank.transform.position, tank.transform.position + (Vector3)(requestDir * 50), Color.red);
+            Debug.DrawLine(tank.transform.position, tank.transform.position + (Vector3)(newRequestDir.normalized * 50), Color.red);
         }
 
-        tank.PerformActuation(requestDir.normalized);
+        tank.PerformActuation(newRequestDir.normalized);
     }
 }

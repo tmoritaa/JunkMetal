@@ -8,17 +8,17 @@ public class AttackGoal : Goal
 {
     private const float TimeDiffThreshToFire = 1f;
     private const float AngleThreshToFire = 5f;
+    private const float OptimalRangeRatio = 0.75f;
 
     private class WeaponMoveResults
     {
         public float timeEstimate = 99999;
         public AIAction moveAction = null;
-        public bool inRange = false;
         public Vector2 targetPos = new Vector2();
         public WeaponPart weapon;
     }
 
-    public AttackGoal(TankController controller) : base(controller) {}
+    public AttackGoal(AITankController controller) : base(controller) {}
 
     public override void Init() {
         // Do nothing.
@@ -52,8 +52,8 @@ public class AttackGoal : Goal
     public override AIAction[] CalcActionsToPerform() {
         List<AIAction> actions = new List<AIAction>();
 
-        Tank tank = tankController.Tank;
-        Tank targetTank = ((AITankController)tankController).TargetTank;
+        Tank tank = controller.Tank;
+        Tank targetTank = ((AITankController)controller).TargetTank;
 
         WeaponMoveResults[] results = new WeaponMoveResults[tank.Turret.Weapons.Length];
         Array.Clear(results, 0, results.Length);
@@ -72,18 +72,26 @@ public class AttackGoal : Goal
 
             WeaponPartSchematic schematic = part.Schematic;
 
-            bool inRange = distToTarget < schematic.Range;
+            float optimalRange = schematic.Range * OptimalRangeRatio;
+            bool inOptimalRange = distToTarget < optimalRange;
 
-            result.inRange = inRange;
-
-            // If not in range, just do action for 
-            if (!inRange) {
-                float travelDist = distToTarget - schematic.Range;
+            if (!inOptimalRange) {
+                // If not in range, just do action to get into optimal range
+                float travelDist = distToTarget - optimalRange;
 
                 // NOTE: we're just going to calculate time to travel distance, without regard for orientation.
                 // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
                 result.timeEstimate = travelDist / tank.TerminalVelocity;
-                result.moveAction = new GoInDirAction(diffVec, tank);
+                result.moveAction = new GoInDirAction(diffVec, controller);
+                result.targetPos = targetTank.transform.position;
+            } else if (!part.IsFireable) {
+                // If weapon is reloading, we want to try to keep optimal distance
+                float travelDist = distToTarget - optimalRange;
+
+                // NOTE: we're just going to calculate time to travel distance, without regard for orientation.
+                // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
+                result.timeEstimate = Mathf.Abs(travelDist) / tank.TerminalVelocity;
+                result.moveAction = new GoInDirAction(Mathf.Sign(travelDist) * diffVec, controller);
                 result.targetPos = targetTank.transform.position;
             } else {
                 // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
@@ -107,18 +115,18 @@ public class AttackGoal : Goal
                 if (intersected) {
                     Vector2 transVec = targetMovePos - (Vector2)tank.transform.position;
                     transposeTimeEstimate = transVec.magnitude / tank.TerminalVelocity;
-                    transposeAction = new GoInDirAction(transVec.normalized, tank);
+                    transposeAction = new GoInDirAction(transVec.normalized, controller);
                 }
 
                 // Next calculate the rotation solution. This should always exist.
                 float rotationTimeEstimate = -1f;
                 AIAction rotationAction = null;
 
-                rotationAction = new RotateAction(result.weapon.CalculateFireVec(), diffVec.normalized, tank);
+                rotationAction = new RotateAction(result.weapon.CalculateFireVec(), diffVec.normalized, controller);
 
                 float rotationAngle = Vector2.Angle(part.CalculateFireVec(), diffVec);
                 float circumference = tank.Hull.Schematic.Size.x * Mathf.PI;
-                float timeToDoOneFullRot = circumference / (tank.TerminalVelocity * 2f);
+                float timeToDoOneFullRot = circumference / tank.TerminalVelocity;
                 rotationTimeEstimate = rotationAngle / 360f * timeToDoOneFullRot;
 
                 if (transposeTimeEstimate < 0 && rotationTimeEstimate < 0) {
@@ -157,14 +165,16 @@ public class AttackGoal : Goal
         }
 
         Vector2 aimVec = finalResult.targetPos - (Vector2)tank.transform.position;
-        actions.Add(new AimWithWeaponAction(aimVec, finalResult.weapon, tank));
+        actions.Add(new AimWithWeaponAction(aimVec, finalResult.weapon, controller));
 
         Vector2 curFireVec = finalResult.weapon.CalculateFireVec();
         Ray ray = new Ray(tank.transform.position, curFireVec);
         float shortestDist = Vector3.Cross(ray.direction, (Vector3)(finalResult.targetPos) - ray.origin).magnitude;
         float tankWidth = targetTank.Hull.Schematic.Size.x;
-        if (finalResult.inRange && shortestDist < tankWidth) {
-            actions.Add(new FireWeaponAction(finalResult.weapon.TurretIdx, tank));
+
+        bool inRange = distToTarget < finalResult.weapon.Schematic.Range;
+        if (inRange && shortestDist < tankWidth) {
+            actions.Add(new FireWeaponAction(finalResult.weapon.TurretIdx, controller));
         }
 
         return actions.ToArray();

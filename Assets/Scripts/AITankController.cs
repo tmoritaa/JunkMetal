@@ -111,7 +111,7 @@ public class AITankController : TankController
     public Vector2 CalcRequestDir(Vector2 target) {
         // First calculate Seek direction
         Vector2 desiredVec = seek(target).normalized;
-        desiredVec = avoidWalls(desiredVec).normalized;
+        desiredVec = AvoidWalls(desiredVec).normalized;
 
         return desiredVec;
     }
@@ -121,7 +121,7 @@ public class AITankController : TankController
         return targetPos - curPos;
     }
 
-    private Vector2 avoidWalls(Vector2 desiredDir) {
+    public Vector2 AvoidWalls(Vector2 desiredDir) {
         Vector2 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
         Vector2 leftVec = forwardVec.Rotate(-90);
         Vector2 rightVec = forwardVec.Rotate(90);

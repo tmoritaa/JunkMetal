@@ -6,11 +6,11 @@ public class FireWeaponAction : AIAction
 {
     private int weaponIdx;
 
-    public FireWeaponAction(int _weaponIdx, Tank _tank) : base(_tank) {
+    public FireWeaponAction(int _weaponIdx, AITankController _controller) : base(_controller) {
         weaponIdx = _weaponIdx;
     }
 
     public override void Perform() {
-        tank.Turret.Weapons[weaponIdx].FireIfAble();
+        controller.Tank.Turret.Weapons[weaponIdx].FireIfAble();
     }
 }
