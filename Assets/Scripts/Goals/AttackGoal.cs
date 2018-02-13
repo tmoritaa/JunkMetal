@@ -75,6 +75,10 @@ public class AttackGoal : Goal
             float optimalRange = schematic.Range * OptimalRangeRatio;
             bool inOptimalRange = distToTarget < optimalRange;
 
+            // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
+            Vector2 targetPos = calculateTargetPos(tank, part.Schematic.ShootImpulse, targetTank);
+            result.targetPos = targetPos;
+
             if (!inOptimalRange) {
                 // If not in range, just do action to get into optimal range
                 float travelDist = distToTarget - optimalRange;
@@ -83,7 +87,6 @@ public class AttackGoal : Goal
                 // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
                 result.timeEstimate = travelDist / tank.TerminalVelocity;
                 result.moveAction = new GoInDirAction(diffVec, controller);
-                result.targetPos = targetTank.transform.position;
             } else if (!part.IsFireable) {
                 // If weapon is reloading, we want to try to keep optimal distance
                 float travelDist = distToTarget - optimalRange;
@@ -92,13 +95,7 @@ public class AttackGoal : Goal
                 // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
                 result.timeEstimate = Mathf.Abs(travelDist) / tank.TerminalVelocity;
                 result.moveAction = new GoInDirAction(Mathf.Sign(travelDist) * diffVec, controller);
-                result.targetPos = targetTank.transform.position;
             } else {
-                // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
-                Vector2 targetPos = calculateTargetPos(tank, part.Schematic.ShootImpulse, targetTank);
-
-                result.targetPos = targetPos;
-
                 // Now we get time estimates for both transpose and rotation solution, and pick the faster one and save that.
                 // First calculate the transpose solution.
                 Vector2 curWeaponFireVec = part.CalculateFireVec();
