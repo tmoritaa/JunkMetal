@@ -16,6 +16,12 @@ public class WeaponPart
         get; set;
     }
 
+    public bool IsFireable {
+        get {
+            return Schematic.ReloadTimeInSec < (Time.time - lastShotTime);
+        }
+    }
+
     private Tank owningTank;
     
     private float lastShotTime;
@@ -36,6 +42,12 @@ public class WeaponPart
         KeyCode shootKey = owningTank.Turret.Schematic.ShootKeys[TurretIdx];
 
         if (Input.GetKey(shootKey) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
+            FireIfAble();
+        }
+    }
+
+    public void FireIfAble() {
+        if (IsFireable) {
             shouldShoot = true;
         }
     }
@@ -44,12 +56,22 @@ public class WeaponPart
         if (shouldShoot) {
             Bullet bullet = BulletFactory.Instance.CreateBullet(owningTank, Schematic.BulletType);
 
-            Vector2 fireVec = owningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
+            Vector2 fireVec = CalculateFireVec();
 
-            bullet.Fire(fireVec, Schematic.ShootForce, Schematic.ShootBackForce, Schematic.Range, Schematic.Damage);
+            bullet.Fire(fireVec, Schematic.ShootImpulse, Schematic.ShootBackForce, Schematic.Range, Schematic.Damage);
 
             lastShotTime = Time.time;
             shouldShoot = false;
         }
+    }
+
+    public Vector2 CalculateFireVec() {
+        return owningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
+    }
+
+    public float CalcTimeToReloaded() {
+        float timeDiff = Time.time - lastShotTime;
+
+        return Schematic.ReloadTimeInSec - timeDiff;
     }
 }

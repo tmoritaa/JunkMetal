@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class AITankController : TankController
 {
-    public Vector2 DestPos
+    public Tank TargetTank
     {
-        get; set;
+        get; private set;
     }
 
     [SerializeField]
@@ -31,6 +31,11 @@ public class AITankController : TankController
         get { return curGoal; }
     }
 
+    void Awake() {
+        // For 1v1 matches, this will always be true. Maybe later we'll have to change the logic, but for now this is fine.
+        TargetTank = GameManager.Instance.HumanTankController.Tank;
+    }
+
     void Update() {
         updateGoalsAndPerformActions();
     }
@@ -38,10 +43,9 @@ public class AITankController : TankController
     public override void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
         base.Init(startPos, _body, _turret, _wheels);
 
-        DestPos = Tank.transform.position;
-
         // TODO: for now, just manually fill up goals list.
-        goals.Add(new SearchGoal(this));
+        //goals.Add(new SearchGoal(this));
+        goals.Add(new AttackGoal(this));
         curGoal = null;
     }
 

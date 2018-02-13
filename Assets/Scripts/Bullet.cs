@@ -57,7 +57,7 @@ public class Bullet : MonoBehaviour
         range = _range;
         damage = _damage;
         firePos = this.transform.position;
-        this.body.AddForce(forwardVec.normalized * shootForce);
+        this.body.AddForce(forwardVec.normalized * shootForce, ForceMode2D.Impulse);
 
         Vector2 backVec = forwardVec.Rotate(180);
         Owner.LeftWheelBody.AddForce(backVec.normalized * shootBackForce);

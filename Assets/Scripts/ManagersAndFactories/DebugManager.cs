@@ -40,18 +40,9 @@ public class DebugManager : MonoBehaviour
         instance = this;
     }
 
-    void Update() {
-        if (Input.GetMouseButton(0)) {
-            GameManager.Instance.AITankController.DestPos = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
-        }
-    }
-
     void OnDrawGizmos() {
         if (Application.isPlaying) {
             Color origColor = Gizmos.color;
-
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(GameManager.Instance.AITankController.DestPos, 30);
 
             if (mapDisplayDebugOn) {
                 // Draw Map

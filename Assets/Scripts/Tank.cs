@@ -83,10 +83,14 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    public float TotalDrag
+    public float TerminalVelocity
     {
-        get; private set;
+        get {
+            return Mathf.Sqrt(Hull.Schematic.EnergyPower / totalDrag);
+        }
     }
+
+    private float totalDrag = 0;
 
     private bool initialized = false;
 
@@ -119,7 +123,7 @@ public partial class Tank : MonoBehaviour
         rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(hullSize.x / 2f, 0, 0);
         rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(hullSize.x / 2f, 0);
 
-        TotalDrag = calculateDrag();
+        totalDrag = calculateDrag();
 
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;

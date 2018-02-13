@@ -6,20 +6,21 @@ using UnityEngine;
 
 public partial class Tank
 {
+    const float MinRatioCutOff = 0.4f;
+    const float MaxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
+
+    const float StartingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
+    const float StartingForwardArcAngle = 360f - StartingBackwardArcAngle;
+
     public void PerformActuation(Vector2 requestDir) {
         // First calculate forward and backwards arc angle based on speed
-        float sqrMaxVelocityMag = this.Hull.Schematic.EnergyPower / this.TotalDrag;
+        float sqrMaxVelocityMag = Mathf.Pow(this.TerminalVelocity, 2);
         float sqrCurVelocity = this.Body.velocity.sqrMagnitude;
 
-        const float minRatioCutOff = 0.4f;
-        const float maxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking
-        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, minRatioCutOff, maxRatioCutoff);
+        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, MinRatioCutOff, MaxRatioCutoff);
 
-        const float startingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking
-        const float startingForwardArcAngle = 360f - startingBackwardArcAngle;
-
-        float curBackwardArcAngle = ratio * startingBackwardArcAngle;
-        float curForwardArcAngle = ratio * startingForwardArcAngle;
+        float curBackwardArcAngle = ratio * StartingBackwardArcAngle;
+        float curForwardArcAngle = ratio * StartingForwardArcAngle;
 
         // Debug stuff
         if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
@@ -51,7 +52,7 @@ public partial class Tank
                 this.Wheels.PerformPowerChange(1, 1);
             }
 
-            // In this case we want the tank to start accelerating backwards
+        // In this case we want the tank to start accelerating backwards
         } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
             float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.Body.rotation), requestDir);
 
@@ -65,7 +66,7 @@ public partial class Tank
                 this.Wheels.PerformPowerChange(-1, -1);
             }
 
-            // In this case we want the tank to start turning
+        // In this case we want the tank to start turning
         } else {
             float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.Body.rotation), requestDir);
             float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.Body.rotation), requestDir);
@@ -73,11 +74,7 @@ public partial class Tank
             bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
             float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
 
-            if (Mathf.Sign(angle) >= 0) {
-                this.Wheels.PerformPowerChange(-1, 1);
-            } else {
-                this.Wheels.PerformPowerChange(1, -1);
-            }
+            applyRotationPowerChange(angle);
         }
 
         // Debug
@@ -89,6 +86,19 @@ public partial class Tank
 
             Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * this.Wheels.LeftCurPower), Color.magenta);
             Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * this.Wheels.RightCurPower), Color.magenta);
+        }
+    }
+
+    public void PerformRotation(Vector2 alignAngle, Vector2 requestDir) {
+        float angle = Vector2.SignedAngle(alignAngle, requestDir);
+        applyRotationPowerChange(angle);
+    }
+
+    private void applyRotationPowerChange(float angleChange) {
+        if (Mathf.Sign(angleChange) >= 0) {
+            this.Wheels.PerformPowerChange(-1, 1);
+        } else {
+            this.Wheels.PerformPowerChange(1, -1);
         }
     }
 }

@@ -16,11 +16,14 @@ public class TurretPart
         get; private set;
     }
 
+    public WeaponPart[] Weapons
+    {
+        get; private set;
+    }
+
     private Tank owningTank;
 
     private float rotationDir = 0;
-    
-    private WeaponPart[] weapons;
 
     private KeyCode[] shootKeys;
 
@@ -28,14 +31,14 @@ public class TurretPart
         Schematic = schematic;
 
         Angle = 0;
-        weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
-        Array.Clear(weapons, 0, weapons.Length);
+        Weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
+        Array.Clear(Weapons, 0, Weapons.Length);
     }
 
     public void SetOwner(Tank tank) {
         owningTank = tank;
 
-        foreach(WeaponPart weapon in weapons) {
+        foreach(WeaponPart weapon in Weapons) {
             if (weapon != null) {
                 weapon.SetOwner(tank);
             }
@@ -45,7 +48,7 @@ public class TurretPart
     public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
         if (weapon.Schematic.Weight <= Schematic.WeaponWeightRestrictions[idx]) {
             weapon.TurretIdx = idx;
-            weapons[idx] = weapon;
+            Weapons[idx] = weapon;
         }
     }
 
@@ -59,7 +62,7 @@ public class TurretPart
         }
         SetRotDir(rotDir);
 
-        foreach (WeaponPart weapon in weapons) {
+        foreach (WeaponPart weapon in Weapons) {
             if (weapon != null) {
                 weapon.HandleInput();
             }
@@ -77,7 +80,7 @@ public class TurretPart
             Angle += angle;
         }
 
-        foreach (WeaponPart weapon in weapons) {
+        foreach (WeaponPart weapon in Weapons) {
             if (weapon != null) {
                 weapon.PerformFixedUpdate();
             }

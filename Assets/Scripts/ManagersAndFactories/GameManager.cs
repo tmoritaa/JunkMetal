@@ -81,7 +81,7 @@ public class GameManager : MonoBehaviour
 
         HumanTankController = Instantiate(humanTankContPrefab, tankRoot, false);
         HumanTankController.Init(
-            new Vector3(0, -600, 0),
+            new Vector3(100, -550, 0),
             new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
             playerTurret,
             new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
@@ -91,7 +91,7 @@ public class GameManager : MonoBehaviour
 
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
-            new Vector3(0, -300, 0),
+            new Vector3(0, -600, 0),
             new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
             aiTurret,
             new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
