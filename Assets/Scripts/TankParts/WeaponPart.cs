@@ -57,8 +57,9 @@ public class WeaponPart
             Bullet bullet = BulletFactory.Instance.CreateBullet(owningTank, Schematic.BulletType);
 
             Vector2 fireVec = CalculateFireVec();
+            Vector2 fireOffset = calculateFireOffset();
 
-            bullet.Fire(fireVec, Schematic.ShootImpulse, Schematic.ShootBackForce, Schematic.Range, Schematic.Damage);
+            bullet.Fire(fireVec, fireOffset, Schematic.ShootImpulse, Schematic.ShootBackForce, Schematic.Range, Schematic.Damage);
 
             lastShotTime = Time.time;
             shouldShoot = false;
@@ -67,6 +68,15 @@ public class WeaponPart
 
     public Vector2 CalculateFireVec() {
         return owningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
+    }
+
+    public Vector2 CalculateFirePos() {
+        Vector2 offset = calculateFireOffset();
+        return (Vector2)owningTank.transform.position + offset;
+    }
+
+    private Vector2 calculateFireOffset() {
+        return owningTank.Turret.Schematic.OrigWeaponFirePosOffset[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
     }
 
     public float CalcTimeToReloaded() {

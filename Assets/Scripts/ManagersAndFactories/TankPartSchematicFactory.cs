@@ -32,7 +32,7 @@ public class TankParSchematictFactory
         return new HullPartSchematic(name, armour, size, energyPower, weight);
     }
 
-    public static TurretPartSchematic CreateTurretPartSchematic(string name, int armour, float rotPerTimeStep, int weight, Vector2[] weaponDirs, int[] weightRestrict, 
+    public static TurretPartSchematic CreateTurretPartSchematic(string name, int armour, float rotPerTimeStep, int weight, Vector2[] weaponDirs, Vector2[] weaponFireOffset, int[] weightRestrict, 
         KeyCode leftTurnKey = KeyCode.None, KeyCode rightTurnKey = KeyCode.None, KeyCode[] shootKeys = null) {
 
         if (shootKeys == null) {
@@ -49,7 +49,7 @@ public class TankParSchematictFactory
             rightTurnKey = (KeyCode)Enum.Parse(typeof(KeyCode), GlobalRandom.GetRandomNumber(97, 123).ToString());
         }
 
-        return new TurretPartSchematic(name, armour, rotPerTimeStep, weight, weaponDirs, weightRestrict, leftTurnKey, rightTurnKey, shootKeys);
+        return new TurretPartSchematic(name, armour, rotPerTimeStep, weight, weaponDirs, weaponFireOffset, weightRestrict, leftTurnKey, rightTurnKey, shootKeys);
     }
 
     public static WeaponPartSchematic CreateWeaponPartSchematic(string name, float shootingImpulse, float shootingBackForce, float reloadTime, float range, int weight, Bullet.BulletTypes bulletType, int damage) 

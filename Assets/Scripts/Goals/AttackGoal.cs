@@ -58,14 +58,15 @@ public class AttackGoal : Goal
         WeaponMoveResults[] results = new WeaponMoveResults[tank.Turret.Weapons.Length];
         Array.Clear(results, 0, results.Length);
 
-        Vector2 diffVec = targetTank.transform.position - tank.transform.position;
-        float distToTarget = diffVec.magnitude;
         for (int i = 0; i < tank.Turret.Weapons.Length; ++i) {
             WeaponPart part = tank.Turret.Weapons[i];
 
             if (part == null) {
                 continue;
             }
+
+            Vector2 diffVec = (Vector2)targetTank.transform.position - part.CalculateFirePos();
+            float distToTarget = diffVec.magnitude;
 
             WeaponMoveResults result = new WeaponMoveResults();
             result.weapon = part;
@@ -75,8 +76,7 @@ public class AttackGoal : Goal
             float optimalRange = schematic.Range * OptimalRangeRatio;
             bool inOptimalRange = distToTarget < optimalRange;
 
-            // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
-            Vector2 targetPos = calculateTargetPos(tank, part.Schematic.ShootImpulse, targetTank);
+            Vector2 targetPos = calculateTargetPos(tank, part, targetTank);
             result.targetPos = targetPos;
 
             if (!inOptimalRange) {
@@ -165,12 +165,15 @@ public class AttackGoal : Goal
         actions.Add(new AimWithWeaponAction(aimVec, finalResult.weapon, controller));
 
         Vector2 curFireVec = finalResult.weapon.CalculateFireVec();
-        Ray ray = new Ray(tank.transform.position, curFireVec);
+        Ray ray = new Ray(finalResult.weapon.CalculateFirePos(), curFireVec);
         float shortestDist = Vector3.Cross(ray.direction, (Vector3)(finalResult.targetPos) - ray.origin).magnitude;
-        float tankWidth = targetTank.Hull.Schematic.Size.x;
+        bool canHitIfFired = shortestDist < targetTank.Hull.Schematic.Size.x;
 
-        bool inRange = distToTarget < finalResult.weapon.Schematic.Range;
-        if (inRange && shortestDist < tankWidth) {
+        Vector2 targetVec = (Vector2)targetTank.transform.position - finalResult.weapon.CalculateFirePos();
+
+        bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
+        bool inRange = targetVec.magnitude < finalResult.weapon.Schematic.Range;
+        if (inRange &&  canHitIfFired && fireVecFacingTarget) {
             actions.Add(new FireWeaponAction(finalResult.weapon.TurretIdx, controller));
         }
 
@@ -178,8 +181,11 @@ public class AttackGoal : Goal
     }
 
     // Used http://danikgames.com/blog/how-to-intersect-a-moving-target-in-2d/ as a reference.
-    private Vector2 calculateTargetPos(Tank tank, float weaponTerminalVel, Tank targetTank) {
-        Vector2 diffVec = targetTank.transform.position - tank.transform.position;
+    private Vector2 calculateTargetPos(Tank tank, WeaponPart part, Tank targetTank) {
+        // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
+        float weaponTerminalVel = part.Schematic.ShootImpulse;
+
+        Vector2 diffVec = (Vector2)targetTank.transform.position - part.CalculateFirePos();
         Vector2 abVec = diffVec.normalized;
 
         Vector2 targetVel = targetTank.Body.velocity;

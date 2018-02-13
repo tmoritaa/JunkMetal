@@ -53,10 +53,10 @@ public class Bullet : MonoBehaviour
         this.gameObject.transform.position = Owner.transform.position;
     }
 
-    public void Fire(Vector2 forwardVec, float shootForce, float shootBackForce, float _range, int _damage) {
+    public void Fire(Vector2 forwardVec, Vector2 firePosOffset, float shootForce, float shootBackForce, float _range, int _damage) {
         range = _range;
         damage = _damage;
-        firePos = this.transform.position;
+        firePos = Owner.transform.position + (Vector3)firePosOffset;
         this.body.AddForce(forwardVec.normalized * shootForce, ForceMode2D.Impulse);
 
         Vector2 backVec = forwardVec.Rotate(180);

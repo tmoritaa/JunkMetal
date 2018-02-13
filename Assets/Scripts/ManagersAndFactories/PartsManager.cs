@@ -92,12 +92,18 @@ public class PartsManager : MonoBehaviour
             float rotSpeed = info.Value<int>("rot_speed");
 
             List<Vector2> weaponDirs = new List<Vector2>();
+            List<Vector2> weaponFireOffset = new List<Vector2>();
             List<int> weightRestricts = new List<int>();
             foreach (JObject jo in info.Value<JArray>("weapons")) {
                 Vector2 dir = new Vector2();
                 dir.x = jo.Value<float>("x_dir");
                 dir.y = jo.Value<float>("y_dir");
                 weaponDirs.Add(dir);
+
+                Vector2 posOffset = new Vector2();
+                posOffset.x = jo.Value<float>("fire_x_offset");
+                posOffset.y = jo.Value<float>("fire_y_offset");
+                weaponFireOffset.Add(posOffset);
 
                 int weightRestric = jo.Value<int>("restrict");
                 weightRestricts.Add(weightRestric);
@@ -113,7 +119,7 @@ public class PartsManager : MonoBehaviour
             }
 
             // TODO: keycodes are for now. Should later be done differently using keyboard schematics
-            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weightRestricts.ToArray(), 
+            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray(), 
                 KeyCode.T, KeyCode.Y, shootKeys);
 
             partSchematics.Add(part.Name, part);
