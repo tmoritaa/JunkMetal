@@ -1,4 +1,4 @@
 {
 	"Basic Weapon1":{"weight":50, "shoot_impulse":1000, "back_force":500000, "range":500, "reload_time":1, "damage":10, "bullet_type":"Normal"},
-	"Basic Weapon2":{"weight":50, "shoot_impulse":1000, "back_force":500000, "range":500, "reload_time":1, "damage":10, "bullet_type":"Normal"}
+	"Basic Weapon2":{"weight":50, "shoot_impulse":1000, "back_force":500000, "range":500, "reload_time":5, "damage":10, "bullet_type":"Normal"}
 }

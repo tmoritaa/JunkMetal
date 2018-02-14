@@ -53,7 +53,7 @@ public class AttackGoal : Goal
         List<AIAction> actions = new List<AIAction>();
 
         Tank tank = controller.Tank;
-        Tank targetTank = ((AITankController)controller).TargetTank;
+        Tank targetTank = controller.TargetTank;
 
         WeaponMoveResults[] results = new WeaponMoveResults[tank.Turret.Weapons.Length];
         Array.Clear(results, 0, results.Length);
@@ -66,7 +66,7 @@ public class AttackGoal : Goal
             }
 
             Vector2 diffVec = (Vector2)targetTank.transform.position - part.CalculateFirePos();
-            float distToTarget = diffVec.magnitude;
+            float distFromTargetToFirePos = diffVec.magnitude;
 
             WeaponMoveResults result = new WeaponMoveResults();
             result.weapon = part;
@@ -74,12 +74,15 @@ public class AttackGoal : Goal
             WeaponPartSchematic schematic = part.Schematic;
 
             float optimalRange = schematic.Range * OptimalRangeRatio;
-            bool inOptimalRange = distToTarget < optimalRange;
+            bool inOptimalRange = distFromTargetToFirePos < optimalRange;
 
             Vector2 targetPos = calculateTargetPos(tank, part, targetTank);
             result.targetPos = targetPos;
 
             if (!inOptimalRange) {
+                Vector2 toTargetVec = targetTank.transform.position - tank.transform.position;
+                float distToTarget = toTargetVec.magnitude;
+
                 // If not in range, just do action to get into optimal range
                 float travelDist = distToTarget - optimalRange;
 
@@ -88,6 +91,9 @@ public class AttackGoal : Goal
                 result.timeEstimate = travelDist / tank.TerminalVelocity;
                 result.moveAction = new GoInDirAction(diffVec, controller);
             } else if (!part.IsFireable) {
+                Vector2 toTargetVec = targetTank.transform.position - tank.transform.position;
+                float distToTarget = toTargetVec.magnitude;
+
                 // If weapon is reloading, we want to try to keep optimal distance
                 float travelDist = distToTarget - optimalRange;
 
@@ -150,6 +156,7 @@ public class AttackGoal : Goal
         WeaponMoveResults finalResult = null;
         for (int i = 0; i < results.Length; ++i) {
             WeaponMoveResults result = results[i];
+
             if (finalResult == null || (result != null && finalResult.timeEstimate > result.timeEstimate)) {
                 finalResult = result;
             }
