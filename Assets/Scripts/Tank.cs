@@ -171,6 +171,21 @@ public partial class Tank : MonoBehaviour
         return val / count;
     }
 
+    public Vector2 GetForwardVec() {
+        return new Vector2(0, 1).Rotate(body.rotation);
+    }
+
+    public Vector2 GetBackwardVec() {
+        return new Vector2(0, -1).Rotate(body.rotation);
+    }
+
+    public float CalcTimeToRotate(Vector2 from, Vector2 to) {
+        float rotationAngle = Vector2.Angle(from, to);
+        float circumference = Hull.Schematic.Size.x * Mathf.PI;
+        float timeToDoOneFullRot = circumference / TerminalVelocity;
+        return rotationAngle / 360f * timeToDoOneFullRot;
+    }
+
     private int calculateTotalArmour() {
         int armour = 0;
 
@@ -201,7 +216,7 @@ public partial class Tank : MonoBehaviour
     }
 
     private void handleMovement() {
-        Vector2 forwardVec = new Vector2(0, 1).Rotate(this.body.rotation);
+        Vector2 forwardVec = this.GetForwardVec();
         this.LeftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.Schematic.EnergyPower / 2f));
         this.RightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.Schematic.EnergyPower / 2f));
     }

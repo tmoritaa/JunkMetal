@@ -16,7 +16,7 @@ public class AimAction : AIAction
         Tank tank = controller.Tank;
 
         float curTurretAngle = tank.Turret.Angle + tank.Body.rotation;
-        Vector2 curDir = new Vector2(0, 1).Rotate(curTurretAngle);
+        Vector2 curDir = tank.GetForwardVec().Rotate(tank.Turret.Angle);
 
         float signedAngle = Vector2.SignedAngle(curDir, aimDir);
         tank.Turret.SetRotDir(Mathf.Sign(signedAngle));

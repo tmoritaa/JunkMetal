@@ -27,25 +27,26 @@ public partial class Tank
         float curBackwardArcAngle = ratio * StartingBackwardArcAngle;
         float curForwardArcAngle = ratio * StartingForwardArcAngle;
 
+        Vector2 forwardVec = this.GetForwardVec();
+        Vector2 backwardVec = this.GetBackwardVec();
+
         // Debug stuff
         if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector2 forwardVec = (new Vector2(0, 1)).Rotate(this.Body.rotation);
             Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
             Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
 
-            Vector2 backwardVec = (new Vector2(0, -1)).Rotate(this.Body.rotation);
             Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
             Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
         }
 
-        float angleDiffFromFront = Vector2.Angle((new Vector2(0, 1)).Rotate(this.Body.rotation), requestDir);
-        float angleDiffFromBack = Vector2.Angle((new Vector2(0, -1)).Rotate(this.Body.rotation), requestDir);
+        float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
+        float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);
 
         const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
 
         // In this case we want the AI to continue accelerating while going towards the requested direction
         if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.Body.rotation), requestDir);
+            float angleToTurn = Vector2.SignedAngle(forwardVec, requestDir);
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
@@ -59,7 +60,7 @@ public partial class Tank
 
         // In this case we want the tank to start accelerating backwards
         } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
-            float angleToTurn = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.Body.rotation), requestDir);
+            float angleToTurn = Vector2.SignedAngle(backwardVec, requestDir);
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
@@ -73,8 +74,8 @@ public partial class Tank
 
         // In this case we want the tank to start turning
         } else {
-            float angleToTurnFromFront = Vector2.SignedAngle((new Vector2(0, 1)).Rotate(this.Body.rotation), requestDir);
-            float angleToTurnFromBack = Vector2.SignedAngle((new Vector2(0, -1)).Rotate(this.Body.rotation), requestDir);
+            float angleToTurnFromFront = Vector2.SignedAngle(forwardVec, requestDir);
+            float angleToTurnFromBack = Vector2.SignedAngle(backwardVec, requestDir);
 
             bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
             float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
@@ -87,10 +88,8 @@ public partial class Tank
             Vector3 leftWheelPos = this.LeftWheelGO.transform.position;
             Vector3 rightWheelPos = this.RightWheelGO.transform.position;
 
-            Vector3 forwardVec = (new Vector2(0, 1)).Rotate(this.Body.rotation);
-
-            Debug.DrawLine(leftWheelPos, leftWheelPos + (forwardVec * 100 * this.Wheels.LeftCurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + (forwardVec * 100 * this.Wheels.RightCurPower), Color.magenta);
+            Debug.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * this.Wheels.LeftCurPower), Color.magenta);
+            Debug.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * this.Wheels.RightCurPower), Color.magenta);
         }
     }
 

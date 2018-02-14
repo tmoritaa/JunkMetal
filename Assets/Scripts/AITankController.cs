@@ -87,8 +87,8 @@ public class AITankController : TankController
         for (int i = 0; i < path.Count; ++i) {
             Node node = path[i];
 
-            Vector2 leftVec = new Vector2(0, 1).Rotate(Tank.Body.rotation - 90).normalized;
-            Vector2 rightVec = new Vector2(0, 1).Rotate(Tank.Body.rotation + 90).normalized;
+            Vector2 leftVec = Tank.GetForwardVec().Rotate(-90).normalized;
+            Vector2 rightVec = Tank.GetForwardVec().Rotate(90).normalized;
 
             Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
             Vector2 diffVec = pos - (Vector2)Tank.transform.position;
@@ -123,7 +123,7 @@ public class AITankController : TankController
     }
 
     public Vector2 AvoidWalls(Vector2 desiredDir) {
-        Vector2 forwardVec = (new Vector2(0, 1)).Rotate(Tank.Body.rotation);
+        Vector2 forwardVec = Tank.GetForwardVec();
         Vector2 leftVec = forwardVec.Rotate(-90);
         Vector2 rightVec = forwardVec.Rotate(90);
         Vector2 backVec = forwardVec.Rotate(180);

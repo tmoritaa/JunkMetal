@@ -108,9 +108,9 @@ public class AttackGoal : Goal
 
                 Vector2 targetMovePos;
                 // Try tank moving forward, and if that doesn't intersect, try tank moving back. If both don't work, then there's no transpose solution.
-                bool intersected = Vector2Extension.LineLineIntersection(tank.transform.position, new Vector2(0, 1).Rotate(tank.Body.rotation), targetPos, -curWeaponFireVec, out targetMovePos);
+                bool intersected = Vector2Extension.LineLineIntersection(tank.transform.position, tank.GetForwardVec(), targetPos, -curWeaponFireVec, out targetMovePos);
                 if (!intersected) {
-                    intersected = Vector2Extension.LineLineIntersection(tank.transform.position, new Vector2(0, -1).Rotate(tank.Body.rotation), targetPos, -curWeaponFireVec, out targetMovePos);
+                    intersected = Vector2Extension.LineLineIntersection(tank.transform.position, tank.GetBackwardVec(), targetPos, -curWeaponFireVec, out targetMovePos);
                 }
 
                 float transposeTimeEstimate = -1f;
@@ -126,11 +126,7 @@ public class AttackGoal : Goal
                 AIAction rotationAction = null;
 
                 rotationAction = new RotateAction(result.weapon.CalculateFireVec(), diffVec.normalized, controller);
-
-                float rotationAngle = Vector2.Angle(part.CalculateFireVec(), diffVec);
-                float circumference = tank.Hull.Schematic.Size.x * Mathf.PI;
-                float timeToDoOneFullRot = circumference / tank.TerminalVelocity;
-                rotationTimeEstimate = rotationAngle / 360f * timeToDoOneFullRot;
+                rotationTimeEstimate = tank.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
 
                 if (transposeTimeEstimate < 0 && rotationTimeEstimate < 0) {
                     Debug.LogWarning("Could not find transpose or rotation solution for attacking. Probably shouldn't happen.");
