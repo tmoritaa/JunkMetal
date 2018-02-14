@@ -13,6 +13,11 @@ public partial class Tank
     const float StartingForwardArcAngle = 360f - StartingBackwardArcAngle;
 
     public void PerformActuation(Vector2 requestDir) {
+        if (requestDir.magnitude == 0) {
+            this.Wheels.PerformPowerChangeToStop();
+            return;
+        }
+
         // First calculate forward and backwards arc angle based on speed
         float sqrMaxVelocityMag = Mathf.Pow(this.TerminalVelocity, 2);
         float sqrCurVelocity = this.Body.velocity.sqrMagnitude;

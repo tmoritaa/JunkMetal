@@ -45,7 +45,8 @@ public class AITankController : TankController
 
         // TODO: for now, just manually fill up goals list.
         //goals.Add(new SearchGoal(this));
-        goals.Add(new AttackGoal(this));
+        //goals.Add(new AttackGoal(this));
+        goals.Add(new DodgeGoal(this));
         curGoal = null;
     }
 
@@ -213,5 +214,35 @@ public class AITankController : TankController
         }
 
         return newDesiredDir;
+    }
+
+    // Used http://danikgames.com/blog/how-to-intersect-a-moving-target-in-2d/ as a reference.
+    public static Vector2 CalculateTargetPos(Tank tank, WeaponPart part, Tank targetTank) {
+        // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
+        float weaponTerminalVel = part.Schematic.ShootImpulse;
+
+        Vector2 diffVec = (Vector2)targetTank.transform.position - part.CalculateFirePos();
+        Vector2 abVec = diffVec.normalized;
+
+        Vector2 targetVel = targetTank.Body.velocity;
+        Vector2 uj = (Vector2.Dot(targetVel, abVec) / abVec.magnitude) * abVec;
+        Vector2 ui = targetVel - uj;
+
+        Vector2 vi = ui;
+
+        float timeToHit = 999;
+        Vector2 v;
+        // Corner case: if it turns out the weapons is too slow to ever catch the target, we just kind of try.
+        if (ui.magnitude > weaponTerminalVel) {
+            v = targetVel.normalized * weaponTerminalVel;
+        } else {
+            Vector2 vj = abVec * Mathf.Sqrt(weaponTerminalVel * weaponTerminalVel - vi.sqrMagnitude);
+            v = vi + vj;
+            timeToHit = diffVec.magnitude / (vj.magnitude - uj.magnitude);
+        }
+
+        Vector2 targetPos = (Vector2)tank.transform.position + v * timeToHit;
+
+        return targetPos;
     }
 }

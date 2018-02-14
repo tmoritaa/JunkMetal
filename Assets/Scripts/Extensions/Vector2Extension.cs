@@ -15,6 +15,13 @@ public static class Vector2Extension
         return new Vector2(x * Mathf.Cos(radAngle) - y * Mathf.Sin(radAngle), x * Mathf.Sin(radAngle) + y * Mathf.Cos(radAngle));
     }
 
+    public static Vector2 Perp(this Vector2 vec) {
+        Vector2 perpVec = vec;
+        perpVec.x = vec.y;
+        perpVec.y = -vec.x;
+        return perpVec;
+    }
+
     public static bool LineLineIntersection(Vector2 point1, Vector2 vec1, Vector2 point2, Vector2 vec2, out Vector2 intersectionPoint) {
         Vector3 vec3 = point2 - point1;
         Vector3 crossVec1and2 = Vector3.Cross(vec1, vec2);

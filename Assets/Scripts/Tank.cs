@@ -156,6 +156,21 @@ public partial class Tank : MonoBehaviour
         Debug.Log("Tank is dead");
     }
 
+    public float GetAvgRangeOfWeapons() {
+        float val = 0;
+        int count = 0;
+        foreach (WeaponPart part in Turret.Weapons) {
+            if (part == null) {
+                continue;
+            }
+
+            val = part.Schematic.Range;
+            count += 1;
+        }
+
+        return val / count;
+    }
+
     private int calculateTotalArmour() {
         int armour = 0;
 

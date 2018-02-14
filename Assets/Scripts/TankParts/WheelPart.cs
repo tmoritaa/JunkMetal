@@ -59,6 +59,11 @@ public class WheelPart
         performPowerChangeForSide(Side.right, rightChangeDir);
     }
 
+    public void PerformPowerChangeToStop() {
+        performPowerChangeForSide(Side.left, Mathf.Sign(LeftCurPower) > 0 ? -1 : 1);
+        performPowerChangeForSide(Side.right, Mathf.Sign(RightCurPower) > 0 ? -1 : 1);
+    }
+
     private void performPowerChangeForSide(Side side, int changeDir) {
         float power = (side == Side.left) ? LeftCurPower : RightCurPower;
 
