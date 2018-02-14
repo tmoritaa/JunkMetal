@@ -46,6 +46,11 @@ public class WeaponPart
         }
     }
 
+    public string GetKeycodeStringForShoot() {
+        KeyCode shootKey = owningTank.Turret.Schematic.ShootKeys[TurretIdx];
+        return shootKey.ToString();
+    }
+
     public void FireIfAble() {
         if (IsFireable) {
             shouldShoot = true;
@@ -83,5 +88,10 @@ public class WeaponPart
         float timeDiff = Time.time - lastShotTime;
 
         return Schematic.ReloadTimeInSec - timeDiff;
+    }
+
+    public float CalcRatioToReloaded() {
+        float timeDiff = Time.time - lastShotTime;
+        return timeDiff / Schematic.ReloadTimeInSec;
     }
 }
