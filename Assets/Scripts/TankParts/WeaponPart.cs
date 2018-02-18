@@ -87,7 +87,7 @@ public class WeaponPart
     public float CalcTimeToReloaded() {
         float timeDiff = Time.time - lastShotTime;
 
-        return Schematic.ReloadTimeInSec - timeDiff;
+        return Mathf.Max(0, Schematic.ReloadTimeInSec - timeDiff);
     }
 
     public float CalcRatioToReloaded() {

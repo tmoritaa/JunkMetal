@@ -38,9 +38,7 @@ public class SearchGoal : Goal
 
     public override void UpdateInsistence() {
         // Increases as player is not visible
-
-        // TODO: for now just set it to 100.
-        Insistence = 100;
+        Insistence = 0;
     }
 
     public override AIAction[] CalcActionsToPerform() {
@@ -54,7 +52,7 @@ public class SearchGoal : Goal
 
         if (path.Count > 0 && (curPos- GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistSigma) {
             path.RemoveAt(0);
-            aiTankController.SmoothPath(path);
+            AIUtility.SmoothPath(path, controller.Tank);
         }
 
         // Check if destination reached, if so, pick next quadrant to go to, and plan path.
@@ -74,7 +72,7 @@ public class SearchGoal : Goal
             destPos = searchQuadrants.NodeToPosition(curDestQuad);
 
             path = GameManager.Instance.Map.FindPath(controller.Tank.transform.position, destPos);
-            aiTankController.SmoothPath(path);
+            AIUtility.SmoothPath(path, controller.Tank);
         }
 
         Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : destPos;

@@ -25,8 +25,25 @@ public class AttackGoal : Goal
     }
 
     public override void UpdateInsistence() {
-        // TODO: properly implement. Right now just testing.
         Insistence = 0;
+
+        // Based on attackability
+        // Calculate threat level of our weapons against target
+        //Tank selfTank = controller.Tank;
+        //Tank oppTank = controller.TargetTank;
+        //foreach (WeaponPart part in selfTank.Turret.Weapons) {
+        //    if (part == null) {
+        //        continue;
+        //    }
+
+        //    Insistence += AIUtility.CalculateRiskValue(part, selfTank, oppTank);
+        //}
+
+        //Insistence = 1.0f - Insistence;
+
+        Insistence = 0.8f;
+
+        Debug.Log("Attack goal Insistence=" + Insistence);
     }
 
     // Three actions: move, aim, and fire
@@ -76,7 +93,7 @@ public class AttackGoal : Goal
             float optimalRange = schematic.Range * OptimalRangeRatio;
             bool inOptimalRange = distFromTargetToFirePos < optimalRange;
 
-            Vector2 targetPos = AITankController.CalculateTargetPos(tank, part, targetTank);
+            Vector2 targetPos = AIUtility.CalculateTargetPos(tank, part, targetTank);
             result.targetPos = targetPos;
 
             if (!inOptimalRange) {
