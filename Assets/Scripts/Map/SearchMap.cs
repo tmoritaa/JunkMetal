@@ -15,20 +15,6 @@ public class SearchMap : Map
         }
     }
 
-    protected override float calcHeuristicCost(Node node, Node target) {
-        Vector2 pos = NodeToPosition(node);
-        Vector2 targetPos = NodeToPosition(target);
-
-        return (pos - targetPos).sqrMagnitude;
-    }
-
-    protected override float calculateConnectionCost(Connection connection) {
-        Vector2 pos = NodeToPosition(connection.srcNode);
-        Vector2 otherPos = NodeToPosition(connection.targetNode);
-
-        return (pos - otherPos).sqrMagnitude;
-    }
-
     protected override Node createNode(int x, int y, params object[] values) {
         return new SearchNode(x, y);
     }
