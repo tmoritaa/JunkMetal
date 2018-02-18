@@ -6,16 +6,16 @@ using UnityEngine;
 
 public class SearchGoal : Goal
 {
-    private TileMap searchQuadrants;
+    private SearchMap searchQuadrants;
     // NOTE: only for debugging.
-    public TileMap SearchQuadrants
+    public SearchMap SearchQuadrants
     {
         get {
             return searchQuadrants;
         }
     }
 
-    private Node curDestQuad;
+    private SearchNode curDestQuad;
 
     private List<Node> path = new List<Node>();
     // NOTE: only for debugging.
@@ -28,12 +28,13 @@ public class SearchGoal : Goal
     {}
 
     public override void Init() {
-        TileMap map = GameManager.Instance.Map;
+        Map map = GameManager.Instance.Map;
 
-        searchQuadrants = new TileMap(map.MapWidth, map.MapHeight, 5);
+        float tileDim = map.MapWidth / (float)5;
+        searchQuadrants = new SearchMap(map.MapWidth, map.MapHeight, tileDim);
 
-        curDestQuad = searchQuadrants.PositionToNode(controller.Tank.transform.position);
-        curDestQuad.value = (char)1;
+        curDestQuad = (SearchNode)searchQuadrants.PositionToNode(controller.Tank.transform.position);
+        curDestQuad.searched = true;
     }
 
     public override void UpdateInsistence() {
@@ -61,14 +62,14 @@ public class SearchGoal : Goal
 
             // If no connections, reset values in quadMap and do again.
             if (connections.Count == 0) {
-                searchQuadrants.ClearNodeValues();
+                searchQuadrants.ResetNodeValues();
                 connections = searchQuadrants.FindConnectedNodes(curDestQuad);
             }
 
-            curDestQuad.value = (char)1;
+            curDestQuad.searched = true;
 
             // Pick random node for next destination
-            curDestQuad = connections[GlobalRandom.GetRandomNumber(0, connections.Count)].targetNode;
+            curDestQuad = (SearchNode)connections[GlobalRandom.GetRandomNumber(0, connections.Count)].targetNode;
             destPos = searchQuadrants.NodeToPosition(curDestQuad);
 
             path = GameManager.Instance.Map.FindPath(controller.Tank.transform.position, destPos);

@@ -44,8 +44,8 @@ public class AITankController : TankController
         base.Init(startPos, _body, _turret, _wheels);
 
         // TODO: for now, just manually fill up goals list.
-        //goals.Add(new SearchGoal(this));
-        goals.Add(new AttackGoal(this));
+        goals.Add(new SearchGoal(this));
+        //goals.Add(new AttackGoal(this));
         //goals.Add(new DodgeGoal(this));
         curGoal = null;
     }

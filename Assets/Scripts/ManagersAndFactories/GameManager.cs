@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
         get; private set;
     }
 
-    public TileMap Map
+    public Map Map
     {
         get; private set;
     }
@@ -107,7 +107,7 @@ public class GameManager : MonoBehaviour
             walls.Add(wallsRoot.GetChild(i));
         }
 
-        Map = new TileMap(mapWidth, mapHeight, tileDim, walls);
+        Map = new Map(mapWidth, mapHeight, tileDim, walls);
     }
 
     private void generateMapBounds() {

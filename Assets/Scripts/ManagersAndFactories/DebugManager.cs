@@ -46,13 +46,13 @@ public class DebugManager : MonoBehaviour
 
             if (mapDisplayDebugOn) {
                 // Draw Map
-                TileMap map = GameManager.Instance.Map;
+                Map map = GameManager.Instance.Map;
                 for (int x = 0; x < map.Cols; ++x) {
                     for (int y = 0; y < map.Rows; ++y) {
-                        char value = map.GetValueAtIdx(x, y);
+                        bool blocked = map.GetNodeAtIdx(x, y).blocked;
                         Vector2 pos = map.IdxToPosition(x, y);
 
-                        Gizmos.color = value == 0 ? Color.green : Color.red;
+                        Gizmos.color = !blocked ? Color.green : Color.red;
                         Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
                     }
                 }
@@ -70,10 +70,11 @@ public class DebugManager : MonoBehaviour
                         Gizmos.DrawWireSphere(pos, 15);
                     }
 
-                    TileMap searchQuads = goal.SearchQuadrants;
+                    SearchMap searchQuads = goal.SearchQuadrants;
 
-                    foreach (Node node in searchQuads.Map) {
-                        if (node.value == 0) {
+                    foreach (Node _node in searchQuads.MapArray) {
+                        SearchNode node = (SearchNode)_node;
+                        if (!node.searched) {
                             Gizmos.color = Color.blue;
                         } else {
                             Gizmos.color = Color.red;
