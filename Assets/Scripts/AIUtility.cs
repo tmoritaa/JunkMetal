@@ -35,7 +35,29 @@ public class AIUtility
 
         return targetPos;
     }
+    
+    public static float CalcThreatValueAtPos(WeaponPart part, Vector2 targetPos) {
+        float timeToHit = 0;
 
+        Vector2 startPos = part.CalculateFirePos();
+
+        Vector2 diffVec = targetPos - startPos;
+
+        // We have to calculate three things: rotation time, travel time to in range, and bullet travel time.
+
+        // First calculate rotation time.
+        timeToHit += part.OwningTank.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
+
+        // Next, calculate travel time.
+        timeToHit += Mathf.Max(diffVec.magnitude - part.Schematic.Range, 0) / part.OwningTank.TerminalVelocity;
+
+        // Finally, calculate travel time.
+        timeToHit += Mathf.Min(part.Schematic.Range, diffVec.magnitude) / part.Schematic.ShootImpulse;
+
+        return timeToHit;
+    }
+
+    // TODO: probably won't be used once AttackGoal and DodgeGoal are rewritten using threat maps. Check later and confirm that it's not used.
     public static float CalculateRiskValue(WeaponPart weaponPart, Tank targetedTank, Tank targetingTank) {
         const float ThreatRangeMod = 1.1f;
 

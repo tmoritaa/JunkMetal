@@ -22,7 +22,10 @@ public class WeaponPart
         }
     }
 
-    private Tank owningTank;
+    public Tank OwningTank
+    {
+        get; private set;
+    }
     
     private float lastShotTime;
     private bool shouldShoot = false;
@@ -35,11 +38,11 @@ public class WeaponPart
     }
 
     public void SetOwner(Tank tank) {
-        owningTank = tank;
+        OwningTank = tank;
     }
 
     public void HandleInput() {
-        KeyCode shootKey = owningTank.Turret.Schematic.ShootKeys[TurretIdx];
+        KeyCode shootKey = OwningTank.Turret.Schematic.ShootKeys[TurretIdx];
 
         if (Input.GetKey(shootKey) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
             FireIfAble();
@@ -47,7 +50,7 @@ public class WeaponPart
     }
 
     public string GetKeycodeStringForShoot() {
-        KeyCode shootKey = owningTank.Turret.Schematic.ShootKeys[TurretIdx];
+        KeyCode shootKey = OwningTank.Turret.Schematic.ShootKeys[TurretIdx];
         return shootKey.ToString();
     }
 
@@ -59,7 +62,7 @@ public class WeaponPart
     
     public void PerformFixedUpdate() {
         if (shouldShoot) {
-            Bullet bullet = BulletFactory.Instance.CreateBullet(owningTank, Schematic.BulletType);
+            Bullet bullet = BulletFactory.Instance.CreateBullet(OwningTank, Schematic.BulletType);
 
             Vector2 fireVec = CalculateFireVec();
             Vector2 fireOffset = calculateFireOffset();
@@ -72,16 +75,16 @@ public class WeaponPart
     }
 
     public Vector2 CalculateFireVec() {
-        return owningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
+        return OwningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(OwningTank.Turret.Angle + OwningTank.Body.rotation);
     }
 
     public Vector2 CalculateFirePos() {
         Vector2 offset = calculateFireOffset();
-        return (Vector2)owningTank.transform.position + offset;
+        return (Vector2)OwningTank.transform.position + offset;
     }
 
     private Vector2 calculateFireOffset() {
-        return owningTank.Turret.Schematic.OrigWeaponFirePosOffset[TurretIdx].Rotate(owningTank.Turret.Angle + owningTank.Body.rotation);
+        return OwningTank.Turret.Schematic.OrigWeaponFirePosOffset[TurretIdx].Rotate(OwningTank.Turret.Angle + OwningTank.Body.rotation);
     }
 
     public float CalcTimeToReloaded() {

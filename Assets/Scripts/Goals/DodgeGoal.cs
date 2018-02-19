@@ -27,7 +27,7 @@ public class DodgeGoal : Goal
         // Calculate threat level of target weapons against us
         Tank selfTank = controller.Tank;
         Tank oppTank = controller.TargetTank;
-        foreach (WeaponPart part in selfTank.Turret.Weapons) {
+        foreach (WeaponPart part in selfTank.Turret.GetAllWeapons()) {
             if (part == null) {
                 continue;
             }
@@ -54,11 +54,7 @@ public class DodgeGoal : Goal
         Vector2 oppToSelfVec = selfTank.transform.position - oppTank.transform.position;
 
         List<RiskInfo> riskInfos = new List<RiskInfo>();
-        foreach(WeaponPart part in oppTank.Turret.Weapons) {
-            if (part == null) {
-                continue;
-            }
-
+        foreach(WeaponPart part in oppTank.Turret.GetAllWeapons()) {
             float riskValue = AIUtility.CalculateRiskValue(part, selfTank, oppTank);
             if (riskValue > 0) {
                 RiskInfo riskInfo = new RiskInfo();

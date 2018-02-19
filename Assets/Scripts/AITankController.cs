@@ -22,6 +22,14 @@ public class AITankController : TankController
 
     private int successiveCollisions = 0;
 
+    private ThreatMap threatMap;
+    // TODO: only for debugging.
+    public ThreatMap ThreatMap {
+        get {
+            return threatMap;
+        }
+    }
+
     private List<Goal> goals = new List<Goal>();
 
     private Goal curGoal = null;
@@ -34,9 +42,12 @@ public class AITankController : TankController
     void Awake() {
         // For 1v1 matches, this will always be true. Maybe later we'll have to change the logic, but for now this is fine.
         TargetTank = GameManager.Instance.HumanTankController.Tank;
+
+        threatMap = new ThreatMap(GameManager.Instance.Map);
     }
 
     void Update() {
+        updateThreatMap();
         updateGoalsAndPerformActions();
     }
 
@@ -48,6 +59,11 @@ public class AITankController : TankController
         //goals.Add(new AttackGoal(this));
         //goals.Add(new DodgeGoal(this));
         curGoal = null;
+    }
+
+    private void updateThreatMap() {
+        threatMap.ResetNodeValues();
+        threatMap.UpdateThreats(TargetTank);
     }
 
     private void updateGoalsAndPerformActions() {

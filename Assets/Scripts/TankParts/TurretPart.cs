@@ -38,11 +38,28 @@ public class TurretPart
     public void SetOwner(Tank tank) {
         owningTank = tank;
 
-        foreach(WeaponPart weapon in Weapons) {
-            if (weapon != null) {
-                weapon.SetOwner(tank);
+        foreach(WeaponPart weapon in GetAllWeapons()) {
+            weapon.SetOwner(tank);
+        }
+    }
+
+    public List<WeaponPart> GetAllWeapons() {
+        List<WeaponPart> weapons = new List<WeaponPart>();
+        foreach (WeaponPart part in Weapons) {
+            if (part != null) {
+                weapons.Add(part);
             }
         }
+
+        return weapons;
+    }
+
+    public WeaponPart GetWeaponAtIdx(int idx) {
+        if (Weapons.Length <= idx) {
+            return null;
+        }
+
+        return Weapons[idx];
     }
 
     public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
@@ -62,10 +79,8 @@ public class TurretPart
         }
         SetRotDir(rotDir);
 
-        foreach (WeaponPart weapon in Weapons) {
-            if (weapon != null) {
-                weapon.HandleInput();
-            }
+        foreach (WeaponPart weapon in GetAllWeapons()) {
+            weapon.HandleInput();
         }
     }
 
@@ -80,10 +95,8 @@ public class TurretPart
             Angle += angle;
         }
 
-        foreach (WeaponPart weapon in Weapons) {
-            if (weapon != null) {
-                weapon.PerformFixedUpdate();
-            }
+        foreach (WeaponPart weapon in GetAllWeapons()) {
+            weapon.PerformFixedUpdate();
         }
     }
 }

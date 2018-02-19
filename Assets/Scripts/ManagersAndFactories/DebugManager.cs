@@ -36,6 +36,9 @@ public class DebugManager : MonoBehaviour
     [SerializeField]
     private bool mapDisplayDebugOn = true;
 
+    [SerializeField]
+    private bool threatMapDebugOn = true;
+
     void Awake() {
         instance = this;
     }
@@ -81,6 +84,20 @@ public class DebugManager : MonoBehaviour
                         }
 
                         Gizmos.DrawWireCube(searchQuads.NodeToPosition(node), new Vector3(searchQuads.TileDim, searchQuads.TileDim, searchQuads.TileDim));
+                    }
+                }
+            }
+
+            if (threatMapDebugOn) {
+                ThreatMap map = GameManager.Instance.AITankController.ThreatMap;
+
+                foreach (Node _node in map.MapArray) {
+                    ThreatNode node = (ThreatNode)_node;
+                    if (node.ThreatValue > 0) {
+                        Color color = new Color(node.ThreatValue, 0, 1f - node.ThreatValue);
+                        Gizmos.color = color;
+
+                        Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
                     }
                 }
             }

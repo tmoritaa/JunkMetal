@@ -66,6 +66,22 @@ public class Map
         markWallsOnMap(walls);
     }
 
+    public Map(Map map) {
+        MapWidth = map.MapWidth;
+        MapHeight = map.MapHeight;
+        TileDim = map.TileDim;
+        Rows = map.Rows;
+        Cols = map.Cols;
+
+        initMap();
+
+        for (int x = 0; x < Cols; ++x) {
+            for (int y = 0; y < Rows; ++y) {
+                MapArray[x, y].blocked = map.MapArray[x, y].blocked;
+            }
+        }
+    }
+
     public virtual void ResetNodeValues() {
         // Do nothing.
     }
@@ -195,7 +211,7 @@ public class Map
         return path;
     }
 
-    public List<Connection> FindConnectedNodes(Node srcNode, bool ignoreValues = false, int xDir = 0, int yDir = 0) {
+    public List<Connection> FindConnectedNodes(Node srcNode, bool ignoreBlocked = false, int xDir = 0, int yDir = 0) {
         List<Connection> connectedNodes = new List<Connection>();
 
         int xStart = xDir == 0 ? -1 : xDir;
@@ -213,7 +229,7 @@ public class Map
                 int[] indices = new int[] { srcNode.x + x, srcNode.y + y };
 
                 // If idx positions are either invalid or blocked, then not connected, and can be skipped over.
-                if (indices[0] < 0 || indices[0] >= Cols || indices[1] < 0 || indices[1] >= Rows || (!ignoreValues && !MapArray[indices[0], indices[1]].NodeTraversable())) {
+                if (indices[0] < 0 || indices[0] >= Cols || indices[1] < 0 || indices[1] >= Rows || (!ignoreBlocked && !MapArray[indices[0], indices[1]].NodeTraversable())) {
                     continue;
                 }
 
