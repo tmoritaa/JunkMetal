@@ -77,13 +77,15 @@ public class Map
 
         for (int x = 0; x < Cols; ++x) {
             for (int y = 0; y < Rows; ++y) {
-                MapArray[x, y].blocked = map.MapArray[x, y].blocked;
+                MapArray[x, y].fullyBlocked = map.MapArray[x, y].fullyBlocked;
             }
         }
     }
 
-    public virtual void ResetNodeValues() {
-        // Do nothing.
+    public void ResetNodeValues() {
+        foreach (Node n in MapArray) {
+            n.ResetNodeValues();
+        }
     }
 
     public Node GetNodeAtIdx(int x, int y) {
@@ -110,6 +112,11 @@ public class Map
 
     public Vector2 IdxToPosition(int x, int y) {
         return new Vector2(TileDim / 2f + x * TileDim - MapWidth / 2f, -TileDim / 2f - y * TileDim + MapHeight / 2f);
+    }
+
+    public void MarkPositionAsTempBlocked(Vector2 pos, bool block) {
+        Node node = PositionToNode(pos);
+        node.tempBlocked = block;
     }
 
     public List<Node> FindPath(Vector2 startPos, Vector2 _targetPos, int xDir = 0, int yDir = 0) {
@@ -239,7 +246,41 @@ public class Map
 
         return connectedNodes;
     }
-    
+
+    public List<Connection> FindStraightPath(Node from, Node to) {
+        List<Connection> pathNodes = new List<Connection>();
+        Node curNode = from;
+        
+        while (curNode != to) {
+            int xDiff = to.x - curNode.x;
+            int yDiff = to.y - curNode.y;
+
+            int xDir = (xDiff >= yDiff) ? Math.Sign(xDiff) : 0;
+            int yDir = (yDiff > xDiff) ? Math.Sign(yDiff) : 0;
+
+            List<Connection> adjNodes = FindConnectedNodes(curNode, true, xDir, yDir);
+
+            Connection closestConnection = null;
+            foreach(Connection connection in adjNodes) {
+                if (closestConnection == null) {
+                    closestConnection = connection;
+                } else {
+                    float curClosestDiff = Math.Abs(closestConnection.targetNode.x - to.x) + Math.Abs(closestConnection.targetNode.y - to.y);
+                    float conDiff = Math.Abs(connection.targetNode.x - to.x) + Math.Abs(connection.targetNode.y - to.y);
+
+                    if (curClosestDiff > conDiff) {
+                        closestConnection = connection;
+                    }
+                }
+            }
+
+            curNode = closestConnection.targetNode;
+            pathNodes.Add(closestConnection);
+        }
+        
+        return pathNodes;
+    }
+
     protected virtual float calculateConnectionCost(Connection connection) {
         Vector2 pos = NodeToPosition(connection.srcNode);
         Vector2 otherPos = NodeToPosition(connection.targetNode);
@@ -267,7 +308,7 @@ public class Map
 
         Node node = PositionToNode(targetPos);
 
-        if (node.blocked) {
+        if (!node.NodeTraversable()) {
             while (true) {
                 List<Connection> connections = FindConnectedNodes(node, true, xDir, yDir);
 
@@ -278,7 +319,7 @@ public class Map
 
                 bool foundSafePos = false;
                 foreach (Connection con in connections) {
-                    if (!con.targetNode.blocked) {
+                    if (con.targetNode.NodeTraversable()) {
                         foundSafePos = true;
                         node = con.targetNode;
                         break;
@@ -338,7 +379,7 @@ public class Map
 
                     if (indices[0] >= 0 && indices[0] < Cols && indices[1] >= 0 && indices[1] < Rows) {
                         Node node = MapArray[indices[0], indices[1]];
-                        node.blocked = true;
+                        node.fullyBlocked = true;
                         markedNodes.Add(node);
                     }
                 }
@@ -348,7 +389,7 @@ public class Map
                 List<Connection> connections = FindConnectedNodes(node);
 
                 foreach (Connection connection in connections) {
-                    connection.targetNode.blocked = true;
+                    connection.targetNode.fullyBlocked = true;
                 }
             }
         }

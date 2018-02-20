@@ -37,7 +37,19 @@ public class DebugManager : MonoBehaviour
     private bool mapDisplayDebugOn = true;
 
     [SerializeField]
-    private bool threatMapDebugOn = true;
+    private bool ThreatMapDebugOn = true;
+
+    [SerializeField]
+    private bool ThreatMapTargetToHitPosDebugOn = true;
+
+    [SerializeField]
+    private bool ThreatMapPosToHitTargetDebugOn = true;
+
+    [SerializeField]
+    private bool ThreatMapDiffMapDebugOn = true;
+
+    [SerializeField]
+    private bool ManeuverPathDebugOn = true;
 
     void Awake() {
         instance = this;
@@ -52,7 +64,7 @@ public class DebugManager : MonoBehaviour
                 Map map = GameManager.Instance.Map;
                 for (int x = 0; x < map.Cols; ++x) {
                     for (int y = 0; y < map.Rows; ++y) {
-                        bool blocked = map.GetNodeAtIdx(x, y).blocked;
+                        bool blocked = !map.GetNodeAtIdx(x, y).NodeTraversable();
                         Vector2 pos = map.IdxToPosition(x, y);
 
                         Gizmos.color = !blocked ? Color.green : Color.red;
@@ -60,7 +72,8 @@ public class DebugManager : MonoBehaviour
                     }
                 }
 
-                if (GameManager.Instance.AITankController.CurGoal.GetType() == typeof(SearchGoal)) {
+                if (GameManager.Instance.AITankController.CurGoal != null 
+                    && GameManager.Instance.AITankController.CurGoal.GetType() == typeof(SearchGoal)) {
                     Gizmos.color = Color.blue;
 
                     SearchGoal goal = (SearchGoal)GameManager.Instance.AITankController.CurGoal;
@@ -88,16 +101,56 @@ public class DebugManager : MonoBehaviour
                 }
             }
 
-            if (threatMapDebugOn) {
+            if (ThreatMapDebugOn) {
                 ThreatMap map = GameManager.Instance.AITankController.ThreatMap;
 
                 foreach (Node _node in map.MapArray) {
                     ThreatNode node = (ThreatNode)_node;
-                    if (node.ThreatValue > 0) {
-                        Color color = new Color(node.ThreatValue, 0, 1f - node.ThreatValue);
-                        Gizmos.color = color;
 
-                        Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
+                    if (ThreatMapTargetToHitPosDebugOn) {
+                        if (node.TimeForTargetToHitNode <= ThreatMap.MaxTimeInSecs) {
+                            Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNode)/ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNode/ThreatMap.MaxTimeInSecs);
+                            Gizmos.color = color;
+
+                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
+                        }
+                    }
+
+                    if (ThreatMapPosToHitTargetDebugOn) {
+                        if (node.TimeToHitTargetFromNode <= ThreatMap.MaxTimeInSecs) {
+                            Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeToHitTargetFromNode)/ThreatMap.MaxTimeInSecs, 0, node.TimeToHitTargetFromNode/ThreatMap.MaxTimeInSecs);
+                            Gizmos.color = color;
+
+                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
+                        }
+                    }
+
+                    if (ThreatMapDiffMapDebugOn) {
+                        float diffVal = node.TimeForTargetToHitNode - node.TimeToHitTargetFromNode;
+                        float distToTarget = ((Vector2)GameManager.Instance.AITankController.TargetTank.transform.position - map.NodeToPosition(node)).magnitude;
+                        if (diffVal > 0 && distToTarget <= 500) {
+                            Color color = new Color(Mathf.Clamp01(diffVal / ThreatMap.MaxTimeInSecs), 0, Mathf.Clamp01((ThreatMap.MaxTimeInSecs - diffVal)/ ThreatMap.MaxTimeInSecs));
+                            Gizmos.color = color;
+
+                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
+                        }
+                    }
+                }
+            }
+
+            if (ManeuverPathDebugOn) {
+                if (GameManager.Instance.AITankController.CurGoal != null
+                    && GameManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
+                    Gizmos.color = Color.blue;
+
+                    ManeuverGoal goal = (ManeuverGoal)GameManager.Instance.AITankController.CurGoal;
+
+                    // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
+                    List<Node> path = goal.Path;
+
+                    foreach (Node node in path) {
+                        Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+                        Gizmos.DrawWireSphere(pos, 15);
                     }
                 }
             }

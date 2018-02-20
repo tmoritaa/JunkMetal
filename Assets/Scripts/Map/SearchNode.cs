@@ -12,6 +12,10 @@ public class SearchNode : Node
     }
 
     public override bool NodeTraversable() {
-        return !blocked && !searched;
+        return base.NodeTraversable() && !searched;
+    }
+
+    public override void ResetNodeValues() {
+        searched = false;
     }
 }

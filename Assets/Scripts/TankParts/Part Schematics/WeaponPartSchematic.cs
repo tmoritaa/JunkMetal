@@ -32,6 +32,13 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
+    public float OptimalRange
+    {
+        get {
+            return Range * 0.75f;
+        }
+    }
+
     public Bullet.BulletTypes BulletType
     {
         get; private set;

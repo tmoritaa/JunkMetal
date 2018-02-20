@@ -17,7 +17,7 @@ public abstract class Goal
         controller = _tankController;
     }
 
-    public abstract void Init();
+    public abstract void ReInit();
     public abstract AIAction[] CalcActionsToPerform();
     public abstract void UpdateInsistence();
 }

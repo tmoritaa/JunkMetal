@@ -7,14 +7,11 @@ using UnityEngine;
 public class AIUtility
 {
     // Used http://danikgames.com/blog/how-to-intersect-a-moving-target-in-2d/ as a reference.
-    public static Vector2 CalculateTargetPos(Tank tank, WeaponPart part, Tank targetTank) {
-        // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
-        float weaponTerminalVel = part.Schematic.ShootImpulse;
-
-        Vector2 diffVec = (Vector2)targetTank.transform.position - part.CalculateFirePos();
+    public static Vector2 CalculateTargetPosWithWeapon(float weaponTerminalVel, Vector2 weaponFirePos, Vector2 weaponOwnerPos, Vector2 targetTankPos, Vector2 targetTankVel) {
+        Vector2 diffVec = targetTankPos- weaponFirePos;
         Vector2 abVec = diffVec.normalized;
 
-        Vector2 targetVel = targetTank.Body.velocity;
+        Vector2 targetVel = targetTankVel;
         Vector2 uj = (Vector2.Dot(targetVel, abVec) / abVec.magnitude) * abVec;
         Vector2 ui = targetVel - uj;
 
@@ -31,28 +28,26 @@ public class AIUtility
             timeToHit = diffVec.magnitude / (vj.magnitude - uj.magnitude);
         }
 
-        Vector2 targetPos = (Vector2)tank.transform.position + v * timeToHit;
+        Vector2 targetPos = weaponOwnerPos + v * timeToHit;
 
         return targetPos;
     }
     
-    public static float CalcThreatValueAtPos(WeaponPart part, Vector2 targetPos) {
+    public static float CalcTimeToHitPos(Vector2 curFirePos, Vector2 curFireVec, Tank tank, WeaponPartSchematic schematic, Vector2 targetPos) {
         float timeToHit = 0;
 
-        Vector2 startPos = part.CalculateFirePos();
-
-        Vector2 diffVec = targetPos - startPos;
+        Vector2 diffVec = targetPos - curFirePos;
 
         // We have to calculate three things: rotation time, travel time to in range, and bullet travel time.
 
         // First calculate rotation time.
-        timeToHit += part.OwningTank.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
+        timeToHit += tank.CalcTimeToRotate(curFireVec, diffVec);
 
         // Next, calculate travel time.
-        timeToHit += Mathf.Max(diffVec.magnitude - part.Schematic.Range, 0) / part.OwningTank.TerminalVelocity;
+        timeToHit += Mathf.Max(diffVec.magnitude - schematic.Range, 0) / tank.TerminalVelocity;
 
-        // Finally, calculate travel time.
-        timeToHit += Mathf.Min(part.Schematic.Range, diffVec.magnitude) / part.Schematic.ShootImpulse;
+        // Finally, calculate bullet travel time.
+        timeToHit += Mathf.Min(schematic.Range, diffVec.magnitude) / schematic.ShootImpulse;
 
         return timeToHit;
     }
@@ -95,7 +90,8 @@ public class AIUtility
 
     public static void SmoothPath(List<Node> path, Tank tank) {
         const int WallBit = 8;
-        const int LayerMask = 1 << WallBit;
+        const int PlayerBit = 9;
+        const int LayerMask = 1 << WallBit | 1 << PlayerBit;
 
         int removeCount = 0;
         for (int i = 0; i < path.Count; ++i) {

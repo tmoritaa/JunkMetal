@@ -13,7 +13,7 @@ public class GoInDirAction : AIAction
     }
 
     public override void Perform() {
-        Tank tank = controller.Tank;
+        Tank tank = controller.SelfTank;
 
         // TODO: Makes sense for now, but later if goals are rewritten to take into account walls, take Avoid Walls from here
         // Currently has minimal effect with the Attack Goal

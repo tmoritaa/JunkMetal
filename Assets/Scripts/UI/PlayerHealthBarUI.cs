@@ -32,6 +32,6 @@ public class PlayerHealthBarUI : BarUI
     }
 
     private Tank getTankOfType() {
-        return (DisplayType == TankController.PlayerTypes.Human) ? GameManager.Instance.HumanTankController.Tank : GameManager.Instance.AITankController.Tank;
+        return (DisplayType == TankController.PlayerTypes.Human) ? GameManager.Instance.HumanTankController.SelfTank : GameManager.Instance.AITankController.SelfTank;
     }
 }

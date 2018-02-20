@@ -15,6 +15,6 @@ public class RotateAction : AIAction
     }
 
     public override void Perform() {
-        controller.Tank.PerformRotation(alignAngle, requestDir);
+        controller.SelfTank.PerformRotation(alignAngle, requestDir);
     }
 }

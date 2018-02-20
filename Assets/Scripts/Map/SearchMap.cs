@@ -12,12 +12,6 @@ public class SearchMap : Map
     public SearchMap(Map map) : base(map) 
         { }
 
-    public override void ResetNodeValues() {
-        foreach (Node n in MapArray) {
-            ((SearchNode)n).searched = false;
-        }
-    }
-
     protected override Node createNode(int x, int y, params object[] values) {
         return new SearchNode(x, y);
     }

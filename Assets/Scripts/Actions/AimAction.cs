@@ -13,7 +13,7 @@ public class AimAction : AIAction
     }
 
     public override void Perform() {
-        Tank tank = controller.Tank;
+        Tank tank = controller.SelfTank;
 
         float curTurretAngle = tank.Turret.Angle + tank.Body.rotation;
         Vector2 curDir = tank.GetForwardVec().Rotate(tank.Turret.Angle);

@@ -8,7 +8,6 @@ public class AttackGoal : Goal
 {
     private const float TimeDiffThreshToFire = 1f;
     private const float AngleThreshToFire = 5f;
-    private const float OptimalRangeRatio = 0.75f;
 
     private class WeaponMoveResults
     {
@@ -20,7 +19,7 @@ public class AttackGoal : Goal
 
     public AttackGoal(AITankController controller) : base(controller) {}
 
-    public override void Init() {
+    public override void ReInit() {
         // Do nothing.
     }
 
@@ -69,7 +68,7 @@ public class AttackGoal : Goal
     public override AIAction[] CalcActionsToPerform() {
         List<AIAction> actions = new List<AIAction>();
 
-        Tank tank = controller.Tank;
+        Tank tank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
         WeaponMoveResults[] results = new WeaponMoveResults[tank.Turret.Weapons.Length];
@@ -90,10 +89,14 @@ public class AttackGoal : Goal
 
             WeaponPartSchematic schematic = part.Schematic;
 
-            float optimalRange = schematic.Range * OptimalRangeRatio;
-            bool inOptimalRange = distFromTargetToFirePos < optimalRange;
+            bool inOptimalRange = distFromTargetToFirePos < schematic.OptimalRange;
 
-            Vector2 targetPos = AIUtility.CalculateTargetPos(tank, part, targetTank);
+            Vector2 targetPos = AIUtility.CalculateTargetPosWithWeapon(
+                part.Schematic.ShootImpulse, // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
+                part.CalculateFirePos(), 
+                tank.transform.position, 
+                targetTank.transform.position, 
+                targetTank.Body.velocity);
             result.targetPos = targetPos;
 
             if (!inOptimalRange) {
@@ -101,7 +104,7 @@ public class AttackGoal : Goal
                 float distToTarget = toTargetVec.magnitude;
 
                 // If not in range, just do action to get into optimal range
-                float travelDist = distToTarget - optimalRange;
+                float travelDist = distToTarget - schematic.OptimalRange;
 
                 // NOTE: we're just going to calculate time to travel distance, without regard for orientation.
                 // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
@@ -112,7 +115,7 @@ public class AttackGoal : Goal
                 float distToTarget = toTargetVec.magnitude;
 
                 // If weapon is reloading, we want to try to keep optimal distance
-                float travelDist = distToTarget - optimalRange;
+                float travelDist = distToTarget - schematic.OptimalRange;
 
                 // NOTE: we're just going to calculate time to travel distance, without regard for orientation.
                 // Later we might have to change this and incorporate orientation. Will have to see how it works overall.

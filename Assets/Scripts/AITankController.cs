@@ -41,29 +41,36 @@ public class AITankController : TankController
 
     void Awake() {
         // For 1v1 matches, this will always be true. Maybe later we'll have to change the logic, but for now this is fine.
-        TargetTank = GameManager.Instance.HumanTankController.Tank;
+        TargetTank = GameManager.Instance.HumanTankController.SelfTank;
 
         threatMap = new ThreatMap(GameManager.Instance.Map);
     }
 
     void Update() {
+        TargetTank.MarkCurPositionAsBlockedOnMap(GameManager.Instance.Map);
+        TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
+
         updateThreatMap();
         updateGoalsAndPerformActions();
+
+        // TODO: for testing only. Remove once done.
+        //rotationTest();
     }
 
     public override void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
         base.Init(startPos, _body, _turret, _wheels);
 
         // TODO: for now, just manually fill up goals list.
-        goals.Add(new SearchGoal(this));
+        //goals.Add(new SearchGoal(this));
         //goals.Add(new AttackGoal(this));
-        //goals.Add(new DodgeGoal(this));
+        goals.Add(new ManeuverGoal(this));
         curGoal = null;
     }
 
     private void updateThreatMap() {
         threatMap.ResetNodeValues();
-        threatMap.UpdateThreats(TargetTank);
+        threatMap.UpdateTimeForTankToHitNode(TargetTank);
+        threatMap.UpdateTimeToHitTargetFromNode(SelfTank, TargetTank);
     }
 
     private void updateGoalsAndPerformActions() {
@@ -85,7 +92,7 @@ public class AITankController : TankController
         }
         
         if (goalChanged) {
-            curGoal.Init();
+            curGoal.ReInit();
         }
 
         AIAction[] actions = curGoal.CalcActionsToPerform();
@@ -104,12 +111,12 @@ public class AITankController : TankController
     }
 
     private Vector2 seek(Vector2 targetPos) {
-        Vector2 curPos = Tank.transform.position;
+        Vector2 curPos = SelfTank.transform.position;
         return targetPos - curPos;
     }
 
     public Vector2 AvoidWalls(Vector2 desiredDir) {
-        Vector2 forwardVec = Tank.GetForwardVec();
+        Vector2 forwardVec = SelfTank.GetForwardVec();
         Vector2 leftVec = forwardVec.Rotate(-90);
         Vector2 rightVec = forwardVec.Rotate(90);
         Vector2 backVec = forwardVec.Rotate(180);
@@ -125,11 +132,11 @@ public class AITankController : TankController
             backVec = tmpVec;
         }
 
-        float xAdd = Tank.Hull.Schematic.Size.x / 2f;
-        float yAdd = Tank.Hull.Schematic.Size.y / 2f;
-        Vector2 TopCenter = (Vector2)Tank.transform.position + forwardVec * yAdd;
-        Vector2 TLCorner = (Vector2)Tank.transform.position + forwardVec * yAdd + leftVec * xAdd;
-        Vector2 TRCorner = (Vector2)Tank.transform.position + forwardVec * yAdd + rightVec * xAdd;
+        float xAdd = SelfTank.Hull.Schematic.Size.x / 2f;
+        float yAdd = SelfTank.Hull.Schematic.Size.y / 2f;
+        Vector2 TopCenter = (Vector2)SelfTank.transform.position + forwardVec * yAdd;
+        Vector2 TLCorner = (Vector2)SelfTank.transform.position + forwardVec * yAdd + leftVec * xAdd;
+        Vector2 TRCorner = (Vector2)SelfTank.transform.position + forwardVec * yAdd + rightVec * xAdd;
 
         // If Collision, then take into account desired Dir and see if risk of collision
         const int WallBit = 8;
@@ -141,7 +148,7 @@ public class AITankController : TankController
         const float ForwardFanRatio = 0.7f;
         const float BackwardFanRatio = 1.0f - ForwardFanRatio;
 
-        float maxDistance = Mathf.Max(Tank.Body.velocity.magnitude, 150f);
+        float maxDistance = Mathf.Max(SelfTank.Body.velocity.magnitude, 150f);
 
         float fanRatio = Mathf.Min((float)successiveCollisions / 250f, 0.8f);
         RaycastHit2D[] hitResult = new RaycastHit2D[4];
@@ -201,4 +208,27 @@ public class AITankController : TankController
 
         return newDesiredDir;
     }
+
+
+    //bool first = false;
+    //Vector2 targetdir;
+    //float startTime = 0;
+    //// TODO: for testing only. Remove once done.
+    //private void rotationTest() {
+    //    SelfTank.PerformRotation(SelfTank.GetForwardVec(), SelfTank.GetBackwardVec());
+    //    if (!first) {
+    //        targetdir = SelfTank.GetBackwardVec();
+    //        startTime = Time.time;
+    //        first = true;
+    //    } else {
+    //        if ((targetdir - SelfTank.GetForwardVec()).magnitude < 0.05f) {
+    //            Debug.Log("Time for full rot=" + (2f * (Time.time - startTime)));
+
+    //            float circumference = (SelfTank.Hull.Schematic.Size.x / 2f) * Mathf.PI;
+    //            float timeToDoOneFullRot = circumference / SelfTank.TerminalVelocityForRotation;
+
+    //            Debug.Log("Calculated time for full rot=" + timeToDoOneFullRot);
+    //        }
+    //    }
+    //}
 }

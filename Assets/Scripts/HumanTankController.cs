@@ -13,6 +13,6 @@ public class HumanTankController : TankController
     }
 
     void Update() {
-        Tank.HandleInput();
+        SelfTank.HandleInput();
     }
 }

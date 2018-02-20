@@ -27,13 +27,13 @@ public class SearchGoal : Goal
     public SearchGoal(AITankController tankController) : base(tankController) 
     {}
 
-    public override void Init() {
+    public override void ReInit() {
         Map map = GameManager.Instance.Map;
 
         float tileDim = map.MapWidth / (float)5;
         searchQuadrants = new SearchMap(map.MapWidth, map.MapHeight, tileDim);
 
-        curDestQuad = (SearchNode)searchQuadrants.PositionToNode(controller.Tank.transform.position);
+        curDestQuad = (SearchNode)searchQuadrants.PositionToNode(controller.SelfTank.transform.position);
         curDestQuad.searched = true;
     }
 
@@ -47,13 +47,13 @@ public class SearchGoal : Goal
 
         AITankController aiTankController = (AITankController)controller;
 
-        Vector2 curPos = controller.Tank.transform.position;
+        Vector2 curPos = controller.SelfTank.transform.position;
         Vector2 destPos = searchQuadrants.NodeToPosition(curDestQuad);
         float sqrDistSigma = aiTankController.SqrDistForDistSigma;
 
         if (path.Count > 0 && (curPos- GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistSigma) {
             path.RemoveAt(0);
-            AIUtility.SmoothPath(path, controller.Tank);
+            AIUtility.SmoothPath(path, controller.SelfTank);
         }
 
         // Check if destination reached, if so, pick next quadrant to go to, and plan path.
@@ -72,8 +72,8 @@ public class SearchGoal : Goal
             curDestQuad = (SearchNode)connections[GlobalRandom.GetRandomNumber(0, connections.Count)].targetNode;
             destPos = searchQuadrants.NodeToPosition(curDestQuad);
 
-            path = GameManager.Instance.Map.FindPath(controller.Tank.transform.position, destPos);
-            AIUtility.SmoothPath(path, controller.Tank);
+            path = GameManager.Instance.Map.FindPath(controller.SelfTank.transform.position, destPos);
+            AIUtility.SmoothPath(path, controller.SelfTank);
         }
 
         Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : destPos;

@@ -15,15 +15,21 @@ public class Node
         get; private set;
     }
 
-    public bool blocked;
+    public bool fullyBlocked;
+    public bool tempBlocked;
 
     public Node(int _x, int _y) {
         x = _x;
         y = _y;
-        blocked = false;
+        fullyBlocked = false;
+        tempBlocked = false;
     }
 
     public virtual bool NodeTraversable() {
-        return !blocked;
+        return !fullyBlocked && !tempBlocked;
+    }
+
+    public virtual void ResetNodeValues() {
+        // Do nothing.
     }
 }

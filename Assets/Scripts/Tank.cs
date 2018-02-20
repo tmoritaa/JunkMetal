@@ -83,14 +83,29 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
+    // Used link for reference https://answers.unity.com/questions/151724/calculating-rigidbody-top-speed.html
+    // TODO: Right now we're assuming that going to terminal velocity is instantaneous for most calculations. We might have to alleviate this assumption if things are wonky.
     public float TerminalVelocity
     {
         get {
-            return Mathf.Sqrt(Hull.Schematic.EnergyPower / totalDrag);
+            float unityDrag = LeftWheelBody.drag;
+            float mass = LeftWheelBody.mass;
+            float addedForce = Hull.Schematic.EnergyPower / 2f;
+            return ((addedForce / unityDrag)) / mass;
         }
     }
 
-    private float totalDrag = 0;
+    // We need a different value for this because angular drag is different from linear drag.
+    // TODO: Not completely accurate, but relatively accurate. Maybe enough for our purposes.
+    public float TerminalVelocityForRotation
+    {
+        get {
+            float unityDrag = Body.angularDrag;
+            float mass = LeftWheelBody.mass;
+            float addedForce = Hull.Schematic.EnergyPower / 2f;
+            return ((addedForce / unityDrag)) / mass;
+        }
+    }
 
     private bool initialized = false;
 
@@ -122,8 +137,6 @@ public partial class Tank : MonoBehaviour
 
         rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(hullSize.x / 2f, 0, 0);
         rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(hullSize.x / 2f, 0);
-
-        totalDrag = calculateDrag();
 
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;
@@ -164,10 +177,11 @@ public partial class Tank : MonoBehaviour
         return new Vector2(0, -1).Rotate(body.rotation);
     }
 
+    // TODO: Not completely accurate, but relatively accurate. Maybe enough for our purposes.
     public float CalcTimeToRotate(Vector2 from, Vector2 to) {
         float rotationAngle = Vector2.Angle(from, to);
-        float circumference = Hull.Schematic.Size.x * Mathf.PI;
-        float timeToDoOneFullRot = circumference / TerminalVelocity;
+        float circumference = (Hull.Schematic.Size.x / 2f) * Mathf.PI;
+        float timeToDoOneFullRot = circumference / TerminalVelocityForRotation;
         return rotationAngle / 360f * timeToDoOneFullRot;
     }
 
@@ -178,16 +192,6 @@ public partial class Tank : MonoBehaviour
         armour += Turret.Schematic.Armour;
 
         return armour;
-    }
-
-    private float calculateDrag() {
-        float drag = 0;
-
-        drag += body.drag;
-        drag += LeftWheelBody.drag;
-        drag += RightWheelBody.drag;
-
-        return drag;
     }
 
     private float calculateTotalWeight() {

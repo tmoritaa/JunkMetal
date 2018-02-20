@@ -16,7 +16,7 @@ public class DodgeGoal : Goal
     public DodgeGoal(AITankController _tankController) : base(_tankController) {
     }
 
-    public override void Init() {
+    public override void ReInit() {
         // Do nothing.
     }
 
@@ -25,7 +25,7 @@ public class DodgeGoal : Goal
 
         // Should be based on attackability of opponent
         // Calculate threat level of target weapons against us
-        Tank selfTank = controller.Tank;
+        Tank selfTank = controller.SelfTank;
         Tank oppTank = controller.TargetTank;
         foreach (WeaponPart part in selfTank.Turret.GetAllWeapons()) {
             if (part == null) {
@@ -48,7 +48,7 @@ public class DodgeGoal : Goal
     public override AIAction[] CalcActionsToPerform() {
         List<AIAction> actions = new List<AIAction>();
         
-        Tank selfTank = controller.Tank;
+        Tank selfTank = controller.SelfTank;
         Tank oppTank = controller.TargetTank;
 
         Vector2 oppToSelfVec = selfTank.transform.position - oppTank.transform.position;

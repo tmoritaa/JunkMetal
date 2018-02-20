@@ -18,6 +18,6 @@ public class AimWithWeaponAction : AIAction
         Vector2 curDir = weapon.CalculateFireVec();
 
         float signedAngle = Vector2.SignedAngle(curDir, aimDir);
-        controller.Tank.Turret.SetRotDir(Mathf.Sign(signedAngle));
+        controller.SelfTank.Turret.SetRotDir(Mathf.Sign(signedAngle));
     }
 }

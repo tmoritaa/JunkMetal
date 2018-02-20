@@ -11,6 +11,6 @@ public class FireWeaponAction : AIAction
     }
 
     public override void Perform() {
-        controller.Tank.Turret.GetWeaponAtIdx(weaponIdx).FireIfAble();
+        controller.SelfTank.Turret.GetWeaponAtIdx(weaponIdx).FireIfAble();
     }
 }

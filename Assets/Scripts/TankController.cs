@@ -20,22 +20,22 @@ public class TankController : MonoBehaviour
     [SerializeField]
     protected Tank tankPrefab;
 
-    public Tank Tank {
+    public Tank SelfTank {
         get; private set;
     }
 
     void Awake() {
-        Tank = null;
+        SelfTank = null;
     }
 
     public virtual void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
-        if (Tank != null) {
-            Destroy(Tank.gameObject);
+        if (SelfTank != null) {
+            Destroy(SelfTank.gameObject);
         }
 
-        Tank = Instantiate(tankPrefab, this.transform, false);
-        Tank.transform.position = startPos;
+        SelfTank = Instantiate(tankPrefab, this.transform, false);
+        SelfTank.transform.position = startPos;
 
-        Tank.Init(_body, _turret, _wheels);
+        SelfTank.Init(_body, _turret, _wheels);
     }
 }

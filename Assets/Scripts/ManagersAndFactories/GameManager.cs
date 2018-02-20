@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour
         get; private set;
     }
 
+    // TODO: later move to AITankController
     public Map Map
     {
         get; private set;
@@ -97,7 +98,7 @@ public class GameManager : MonoBehaviour
             aiTurret,
             new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
         
-        MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.Tank.gameObject);
+        MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.SelfTank.gameObject);
     }
 
     private void generateTileMap() {
