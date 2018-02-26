@@ -22,8 +22,6 @@ public class TurretPart
 
     private float rotationDir = 0;
 
-    private KeyCode[] shootKeys;
-
     public TurretPart(TurretPartSchematic schematic) {
         Schematic = schematic;
 
@@ -69,9 +67,9 @@ public class TurretPart
     public void HandleInput() {
         float rotDir = 0;
 
-        if (Input.GetKey(Schematic.LeftTurnKey)) {
+        if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.TurretCCW))) {
             rotDir = 1.0f;
-        } else if (Input.GetKey(Schematic.RightTurnKey)) {
+        } else if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.TurretCW))) {
             rotDir = -1.0f;
         }
         SetRotDir(rotDir);

@@ -42,16 +42,13 @@ public class WeaponPart
     }
 
     public void HandleInput() {
-        KeyCode shootKey = OwningTank.Turret.Schematic.ShootKeys[TurretIdx];
-
-        if (Input.GetKey(shootKey) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
+        if (Input.GetKey(getKeycodeForWeaponFire()) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
             FireIfAble();
         }
     }
 
     public string GetKeycodeStringForShoot() {
-        KeyCode shootKey = OwningTank.Turret.Schematic.ShootKeys[TurretIdx];
-        return shootKey.ToString();
+        return getKeycodeForWeaponFire().ToString();
     }
 
     public void FireIfAble() {
@@ -96,5 +93,9 @@ public class WeaponPart
     public float CalcRatioToReloaded() {
         float timeDiff = Time.time - lastShotTime;
         return timeDiff / Schematic.ReloadTimeInSec;
+    }
+
+    private KeyCode getKeycodeForWeaponFire() {
+        return InputManager.Instance.GetKeyCodeForKeyboard((InputManager.KeyType)(100 + TurretIdx));
     }
 }

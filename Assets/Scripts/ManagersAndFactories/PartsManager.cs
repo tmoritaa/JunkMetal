@@ -72,7 +72,7 @@ public class PartsManager : MonoBehaviour
             float energyDec = info.Value<float>("energy_dec");
 
             // TODO: keycodes are for now. Should later be done differently using keyboard schematics
-            WheelPartSchematic part = TankParSchematictFactory.CreateWheelPartSchematic(name, energyInc, energyDec, weight, KeyCode.W, KeyCode.S, KeyCode.I, KeyCode.K);
+            WheelPartSchematic part = TankParSchematictFactory.CreateWheelPartSchematic(name, energyInc, energyDec, weight);
 
             partSchematics.Add(part.Name, part);
         }
@@ -109,18 +109,7 @@ public class PartsManager : MonoBehaviour
                 weightRestricts.Add(weightRestric);
             }
 
-            KeyCode[] shootKeys = null;
-
-            // TODO: keycodes are for now. Should later be done differently using keyboard schematics
-            if (weaponDirs.Count == 1) {
-                shootKeys = new KeyCode[] { KeyCode.P };
-            } else if (weaponDirs.Count == 2) {
-                shootKeys = new KeyCode[] { KeyCode.P, KeyCode.O };
-            }
-
-            // TODO: keycodes are for now. Should later be done differently using keyboard schematics
-            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray(), 
-                KeyCode.T, KeyCode.Y, shootKeys);
+            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
 
             partSchematics.Add(part.Name, part);
         }

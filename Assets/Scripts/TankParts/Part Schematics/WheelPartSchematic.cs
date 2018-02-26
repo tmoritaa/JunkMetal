@@ -23,32 +23,10 @@ public class WheelPartSchematic : PartSchematic
         get; private set;
     }
 
-    public KeyCode LeftForwardKey
-    {
-        get; private set;
-    }
-    public KeyCode LeftBackwardKey
-    {
-        get; private set;
-    }
-    public KeyCode RightForwardKey
-    {
-        get; private set;
-    }
-    public KeyCode RightBackwardKey
-    {
-        get; private set;
-    }
-
-    public WheelPartSchematic(string name, float _energyInc, float _energyDec, int _weight, KeyCode _leftForwardKey, KeyCode _leftBackwardKey, KeyCode _rightForwardKey, KeyCode _rightBackwardKey) : base(name) {
+    public WheelPartSchematic(string name, float _energyInc, float _energyDec, int _weight) : base(name) {
         Name = name;
         EnergyInc = _energyInc;
         EnergyDec = _energyDec;
         Weight = _weight;
-
-        LeftForwardKey = _leftForwardKey;
-        LeftBackwardKey = _leftBackwardKey;
-        RightForwardKey = _rightForwardKey;
-        RightBackwardKey = _rightBackwardKey;
     }
 }

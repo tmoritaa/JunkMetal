@@ -37,28 +37,10 @@ public class TurretPartSchematic : PartSchematic
         get; private set;
     }
 
-    public KeyCode LeftTurnKey
-    {
-        get; private set;
-    }
-
-    public KeyCode RightTurnKey
-    {
-        get; private set;
-    }
-
-    public KeyCode[] ShootKeys
-    {
-        get; private set;
-    }
-
-    public TurretPartSchematic(string name, int _armour, float _rotPerSecond, int _weight, Vector2[] _weaponDirs, Vector2[] _weaponFireOffset, int[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey, KeyCode[] _shootKeys) : base(name) {
+    public TurretPartSchematic(string name, int _armour, float _rotPerSecond, int _weight, Vector2[] _weaponDirs, Vector2[] _weaponFireOffset, int[] _weaponWeightRestrict) : base(name) {
         Name = name;
         Armour = _armour;
         RotPerSecond = _rotPerSecond;
-        LeftTurnKey = _leftTurnKey;
-        RightTurnKey = _rightTurnKey;
-        ShootKeys = _shootKeys;
         Weight = _weight;
 
         OrigWeaponDirs = _weaponDirs;
