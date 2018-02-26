@@ -9,9 +9,11 @@ public class BulletFactory : MonoBehaviour
 {
     [SerializeField]
     private Transform bulletsRoot;
-
+    
     [SerializeField]
-    private PrefabManager prefabManager;
+    BulletPrefabScriptableObject bulletPrefabs;
+
+    private Dictionary<Bullet.BulletTypes, Bullet> typeToBulletDict = new Dictionary<Bullet.BulletTypes, Bullet>();
 
     private static BulletFactory instance;
     public static BulletFactory Instance {
@@ -21,11 +23,15 @@ public class BulletFactory : MonoBehaviour
     }
 
     void Awake() {
-        instance = this;    
+        instance = this;
+
+        foreach (Bullet bullet in bulletPrefabs.bulletPrefabs) {
+            typeToBulletDict.Add(bullet.BulletType, bullet);
+        }
     }
 
     public Bullet CreateBullet(Tank owningTank, Bullet.BulletTypes bType) {
-        Bullet prefab = prefabManager.GetBulletPrefabOfType(bType);
+        Bullet prefab = typeToBulletDict[bType];
 
         Bullet bullet = GameObject.Instantiate(prefab);
         bullet.transform.SetParent(bulletsRoot, false);
