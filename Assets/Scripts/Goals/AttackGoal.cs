@@ -6,9 +6,6 @@ using UnityEngine;
 
 public class AttackGoal : Goal
 {
-    private const float TimeDiffThreshToFire = 1f;
-    private const float AngleThreshToFire = 5f;
-
     private class WeaponMoveResults
     {
         public float timeEstimate = 99999;
@@ -26,23 +23,20 @@ public class AttackGoal : Goal
     public override void UpdateInsistence() {
         Insistence = 0;
 
-        // Based on attackability
-        // Calculate threat level of our weapons against target
-        //Tank selfTank = controller.Tank;
-        //Tank oppTank = controller.TargetTank;
-        //foreach (WeaponPart part in selfTank.Turret.Weapons) {
-        //    if (part == null) {
-        //        continue;
-        //    }
+        ThreatMap map = controller.ThreatMap;
+        ThreatNode node = (ThreatNode)map.PositionToNode(controller.SelfTank.transform.position);
 
-        //    Insistence += AIUtility.CalculateRiskValue(part, selfTank, oppTank);
-        //}
+        Vector2 diffVec = controller.TargetTank.transform.position - controller.SelfTank.transform.position;
+        WeaponPart weapon = node.WeaponToHitTargetFromNode;
+        bool weaponFireable = weapon != null && weapon.IsFireable && weapon.Schematic.Range > diffVec.magnitude;;
 
-        //Insistence = 1.0f - Insistence;
+        List<ThreatNode> markedNodes = map.NodesMarkedHitTargetFromNode.ToList();
+        markedNodes.OrderBy(n => n.GetTimeDiffForHittingTarget());
+        ThreatNode medianNode = markedNodes[markedNodes.Count / 2];
 
-        Insistence = 0.8f;
-
-        Debug.Log("Attack goal Insistence=" + Insistence);
+        if (weaponFireable && node.GetTimeDiffForHittingTarget() > medianNode.GetTimeDiffForHittingTarget()) {
+            Insistence = 100;
+        }
     }
 
     // Three actions: move, aim, and fire
@@ -71,108 +65,79 @@ public class AttackGoal : Goal
         Tank tank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
-        WeaponMoveResults[] results = new WeaponMoveResults[tank.Turret.Weapons.Length];
-        Array.Clear(results, 0, results.Length);
+        List<WeaponMoveResults> results = new List<WeaponMoveResults>();
 
-        for (int i = 0; i < tank.Turret.Weapons.Length; ++i) {
-            WeaponPart part = tank.Turret.Weapons[i];
+        foreach (WeaponPart part in tank.Turret.GetAllWeapons()) {
+            Vector2 diffVec = targetTank.transform.position - tank.transform.position;
 
-            if (part == null) {
+            bool weaponInRange = part.Schematic.Range > diffVec.magnitude;
+
+            // If the weapon isn't fireable or in range, ignore it.
+            if (!part.IsFireable || !weaponInRange) {
                 continue;
             }
-
-            Vector2 diffVec = (Vector2)targetTank.transform.position - part.CalculateFirePos();
-            float distFromTargetToFirePos = diffVec.magnitude;
 
             WeaponMoveResults result = new WeaponMoveResults();
             result.weapon = part;
 
             WeaponPartSchematic schematic = part.Schematic;
 
-            bool inOptimalRange = distFromTargetToFirePos < schematic.OptimalRange;
-
             Vector2 targetPos = AIUtility.CalculateTargetPosWithWeapon(
                 part.Schematic.ShootImpulse, // NOTE: Since bullet mass is always 1, shoot impulse is directly the terminal velocity of the bullet
-                part.CalculateFirePos(), 
-                tank.transform.position, 
-                targetTank.transform.position, 
+                part.CalculateFirePos(),
+                tank.transform.position,
+                targetTank.transform.position,
                 targetTank.Body.velocity);
             result.targetPos = targetPos;
 
-            if (!inOptimalRange) {
-                Vector2 toTargetVec = targetTank.transform.position - tank.transform.position;
-                float distToTarget = toTargetVec.magnitude;
+            // Now we get time estimates for both transpose and rotation solution, and pick the faster one and save that.
+            // First calculate the transpose solution.
+            Vector2 curWeaponFireVec = part.CalculateFireVec();
 
-                // If not in range, just do action to get into optimal range
-                float travelDist = distToTarget - schematic.OptimalRange;
+            Vector2 targetMovePos;
+            // Try tank moving forward, and if that doesn't intersect, try tank moving back. If both don't work, then there's no transpose solution.
+            bool intersected = Vector2Extension.LineLineIntersection(tank.transform.position, tank.GetForwardVec(), targetPos, -curWeaponFireVec, out targetMovePos);
+            if (!intersected) {
+                intersected = Vector2Extension.LineLineIntersection(tank.transform.position, tank.GetBackwardVec(), targetPos, -curWeaponFireVec, out targetMovePos);
+            }
 
-                // NOTE: we're just going to calculate time to travel distance, without regard for orientation.
-                // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
-                result.timeEstimate = travelDist / tank.TerminalVelocity;
-                result.moveAction = new GoInDirAction(toTargetVec, controller);
-            } else if (!part.IsFireable) {
-                Vector2 toTargetVec = targetTank.transform.position - tank.transform.position;
-                float distToTarget = toTargetVec.magnitude;
+            float transposeTimeEstimate = -1f;
+            AIAction transposeAction = null;
+            if (intersected) {
+                Vector2 transVec = targetMovePos - (Vector2)tank.transform.position;
+                transposeTimeEstimate = transVec.magnitude / tank.TerminalVelocity;
+                transposeAction = new GoInDirAction(transVec.normalized, controller);
+            }
 
-                // If weapon is reloading, we want to try to keep optimal distance
-                float travelDist = distToTarget - schematic.OptimalRange;
+            // Next calculate the rotation solution. This should always exist.
+            float rotationTimeEstimate = -1f;
+            AIAction rotationAction = null;
 
-                // NOTE: we're just going to calculate time to travel distance, without regard for orientation.
-                // Later we might have to change this and incorporate orientation. Will have to see how it works overall.
-                result.timeEstimate = Mathf.Abs(travelDist) / tank.TerminalVelocity;
-                result.moveAction = new GoInDirAction(Mathf.Sign(travelDist) * toTargetVec, controller);
+            rotationAction = new RotateAction(result.weapon.CalculateFireVec(), diffVec.normalized, controller);
+            rotationTimeEstimate = tank.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
+
+            if (transposeTimeEstimate < 0 && rotationTimeEstimate < 0) {
+                Debug.LogWarning("Could not find transpose or rotation solution for attacking. Probably shouldn't happen.");
+            } else if (transposeTimeEstimate < 0 && rotationTimeEstimate >= 0) {
+                result.timeEstimate = rotationTimeEstimate;
+                result.moveAction = rotationAction;
+            } else if (transposeTimeEstimate >= 0 && rotationTimeEstimate < 0) {
+                result.timeEstimate = transposeTimeEstimate;
+                result.moveAction = transposeAction;
             } else {
-                // Now we get time estimates for both transpose and rotation solution, and pick the faster one and save that.
-                // First calculate the transpose solution.
-                Vector2 curWeaponFireVec = part.CalculateFireVec();
-
-                Vector2 targetMovePos;
-                // Try tank moving forward, and if that doesn't intersect, try tank moving back. If both don't work, then there's no transpose solution.
-                bool intersected = Vector2Extension.LineLineIntersection(tank.transform.position, tank.GetForwardVec(), targetPos, -curWeaponFireVec, out targetMovePos);
-                if (!intersected) {
-                    intersected = Vector2Extension.LineLineIntersection(tank.transform.position, tank.GetBackwardVec(), targetPos, -curWeaponFireVec, out targetMovePos);
-                }
-
-                float transposeTimeEstimate = -1f;
-                AIAction transposeAction = null;
-                if (intersected) {
-                    Vector2 transVec = targetMovePos - (Vector2)tank.transform.position;
-                    transposeTimeEstimate = transVec.magnitude / tank.TerminalVelocity;
-                    transposeAction = new GoInDirAction(transVec.normalized, controller);
-                }
-
-                // Next calculate the rotation solution. This should always exist.
-                float rotationTimeEstimate = -1f;
-                AIAction rotationAction = null;
-
-                rotationAction = new RotateAction(result.weapon.CalculateFireVec(), diffVec.normalized, controller);
-                rotationTimeEstimate = tank.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
-
-                if (transposeTimeEstimate < 0 && rotationTimeEstimate < 0) {
-                    Debug.LogWarning("Could not find transpose or rotation solution for attacking. Probably shouldn't happen.");
-                } else if (transposeTimeEstimate < 0 && rotationTimeEstimate >= 0) {
-                    result.timeEstimate = rotationTimeEstimate;
-                    result.moveAction = rotationAction;
-                } else if (transposeTimeEstimate >= 0 && rotationTimeEstimate < 0) {
-                    result.timeEstimate = transposeTimeEstimate;
-                    result.moveAction = transposeAction;
-                } else {
-                    result.timeEstimate = Mathf.Min(transposeTimeEstimate, rotationTimeEstimate);
-                    result.moveAction = (transposeTimeEstimate < rotationTimeEstimate) ? transposeAction : rotationAction;
-                }
+                result.timeEstimate = Mathf.Min(transposeTimeEstimate, rotationTimeEstimate);
+                result.moveAction = (transposeTimeEstimate < rotationTimeEstimate) ? transposeAction : rotationAction;
             }
 
             // Add time to reload to time estimate.
-            result.timeEstimate += part.CalcTimeToReloaded(); 
+            result.timeEstimate += part.CalcTimeToReloaded();
 
-            results[i] = result;
+            results.Add(result);
         }
 
         // Pick smallest time estimate with action.
         WeaponMoveResults finalResult = null;
-        for (int i = 0; i < results.Length; ++i) {
-            WeaponMoveResults result = results[i];
-
+        foreach (WeaponMoveResults result in results) {
             if (finalResult == null || (result != null && finalResult.timeEstimate > result.timeEstimate)) {
                 finalResult = result;
             }
@@ -180,24 +145,25 @@ public class AttackGoal : Goal
 
         if (finalResult != null) {
             actions.Add(finalResult.moveAction);
+
+            Vector2 aimVec = finalResult.targetPos - (Vector2)tank.transform.position;
+            actions.Add(new AimWithWeaponAction(aimVec, finalResult.weapon, controller));
+
+            Vector2 curFireVec = finalResult.weapon.CalculateFireVec();
+            Ray ray = new Ray(finalResult.weapon.CalculateFirePos(), curFireVec);
+            float shortestDist = Vector3.Cross(ray.direction, (Vector3)(finalResult.targetPos) - ray.origin).magnitude;
+            bool canHitIfFired = shortestDist < targetTank.Hull.Schematic.Size.x;
+
+            Vector2 targetVec = (Vector2)targetTank.transform.position - finalResult.weapon.CalculateFirePos();
+
+            bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
+            bool inRange = targetVec.magnitude < finalResult.weapon.Schematic.Range;
+            if (inRange && canHitIfFired && fireVecFacingTarget) {
+                actions.Add(new FireWeaponAction(finalResult.weapon.TurretIdx, controller));
+            }
         } else {
-            Debug.LogWarning("No move action picked.");
-        }
-
-        Vector2 aimVec = finalResult.targetPos - (Vector2)tank.transform.position;
-        actions.Add(new AimWithWeaponAction(aimVec, finalResult.weapon, controller));
-
-        Vector2 curFireVec = finalResult.weapon.CalculateFireVec();
-        Ray ray = new Ray(finalResult.weapon.CalculateFirePos(), curFireVec);
-        float shortestDist = Vector3.Cross(ray.direction, (Vector3)(finalResult.targetPos) - ray.origin).magnitude;
-        bool canHitIfFired = shortestDist < targetTank.Hull.Schematic.Size.x;
-
-        Vector2 targetVec = (Vector2)targetTank.transform.position - finalResult.weapon.CalculateFirePos();
-
-        bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
-        bool inRange = targetVec.magnitude < finalResult.weapon.Schematic.Range;
-        if (inRange &&  canHitIfFired && fireVecFacingTarget) {
-            actions.Add(new FireWeaponAction(finalResult.weapon.TurretIdx, controller));
+            // In general, this should never happen since insistence will be based on whether there's a fireable weapon
+            Debug.LogWarning("No action picked since no weapons were found to be suitable.");
         }
 
         return actions.ToArray();

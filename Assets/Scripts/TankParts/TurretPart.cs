@@ -16,10 +16,7 @@ public class TurretPart
         get; private set;
     }
 
-    public WeaponPart[] Weapons
-    {
-        get; private set;
-    }
+    private WeaponPart[] weapons;
 
     private Tank owningTank;
 
@@ -31,8 +28,8 @@ public class TurretPart
         Schematic = schematic;
 
         Angle = 0;
-        Weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
-        Array.Clear(Weapons, 0, Weapons.Length);
+        weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
+        Array.Clear(weapons, 0, weapons.Length);
     }
 
     public void SetOwner(Tank tank) {
@@ -45,7 +42,7 @@ public class TurretPart
 
     public List<WeaponPart> GetAllWeapons() {
         List<WeaponPart> weapons = new List<WeaponPart>();
-        foreach (WeaponPart part in Weapons) {
+        foreach (WeaponPart part in this.weapons) {
             if (part != null) {
                 weapons.Add(part);
             }
@@ -55,17 +52,17 @@ public class TurretPart
     }
 
     public WeaponPart GetWeaponAtIdx(int idx) {
-        if (Weapons.Length <= idx) {
+        if (weapons.Length <= idx) {
             return null;
         }
 
-        return Weapons[idx];
+        return weapons[idx];
     }
 
     public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
         if (weapon.Schematic.Weight <= Schematic.WeaponWeightRestrictions[idx]) {
             weapon.TurretIdx = idx;
-            Weapons[idx] = weapon;
+            weapons[idx] = weapon;
         }
     }
 

@@ -30,23 +30,6 @@ public class ThreatMap : Map
 
     public ThreatMap(Map map) : base(map) { }
 
-    protected override float calcHeuristicCost(Node node, Node target) {
-        List<Connection> connections = FindStraightPath(node, target);
-
-        float totalCost = 0;
-        foreach(Connection con in connections) {
-            ThreatNode threatNode = (ThreatNode)con.targetNode;
-            totalCost += Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
-        }
-
-        return totalCost;
-    }
-
-    protected override float calculateConnectionCost(Connection connection) {
-        ThreatNode threatNode = (ThreatNode)connection.targetNode;
-        return Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
-    }
-
     public void UpdateTimeToHitTargetFromNode(Tank selfTank, Tank targetTank) {
         nodesMarkedHitTargetFromNode.Clear();
 
@@ -136,6 +119,23 @@ public class ThreatMap : Map
                 openNodes.RemoveAt(0);
             }
         }   
+    }
+
+    protected override float calcHeuristicCost(Node node, Node target) {
+        List<Connection> connections = FindStraightPath(node, target);
+
+        float totalCost = 0;
+        foreach (Connection con in connections) {
+            ThreatNode threatNode = (ThreatNode)con.targetNode;
+            totalCost += Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
+        }
+
+        return totalCost;
+    }
+
+    protected override float calculateConnectionCost(Connection connection) {
+        ThreatNode threatNode = (ThreatNode)connection.targetNode;
+        return Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
     }
 
     protected override Node createNode(int x, int y, params object[] values) {
