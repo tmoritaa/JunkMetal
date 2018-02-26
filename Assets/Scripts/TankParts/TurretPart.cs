@@ -86,8 +86,10 @@ public class TurretPart
     }
 
     public void PerformFixedUpdate() {
-        if (Mathf.Abs(Schematic.RotPerTimeStep) > 0 && Math.Abs(rotationDir) > 0) {
-            float angle = rotationDir * Schematic.RotPerTimeStep;
+        float timeDelta = Time.fixedDeltaTime;
+
+        if (Mathf.Abs(Schematic.RotPerSecond) > 0 && Math.Abs(rotationDir) > 0) {
+            float angle = rotationDir * Schematic.RotPerSecond * timeDelta;
             owningTank.TurretGO.transform.Rotate(new Vector3(0, 0, angle));
             Angle += angle;
         }

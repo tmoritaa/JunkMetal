@@ -32,7 +32,7 @@ public class TurretPartSchematic : PartSchematic
         get; private set;
     }
 
-    public float RotPerTimeStep
+    public float RotPerSecond
     {
         get; private set;
     }
@@ -52,10 +52,10 @@ public class TurretPartSchematic : PartSchematic
         get; private set;
     }
 
-    public TurretPartSchematic(string name, int _armour, float _rotPerTimestep, int _weight, Vector2[] _weaponDirs, Vector2[] _weaponFireOffset, int[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey, KeyCode[] _shootKeys) : base(name) {
+    public TurretPartSchematic(string name, int _armour, float _rotPerSecond, int _weight, Vector2[] _weaponDirs, Vector2[] _weaponFireOffset, int[] _weaponWeightRestrict, KeyCode _leftTurnKey, KeyCode _rightTurnKey, KeyCode[] _shootKeys) : base(name) {
         Name = name;
         Armour = _armour;
-        RotPerTimeStep = _rotPerTimestep;
+        RotPerSecond = _rotPerSecond;
         LeftTurnKey = _leftTurnKey;
         RightTurnKey = _rightTurnKey;
         ShootKeys = _shootKeys;
