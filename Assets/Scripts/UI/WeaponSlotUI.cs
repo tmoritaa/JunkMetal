@@ -43,7 +43,7 @@ public class WeaponSlotUI : MonoBehaviour
         } else {
             part = _part;
             nameText.text = part.Schematic.Name;
-            keyText.text = part.GetKeycodeStringForShoot();
+            keyText.text = "X"; // TODO: fix later
             initialized = true;
         }
     }

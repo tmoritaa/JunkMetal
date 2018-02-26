@@ -37,17 +37,17 @@ public class WheelPart
         int leftChangeDir = 0;
         int rightChangeDir = 0;
 
-        if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.LeftWheelFwd))) {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.LeftWheelFwd)) {
             leftChangeDir += 1;
         }
-        if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.LeftWheelBack))) {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.LeftWheelBack)) {
             leftChangeDir -= 1;
         }
 
-        if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.RightWheelFwd))) {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.RightWheelFwd)) {
             rightChangeDir += 1;
         }
-        if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.RightWheelBack))) {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.RightWheelBack)) {
             rightChangeDir -= 1;
         }
 

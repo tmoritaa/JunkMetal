@@ -67,9 +67,9 @@ public class TurretPart
     public void HandleInput() {
         float rotDir = 0;
 
-        if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.TurretCCW))) {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.TurretCCW)) {
             rotDir = 1.0f;
-        } else if (Input.GetKey(InputManager.Instance.GetKeyCodeForKeyboard(InputManager.KeyType.TurretCW))) {
+        } else if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.TurretCW)) {
             rotDir = -1.0f;
         }
         SetRotDir(rotDir);

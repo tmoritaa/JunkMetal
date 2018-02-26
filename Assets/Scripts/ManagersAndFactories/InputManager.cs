@@ -22,6 +22,7 @@ public class InputManager
     private static InputManager instance = null;
 
     private Dictionary<KeyType, KeyCode> keyboardBindings = new Dictionary<KeyType, KeyCode>();
+    private Dictionary<KeyType, object> controllerBindings = new Dictionary<KeyType, object>();
 
     public static InputManager Instance {
         get {
@@ -35,10 +36,32 @@ public class InputManager
 
     private InputManager() {
         initKeyboardBindings();
+        initControllerBindings();
     }
 
-    public KeyCode GetKeyCodeForKeyboard(KeyType kType) {
-        return keyboardBindings[kType];
+    public bool IsKeyTypeDown(KeyType kType) {
+        return isKeyboardKeyTypeDown(kType) || isControllerKeyTypeDown(kType);
+    }
+
+    private bool isKeyboardKeyTypeDown(KeyType kType) {
+        KeyCode kCode = keyboardBindings[kType];
+        return Input.GetKey(kCode);
+    }
+
+    private bool isControllerKeyTypeDown(KeyType kType) {
+        if (kType == KeyType.LeftWheelFwd || kType == KeyType.LeftWheelBack || kType == KeyType.RightWheelFwd || kType == KeyType.RightWheelBack) {
+            string keyName = (string)controllerBindings[kType];
+            float axisVal = Input.GetAxis(keyName);
+
+            if (kType == KeyType.LeftWheelFwd || kType == KeyType.RightWheelFwd) {
+                return axisVal < 0;
+            } else {
+                return axisVal > 0;
+            }
+        } else {
+            KeyCode keyCode = (KeyCode)controllerBindings[kType];
+            return Input.GetKey(keyCode);            
+        }
     }
 
     private void initKeyboardBindings() {
@@ -51,5 +74,17 @@ public class InputManager
         keyboardBindings[KeyType.FireWeapon0] = KeyCode.P;
         keyboardBindings[KeyType.FireWeapon1] = KeyCode.O;
         keyboardBindings[KeyType.FireWeapon2] = KeyCode.I;
+    }
+
+    private void initControllerBindings() {
+        controllerBindings[KeyType.LeftWheelFwd] = "Left Stick Y Axis";
+        controllerBindings[KeyType.LeftWheelBack] = "Left Stick Y Axis";
+        controllerBindings[KeyType.RightWheelFwd] = "Right Stick Y Axis";
+        controllerBindings[KeyType.RightWheelBack] = "Right Stick Y Axis";
+        controllerBindings[KeyType.TurretCW] = KeyCode.JoystickButton5;
+        controllerBindings[KeyType.TurretCCW] = KeyCode.JoystickButton4;
+        controllerBindings[KeyType.FireWeapon0] = KeyCode.JoystickButton2;
+        controllerBindings[KeyType.FireWeapon1] = KeyCode.JoystickButton3;
+        controllerBindings[KeyType.FireWeapon2] = KeyCode.JoystickButton1;
     }
 }

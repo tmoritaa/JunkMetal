@@ -42,13 +42,9 @@ public class WeaponPart
     }
 
     public void HandleInput() {
-        if (Input.GetKey(getKeycodeForWeaponFire()) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
+        if (InputManager.Instance.IsKeyTypeDown((InputManager.KeyType)(100 + TurretIdx)) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
             FireIfAble();
         }
-    }
-
-    public string GetKeycodeStringForShoot() {
-        return getKeycodeForWeaponFire().ToString();
     }
 
     public void FireIfAble() {
@@ -93,9 +89,5 @@ public class WeaponPart
     public float CalcRatioToReloaded() {
         float timeDiff = Time.time - lastShotTime;
         return timeDiff / Schematic.ReloadTimeInSec;
-    }
-
-    private KeyCode getKeycodeForWeaponFire() {
-        return InputManager.Instance.GetKeyCodeForKeyboard((InputManager.KeyType)(100 + TurretIdx));
     }
 }
