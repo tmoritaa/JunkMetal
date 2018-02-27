@@ -124,7 +124,7 @@ public class Map
         NodeRecord startNodeRecord = new NodeRecord(MapArray[startIdx[0], startIdx[1]]);
 
         Vector2 searchDir = (_targetPos - startPos).normalized;
-        Vector2 targetPos = findNonblockedPosInProximity(_targetPos, (int)Mathf.Sign(searchDir.x), (int)Mathf.Sign(searchDir.y));
+        Vector2 targetPos = findNonblockedPosInProximity(_targetPos);
         int[] targetIdx = PositionToIdx(targetPos);
         NodeRecord targetNodeRecord = new NodeRecord(MapArray[targetIdx[0], targetIdx[1]]);
 
@@ -299,18 +299,16 @@ public class Map
         return new Node(x, y);
     }
 
-    // NOTE: if the specified direction has no valid targets ever, then this function will assert and return the last checked pos.
-    protected Vector2 findNonblockedPosInProximity(Vector2 targetPos, int xDir = 0, int yDir = 0) {
-        // If no shift direction specified, just assume up.
-        if (xDir == 0 && yDir == 0) {
-            yDir = 1;
-        }
-
+    protected Vector2 findNonblockedPosInProximity(Vector2 targetPos) {
         Node node = PositionToNode(targetPos);
 
         if (!node.NodeTraversable()) {
-            while (true) {
-                List<Connection> connections = FindConnectedNodes(node, true, xDir, yDir);
+            List<Node> openNodes = new List<Node>();
+            List<Node> closedNodes = new List<Node>();
+            openNodes.Add(node);
+            while (openNodes.Count > 0) {
+                node = openNodes[0];
+                List<Connection> connections = FindConnectedNodes(node, true);
 
                 if (connections.Count == 0) {
                     Debug.Assert(false, "FindNonBlockedPosInProximity was unable to find any valid nodes");
@@ -328,9 +326,16 @@ public class Map
 
                 if (foundSafePos) {
                     break;
+                } else {
+                    foreach (Connection con in connections) {
+                        if (openNodes.Find(n => n == con.targetNode) == null && closedNodes.Find(n => n == con.targetNode) == null) {
+                            openNodes.Add(con.targetNode);
+                        }
+                    }
                 }
 
-                node = connections[0].targetNode;
+                closedNodes.Add(node);
+                openNodes.RemoveAt(0);
             }
         }
 
