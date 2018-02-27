@@ -6,9 +6,13 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class StartManager : MonoBehaviour 
+public class MainScreenManager : MonoBehaviour 
 {
-	public void StartGame() {
+	public void GotoCombat() {
         SceneManager.LoadScene("Game");
+    }
+
+    public void GotoCustomization() {
+        SceneManager.LoadScene("Customization");
     }
 }

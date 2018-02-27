@@ -100,7 +100,7 @@ public class AIUtility
             Vector2 leftVec = tank.GetForwardVec().Rotate(-90).normalized;
             Vector2 rightVec = tank.GetForwardVec().Rotate(90).normalized;
 
-            Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+            Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
             Vector2 diffVec = pos - (Vector2)tank.transform.position;
 
             RaycastHit2D leftHit = Physics2D.Raycast((Vector2)tank.transform.position + (leftVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);

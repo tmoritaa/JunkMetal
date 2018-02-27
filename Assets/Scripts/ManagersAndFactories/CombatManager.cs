@@ -5,10 +5,10 @@ using System.Linq;
 
 using UnityEngine;
 
-public class GameManager : MonoBehaviour 
+public class CombatManager : MonoBehaviour 
 {
-    private static GameManager instance;
-    public static GameManager Instance
+    private static CombatManager instance;
+    public static CombatManager Instance
     {
         get {
             return instance;

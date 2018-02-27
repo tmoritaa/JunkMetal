@@ -28,7 +28,7 @@ public class SearchGoal : Goal
     {}
 
     public override void ReInit() {
-        Map map = GameManager.Instance.Map;
+        Map map = CombatManager.Instance.Map;
 
         float tileDim = map.MapWidth / (float)5;
         searchQuadrants = new SearchMap(map.MapWidth, map.MapHeight, tileDim);
@@ -51,7 +51,7 @@ public class SearchGoal : Goal
         Vector2 destPos = searchQuadrants.NodeToPosition(curDestQuad);
         float sqrDistSigma = aiTankController.SqrDistForDistSigma;
 
-        if (path.Count > 0 && (curPos- GameManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistSigma) {
+        if (path.Count > 0 && (curPos- CombatManager.Instance.Map.NodeToPosition(path[0])).sqrMagnitude < sqrDistSigma) {
             path.RemoveAt(0);
             AIUtility.SmoothPath(path, controller.SelfTank);
         }
@@ -72,11 +72,11 @@ public class SearchGoal : Goal
             curDestQuad = (SearchNode)connections[GlobalRandom.GetRandomNumber(0, connections.Count)].targetNode;
             destPos = searchQuadrants.NodeToPosition(curDestQuad);
 
-            path = GameManager.Instance.Map.FindPath(controller.SelfTank.transform.position, destPos);
+            path = CombatManager.Instance.Map.FindPath(controller.SelfTank.transform.position, destPos);
             AIUtility.SmoothPath(path, controller.SelfTank);
         }
 
-        Vector2 target = (path.Count > 0) ? GameManager.Instance.Map.NodeToPosition(path[0]) : destPos;
+        Vector2 target = (path.Count > 0) ? CombatManager.Instance.Map.NodeToPosition(path[0]) : destPos;
 
         Vector2 requestDir = aiTankController.CalcRequestDir(target).normalized;
         actions.Add(new GoInDirAction(requestDir, controller));

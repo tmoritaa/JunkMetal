@@ -41,13 +41,13 @@ public class AITankController : TankController
 
     void Awake() {
         // For 1v1 matches, this will always be true. Maybe later we'll have to change the logic, but for now this is fine.
-        TargetTank = GameManager.Instance.HumanTankController.SelfTank;
+        TargetTank = CombatManager.Instance.HumanTankController.SelfTank;
 
-        threatMap = new ThreatMap(GameManager.Instance.Map);
+        threatMap = new ThreatMap(CombatManager.Instance.Map);
     }
 
     void Update() {
-        TargetTank.MarkCurPositionAsBlockedOnMap(GameManager.Instance.Map);
+        TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
         TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
 
         updateThreatMap();

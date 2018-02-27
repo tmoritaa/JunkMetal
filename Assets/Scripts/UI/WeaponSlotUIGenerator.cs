@@ -14,7 +14,7 @@ public class WeaponSlotUIGenerator : MonoBehaviour
     private int totalNumWeapons = 4;
 
 	void Start() {
-        Tank playerTank = GameManager.Instance.HumanTankController.SelfTank;
+        Tank playerTank = CombatManager.Instance.HumanTankController.SelfTank;
 
         for (int i = 0; i < totalNumWeapons; ++i) {
             WeaponSlotUI slotUI = Instantiate<WeaponSlotUI>(weaponSlotUIPrefab, this.transform, false);

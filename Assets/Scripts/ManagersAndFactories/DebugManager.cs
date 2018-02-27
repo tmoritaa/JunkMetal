@@ -61,7 +61,7 @@ public class DebugManager : MonoBehaviour
 
             if (mapDisplayDebugOn) {
                 // Draw Map
-                Map map = GameManager.Instance.Map;
+                Map map = CombatManager.Instance.Map;
                 for (int x = 0; x < map.Cols; ++x) {
                     for (int y = 0; y < map.Rows; ++y) {
                         bool blocked = !map.GetNodeAtIdx(x, y).NodeTraversable();
@@ -72,17 +72,17 @@ public class DebugManager : MonoBehaviour
                     }
                 }
 
-                if (GameManager.Instance.AITankController.CurGoal != null 
-                    && GameManager.Instance.AITankController.CurGoal.GetType() == typeof(SearchGoal)) {
+                if (CombatManager.Instance.AITankController.CurGoal != null 
+                    && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(SearchGoal)) {
                     Gizmos.color = Color.blue;
 
-                    SearchGoal goal = (SearchGoal)GameManager.Instance.AITankController.CurGoal;
+                    SearchGoal goal = (SearchGoal)CombatManager.Instance.AITankController.CurGoal;
 
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<Node> path = goal.Path;
 
                     foreach (Node node in path) {
-                        Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+                        Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
                         Gizmos.DrawWireSphere(pos, 15);
                     }
 
@@ -102,7 +102,7 @@ public class DebugManager : MonoBehaviour
             }
 
             if (ThreatMapDebugOn) {
-                ThreatMap map = GameManager.Instance.AITankController.ThreatMap;
+                ThreatMap map = CombatManager.Instance.AITankController.ThreatMap;
 
                 foreach (Node _node in map.MapArray) {
                     ThreatNode node = (ThreatNode)_node;
@@ -127,7 +127,7 @@ public class DebugManager : MonoBehaviour
 
                     if (ThreatMapDiffMapDebugOn) {
                         float diffVal = node.TimeForTargetToHitNode - node.TimeToHitTargetFromNode;
-                        float distToTarget = ((Vector2)GameManager.Instance.AITankController.TargetTank.transform.position - map.NodeToPosition(node)).magnitude;
+                        float distToTarget = ((Vector2)CombatManager.Instance.AITankController.TargetTank.transform.position - map.NodeToPosition(node)).magnitude;
                         if (diffVal > 0 && distToTarget <= 500) {
                             Color color = new Color(Mathf.Clamp01(diffVal / ThreatMap.MaxTimeInSecs), 0, Mathf.Clamp01((ThreatMap.MaxTimeInSecs - diffVal)/ ThreatMap.MaxTimeInSecs));
                             Gizmos.color = color;
@@ -139,17 +139,17 @@ public class DebugManager : MonoBehaviour
             }
 
             if (ManeuverPathDebugOn) {
-                if (GameManager.Instance.AITankController.CurGoal != null
-                    && GameManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
+                if (CombatManager.Instance.AITankController.CurGoal != null
+                    && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
                     Gizmos.color = Color.blue;
 
-                    ManeuverGoal goal = (ManeuverGoal)GameManager.Instance.AITankController.CurGoal;
+                    ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
 
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<Node> path = goal.Path;
 
                     foreach (Node node in path) {
-                        Vector2 pos = GameManager.Instance.Map.NodeToPosition(node);
+                        Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
                         Gizmos.DrawWireSphere(pos, 15);
                     }
                 }
