@@ -121,10 +121,19 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    public void Init(HullPart _body, TurretPart _turret, WheelPart _wheels) {
-        Hull = _body;
-        Wheels = _wheels;
-        Turret = _turret;
+    public void Init(TankSchematic tankSchematic) {
+        Hull = new HullPart(tankSchematic.HullSchematic);
+        Wheels = new WheelPart(tankSchematic.WheelSchematic);
+        Turret = new TurretPart(tankSchematic.TurretSchematic);
+
+        int count = 0;
+        foreach(WeaponPartSchematic weaponSchematic in tankSchematic.WeaponSchematics) {
+            if (weaponSchematic != null) {
+                WeaponPart part = new WeaponPart(weaponSchematic);
+                Turret.AddWeaponAtIdx(part, count);
+            }
+            count += 1;
+        }
 
         Turret.SetOwner(this);
 

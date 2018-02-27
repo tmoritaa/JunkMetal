@@ -28,7 +28,7 @@ public class TankController : MonoBehaviour
         SelfTank = null;
     }
 
-    public virtual void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
+    public virtual void Init(Vector2 startPos, TankSchematic tankSchematic) {
         if (SelfTank != null) {
             Destroy(SelfTank.gameObject);
         }
@@ -36,6 +36,6 @@ public class TankController : MonoBehaviour
         SelfTank = Instantiate(tankPrefab, this.transform, false);
         SelfTank.transform.position = startPos;
 
-        SelfTank.Init(_body, _turret, _wheels);
+        SelfTank.Init(tankSchematic);
     }
 }

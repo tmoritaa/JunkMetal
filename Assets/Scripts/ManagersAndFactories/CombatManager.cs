@@ -76,27 +76,15 @@ public class CombatManager : MonoBehaviour
         generateMapBounds();
         generateTileMap();
 
-        TurretPart playerTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
-        playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
-        playerTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon2")), 1);
-
         HumanTankController = Instantiate(humanTankContPrefab, tankRoot, false);
         HumanTankController.Init(
             new Vector3(0, -800, 0),
-            new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Faster Hull")),
-            playerTurret,
-            new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
-
-        TurretPart aiTurret = new TurretPart(PartsManager.Instance.GetPartFromName<TurretPartSchematic>("Basic Turret"));
-        aiTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon1")), 0);
-        //aiTurret.AddWeaponAtIdx(new WeaponPart(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>("Basic Weapon2")), 1);
+            PlayerManager.Instance.TankSchematic);
 
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
             new Vector3(0, -600, 0),
-            new HullPart(PartsManager.Instance.GetPartFromName<HullPartSchematic>("Basic Hull")),
-            aiTurret,
-            new WheelPart(PartsManager.Instance.GetPartFromName<WheelPartSchematic>("Basic Wheels")));
+            PlayerManager.Instance.TankSchematic); // TODO: for now. Later change it so it actually uses Enemy tank schematics
         
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.SelfTank.gameObject);
     }

@@ -57,8 +57,8 @@ public class AITankController : TankController
         //rotationTest();
     }
 
-    public override void Init(Vector2 startPos, HullPart _body, TurretPart _turret, WheelPart _wheels) {
-        base.Init(startPos, _body, _turret, _wheels);
+    public override void Init(Vector2 startPos, TankSchematic tankSchematic) {
+        base.Init(startPos, tankSchematic);
 
         // TODO: for now, just manually fill up goals list.
         //goals.Add(new SearchGoal(this));
