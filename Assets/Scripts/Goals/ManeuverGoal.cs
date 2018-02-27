@@ -74,7 +74,11 @@ public class ManeuverGoal : Goal
             path = map.FindPath(selfTank.transform.position, map.NodeToPosition(targetNode));
             AIUtility.SmoothPath(path, selfTank);
 
-            actions.Add(new AimWithWeaponAction(diffDir, targetNode.WeaponToHitTargetFromNode, controller));
+            if (targetNode.WeaponToHitTargetFromNode != null) {
+                actions.Add(new AimWithWeaponAction(diffDir, targetNode.WeaponToHitTargetFromNode, controller));
+            } else {
+                actions.Add(new AimAction(diffDir, controller));
+            }
         } else if (targetNode == null) {
             Debug.LogWarning("Closest safe node not found. Default to just approaching opponent");
             actions.Add(new GoInDirAction(diffDir, controller));
