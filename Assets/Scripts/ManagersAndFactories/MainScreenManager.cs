@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class MainScreenManager : MonoBehaviour 
 {
 	public void GotoCombat() {
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("Combat");
     }
 
     public void GotoCustomization() {
