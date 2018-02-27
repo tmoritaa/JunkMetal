@@ -6,9 +6,13 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MainScreenManager : MonoBehaviour 
+public class MainScreenHandler : MonoBehaviour 
 {
-	public void GotoCombat() {
+    void Start() {
+        PlayerManager.Instance.SavePlayerInfo();
+    }
+
+    public void GotoCombat() {
         SceneManager.LoadScene("Combat");
     }
 
