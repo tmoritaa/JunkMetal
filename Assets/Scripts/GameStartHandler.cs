@@ -11,10 +11,12 @@ public class GameStartHandler : MonoBehaviour
 {
     [SerializeField]
     private Button continueButton;
-
-    void Awake() {
+    
+    void Start() {
         if (!PlayerManager.Instance.PlayerSaveExists()) {
             continueButton.gameObject.SetActive(false);
+        } else {
+            continueButton.Select();
         }
     }
 

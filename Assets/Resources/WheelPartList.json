@@ -1,3 +1,4 @@
 {
-	"Basic Wheels":{"weight":125, "energy_inc":0.1, "energy_dec":0.05}
+	"Basic Wheels":{"weight":125, "energy_inc":0.1, "energy_dec":0.05},
+	"Other Wheels":{"weight":100, "energy_inc":0.5, "energy_dec":0.1}
 }

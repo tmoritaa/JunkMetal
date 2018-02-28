@@ -29,4 +29,8 @@ public class WheelPartSchematic : PartSchematic
         EnergyDec = _energyDec;
         Weight = _weight;
     }
+
+    public override string GetPartTypeString() {
+        return "Wheels";
+    }
 }

@@ -16,7 +16,7 @@ public class PartsManager : MonoBehaviour
         }
     }
 
-    private Dictionary<string, PartSchematic> partSchematics = new Dictionary<string, PartSchematic>();
+    private Dictionary<Type, Dictionary<string, PartSchematic>> partSchematicDics = new Dictionary<Type, Dictionary<string, PartSchematic>>();
 
     void Awake() {
         instance = this;
@@ -29,6 +29,8 @@ public class PartsManager : MonoBehaviour
     public T GetPartFromName<T>(string name) where T : PartSchematic {
         PartSchematic part = null;
 
+        Dictionary<string, PartSchematic> partSchematics = partSchematicDics[typeof(T)];
+
         if (partSchematics.ContainsKey(name)) {
             part = partSchematics[name];
         }
@@ -36,7 +38,20 @@ public class PartsManager : MonoBehaviour
         return (T)part;
     }
 
+    public PartSchematic[] GetPartsOfType(Type type) {
+        Dictionary<string, PartSchematic> partSchematics = partSchematicDics[type];
+
+        List<PartSchematic> parts = new List<PartSchematic>();
+        foreach (PartSchematic part in partSchematics.Values) {
+            parts.Add(part);
+        }
+
+        return parts.ToArray();
+    }
+
     private void loadHullParts() {
+        Dictionary<string, PartSchematic> schematics = new Dictionary<string, PartSchematic>();
+
         TextAsset jsonText = Resources.Load("HullPartList") as TextAsset;
 
         JObject root = JObject.Parse(jsonText.text);
@@ -54,11 +69,15 @@ public class PartsManager : MonoBehaviour
 
             HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, size, power, weight);
 
-            partSchematics.Add(part.Name, part);
+            schematics.Add(part.Name, part);
         }
+
+        partSchematicDics.Add(typeof(HullPartSchematic), schematics);
     }
 
     private void loadWheelParts() {
+        Dictionary<string, PartSchematic> schematics = new Dictionary<string, PartSchematic>();
+
         TextAsset jsonText = Resources.Load("WheelPartList") as TextAsset;
 
         JObject root = JObject.Parse(jsonText.text);
@@ -74,11 +93,15 @@ public class PartsManager : MonoBehaviour
             // TODO: keycodes are for now. Should later be done differently using keyboard schematics
             WheelPartSchematic part = TankParSchematictFactory.CreateWheelPartSchematic(name, energyInc, energyDec, weight);
 
-            partSchematics.Add(part.Name, part);
+            schematics.Add(part.Name, part);
         }
+
+        partSchematicDics.Add(typeof(WheelPartSchematic), schematics);
     }
 
     private void loadTurretParts() {
+        Dictionary<string, PartSchematic> schematics = new Dictionary<string, PartSchematic>();
+
         TextAsset jsonText = Resources.Load("TurretPartList") as TextAsset;
 
         JObject root = JObject.Parse(jsonText.text);
@@ -111,11 +134,15 @@ public class PartsManager : MonoBehaviour
 
             TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
 
-            partSchematics.Add(part.Name, part);
+            schematics.Add(part.Name, part);
         }
+
+        partSchematicDics.Add(typeof(TurretPartSchematic), schematics);
     }
 
     private void loadWeaponParts() {
+        Dictionary<string, PartSchematic> schematics = new Dictionary<string, PartSchematic>();
+
         TextAsset jsonText = Resources.Load("WeaponPartList") as TextAsset;
 
         JObject root = JObject.Parse(jsonText.text);
@@ -134,7 +161,9 @@ public class PartsManager : MonoBehaviour
 
             WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, shootImpulse, backforce, reloadTime, range, weight, bType, damage);
 
-            partSchematics.Add(part.Name, part);
+            schematics.Add(part.Name, part);
         }
+
+        partSchematicDics.Add(typeof(WeaponPartSchematic), schematics);
     }
 }

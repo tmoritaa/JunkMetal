@@ -36,4 +36,8 @@ public class HullPartSchematic : PartSchematic
         EnergyPower = energyPower;
         Weight = weight;
     }
+
+    public override string GetPartTypeString() {
+        return "Hull";
+    }
 }
