@@ -6,29 +6,22 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Button))]
-public class EquippedPartsItem : MonoBehaviour 
+public class OtherPartsItem : MonoBehaviour 
 {
-    [SerializeField]
-    private Text partTypeDisplay;
-
     [SerializeField]
     private Text partNameDisplay;
 
-    public PartSlot Slot
+    public PartSchematic Part
     {
         get; private set;
     }
 
-    public void Init(PartSlot slot) {
-        Slot = slot;
-
-        partTypeDisplay.text = Slot.PartType.ToString();
-        partNameDisplay.text = Slot.Part != null ? Slot.Part.Name : "Empty";
+    public void Init(PartSchematic schematic) {
+        Part = schematic;
+        partNameDisplay.text = Part != null ? Part.Name : "Empty";
     }
 
     public void Cleanup() {
-        Slot = null;
         this.GetComponent<Button>().onClick.RemoveAllListeners();
         this.GetComponent<Button>().interactable = true;
     }

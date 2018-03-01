@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class SelectOtherItemsState : CustomizationState
 {
-    private List<EquippedPartsItem> items = new List<EquippedPartsItem>();
+    private List<OtherPartsItem> items = new List<OtherPartsItem>();
 
     public SelectOtherItemsState(CustomizationHandler _handler) : base(_handler) {
     }
@@ -15,14 +15,15 @@ public class SelectOtherItemsState : CustomizationState
     public override void Start() {
         generateOtherItems();
 
-        handler.OtherPartsFrame.gameObject.SetActive(true);
+        handler.OtherPartsDisplaySection.gameObject.SetActive(true);
+        handler.OtherPartsDisplaySection.UpdateHeaderText(handler.PickedPartsItem.Slot);
         items[0].GetComponent<Button>().Select();
     }
 
     public override void End() {
-        foreach (EquippedPartsItem item in items) {
+        foreach (OtherPartsItem item in items) {
             item.Cleanup();
-            handler.EquippedPartsItemPool.ReturnObject(item.gameObject);
+            handler.OtherPartsItemPool.ReturnObject(item.gameObject);
         }
         items.Clear();
     }
@@ -40,7 +41,7 @@ public class SelectOtherItemsState : CustomizationState
         for (int i = 0; i < parts.Length; ++i) {
             PartSchematic schem = parts[i];
 
-            EquippedPartsItem item = handler.EquippedPartsItemPool.GetObject().GetComponent<EquippedPartsItem>();
+            OtherPartsItem item = handler.OtherPartsItemPool.GetObject().GetComponent<OtherPartsItem>();
             item.transform.SetParent(handler.OtherPartsItemsRoot, false);
 
             Vector2 anchorMin = new Vector2(0, 1 - (i + 1) * itemAnchorStep);
@@ -58,8 +59,8 @@ public class SelectOtherItemsState : CustomizationState
         }
     }
 
-    private void ownedItemSelected(EquippedPartsItem item) {
-        handler.UpdateEquippedParts(item.Slot.Part);
+    private void ownedItemSelected(OtherPartsItem item) {
+        handler.UpdateEquippedParts(item.Part);
 
         handler.GotoState(CustomizationHandler.StateType.EquippedItemSelect);
     }

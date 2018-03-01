@@ -25,7 +25,7 @@ public class SelectEquippedItemsState : CustomizationState
 
         items[highlightItemIdx].GetComponent<Button>().Select();
 
-        handler.OtherPartsFrame.gameObject.SetActive(false);
+        handler.OtherPartsDisplaySection.gameObject.SetActive(false);
     }
 
     public override void End() {

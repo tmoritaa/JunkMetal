@@ -33,11 +33,20 @@ public class CustomizationHandler : MonoBehaviour
     }
 
     [SerializeField]
-    private GameObject otherPartsFrame;
-    public GameObject OtherPartsFrame
+    private SimpleObjectPool otherPartsItemPool;
+    public SimpleObjectPool OtherPartsItemPool
     {
         get {
-            return otherPartsFrame;
+            return otherPartsItemPool;
+        }
+    }
+
+    [SerializeField]
+    private OtherPartsDisplaySection otherPartsDisplaySection;
+    public OtherPartsDisplaySection OtherPartsDisplaySection
+    {
+        get {
+            return otherPartsDisplaySection;
         }
     }
 
