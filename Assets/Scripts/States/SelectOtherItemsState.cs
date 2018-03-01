@@ -34,7 +34,7 @@ public class SelectOtherItemsState : CustomizationState
     }
 
     private void generateOtherItems() {
-        PartSchematic[] parts = PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.PartSchematicType);
+        PartSchematic[] parts = PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.Slot.PartType);
 
         float itemAnchorStep = 1f / 9f;
         for (int i = 0; i < parts.Length; ++i) {
@@ -52,19 +52,14 @@ public class SelectOtherItemsState : CustomizationState
             rect.offsetMin = new Vector2();
             rect.offsetMax = new Vector2();
 
-            item.Init(schem, i);
+            item.Init(schem);
             item.GetComponent<Button>().onClick.AddListener(delegate { ownedItemSelected(item); });
             items.Add(item);
         }
     }
 
     private void ownedItemSelected(EquippedPartsItem item) {
-        TankSchematic schem = PlayerManager.Instance.TankSchematic;
-
-        PartSchematic pickedEquippedPart = handler.PickedPartsItem.PartSchematic;
-        PartSchematic newPart = item.PartSchematic;
-
-        PlayerManager.Instance.TankSchematic.UpdateTankSchematic(newPart, pickedEquippedPart, handler.PickedPartsItem.ItemIdx - handler.WeaponStartIdx);
+        handler.UpdateEquippedParts(item.Slot.Part);
 
         handler.GotoState(CustomizationHandler.StateType.EquippedItemSelect);
     }

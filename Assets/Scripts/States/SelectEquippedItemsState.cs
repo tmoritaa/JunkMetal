@@ -11,10 +11,8 @@ public class SelectEquippedItemsState : CustomizationState
 
     public SelectEquippedItemsState(CustomizationHandler _handler) : base(_handler) {}
 
-    bool initialized = false;
-
     public override void Start() {
-        int highlightItemIdx = (handler.PickedPartsItem != null) ? handler.PickedPartsItem .ItemIdx : 0;
+        int highlightItemIdx = (handler.PickedPartsItem != null) ? handler.PickedPartsItem.Slot.Idx : 0;
         handler.PickedPartsItem = null;
 
         foreach (EquippedPartsItem item in items) {
@@ -43,19 +41,9 @@ public class SelectEquippedItemsState : CustomizationState
     }
 
     private void generateEquippedPartItems() {
-        TankSchematic playerSchematic = PlayerManager.Instance.TankSchematic;
-
-        List<PartSchematic> schematics = new List<PartSchematic> {
-            playerSchematic.HullSchematic,
-            playerSchematic.WheelSchematic,
-            playerSchematic.TurretSchematic
-        };
-        schematics.AddRange(playerSchematic.WeaponSchematics);
-        handler.WeaponStartIdx = 3;
-
         const float itemAnchorStep = 1f / 9f;
-        for (int i = 0; i < schematics.Count; ++i) {
-            PartSchematic schem = schematics[i];
+        for (int i = 0; i < handler.EquippedParts.Count; ++i) {
+            PartSlot slot = handler.EquippedParts[i];
 
             EquippedPartsItem item = handler.EquippedPartsItemPool.GetObject().GetComponent<EquippedPartsItem>();
             item.transform.SetParent(handler.EquippedPartsItemRoot, false);
@@ -69,7 +57,7 @@ public class SelectEquippedItemsState : CustomizationState
             rect.offsetMin = new Vector2();
             rect.offsetMax = new Vector2();
 
-            item.Init(schem, i);
+            item.Init(slot);
             item.GetComponent<Button>().onClick.AddListener(delegate { equippedItemSelected(item); });
             items.Add(item);
         }

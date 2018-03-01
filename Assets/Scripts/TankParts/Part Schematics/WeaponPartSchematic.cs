@@ -59,8 +59,4 @@ public class WeaponPartSchematic : PartSchematic
         BulletType = _bulletType;
         Damage = _damage;
     }
-
-    public override string GetPartTypeString() {
-        return "Weapon";
-    }
 }

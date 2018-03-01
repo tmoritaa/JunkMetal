@@ -81,19 +81,19 @@ public class PlayerManager : MonoBehaviour
         JObject parts = root.Value<JObject>("Parts");
 
         string hullName = parts.Value<string>("Hull");
-        HullPartSchematic hull = PartsManager.Instance.GetPartFromName<HullPartSchematic>(hullName);
+        HullPartSchematic hull = (HullPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Hull, hullName);
         
         string turretName = parts.Value<string>("Turret");
-        TurretPartSchematic turret = PartsManager.Instance.GetPartFromName<TurretPartSchematic>(turretName);
+        TurretPartSchematic turret = (TurretPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Turret, turretName);
 
         string wheelsName = parts.Value<string>("Wheels");
-        WheelPartSchematic wheels = PartsManager.Instance.GetPartFromName<WheelPartSchematic>(wheelsName);
+        WheelPartSchematic wheels = (WheelPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Wheels, wheelsName);
 
         JArray weapons = parts.Value<JArray>("Weapons");
         List<WeaponPartSchematic> weaponsList = new List<WeaponPartSchematic>();
         foreach (string str in weapons) {
             if (!str.Equals(string.Empty)) {
-                weaponsList.Add(PartsManager.Instance.GetPartFromName<WeaponPartSchematic>(str));
+                weaponsList.Add((WeaponPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Weapon, str));
             } else {
                 weaponsList.Add(null);
             }

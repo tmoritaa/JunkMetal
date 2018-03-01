@@ -47,8 +47,4 @@ public class TurretPartSchematic : PartSchematic
         OrigWeaponFirePosOffset = _weaponFireOffset;
         WeaponWeightRestrictions = _weaponWeightRestrict;
     }
-
-    public override string GetPartTypeString() {
-        return "Turret";
-    }
 }

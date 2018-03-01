@@ -16,7 +16,7 @@ public class PartsManager : MonoBehaviour
         }
     }
 
-    private Dictionary<Type, Dictionary<string, PartSchematic>> partSchematicDics = new Dictionary<Type, Dictionary<string, PartSchematic>>();
+    private Dictionary<PartSchematic.PartType, Dictionary<string, PartSchematic>> partSchematicDics = new Dictionary<PartSchematic.PartType, Dictionary<string, PartSchematic>>();
 
     void Awake() {
         instance = this;
@@ -26,20 +26,20 @@ public class PartsManager : MonoBehaviour
         loadWeaponParts();
     }
     
-    public T GetPartFromName<T>(string name) where T : PartSchematic {
+    public PartSchematic GetPartFromName(PartSchematic.PartType pType, string name) {
         PartSchematic part = null;
 
-        Dictionary<string, PartSchematic> partSchematics = partSchematicDics[typeof(T)];
+        Dictionary<string, PartSchematic> partSchematics = partSchematicDics[pType];
 
         if (partSchematics.ContainsKey(name)) {
             part = partSchematics[name];
         }
 
-        return (T)part;
+        return part;
     }
 
-    public PartSchematic[] GetPartsOfType(Type type) {
-        Dictionary<string, PartSchematic> partSchematics = partSchematicDics[type];
+    public PartSchematic[] GetPartsOfType(PartSchematic.PartType pType) {
+        Dictionary<string, PartSchematic> partSchematics = partSchematicDics[pType];
 
         List<PartSchematic> parts = new List<PartSchematic>();
         foreach (PartSchematic part in partSchematics.Values) {
@@ -72,7 +72,7 @@ public class PartsManager : MonoBehaviour
             schematics.Add(part.Name, part);
         }
 
-        partSchematicDics.Add(typeof(HullPartSchematic), schematics);
+        partSchematicDics.Add(PartSchematic.PartType.Hull, schematics);
     }
 
     private void loadWheelParts() {
@@ -90,13 +90,12 @@ public class PartsManager : MonoBehaviour
             float energyInc = info.Value<float>("energy_inc");
             float energyDec = info.Value<float>("energy_dec");
 
-            // TODO: keycodes are for now. Should later be done differently using keyboard schematics
             WheelPartSchematic part = TankParSchematictFactory.CreateWheelPartSchematic(name, energyInc, energyDec, weight);
 
             schematics.Add(part.Name, part);
         }
 
-        partSchematicDics.Add(typeof(WheelPartSchematic), schematics);
+        partSchematicDics.Add(PartSchematic.PartType.Wheels, schematics);
     }
 
     private void loadTurretParts() {
@@ -137,7 +136,7 @@ public class PartsManager : MonoBehaviour
             schematics.Add(part.Name, part);
         }
 
-        partSchematicDics.Add(typeof(TurretPartSchematic), schematics);
+        partSchematicDics.Add(PartSchematic.PartType.Turret, schematics);
     }
 
     private void loadWeaponParts() {
@@ -164,6 +163,6 @@ public class PartsManager : MonoBehaviour
             schematics.Add(part.Name, part);
         }
 
-        partSchematicDics.Add(typeof(WeaponPartSchematic), schematics);
+        partSchematicDics.Add(PartSchematic.PartType.Weapon, schematics);
     }
 }

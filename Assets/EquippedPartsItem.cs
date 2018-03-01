@@ -10,50 +10,33 @@ using UnityEngine.UI;
 public class EquippedPartsItem : MonoBehaviour 
 {
     [SerializeField]
-    private PartTypeDisplay partTypeDisplay;
+    private Text partTypeDisplay;
 
     [SerializeField]
-    private PartNameDisplay partNameDisplay;
+    private Text partNameDisplay;
 
-    public Type PartSchematicType
-    {
-        get {
-            if (PartSchematic != null) {
-                return PartSchematic.GetType();
-            } else {
-                return typeof(WeaponPartSchematic);
-            }
-        }
-    }
-
-    public PartSchematic PartSchematic
+    public PartSlot Slot
     {
         get; private set;
     }
 
-    public int ItemIdx
-    {
-        get; private set;
+    public void Init(PartSlot slot) {
+        Slot = slot;
+
+        partTypeDisplay.text = Slot.PartType.ToString();
+        partNameDisplay.text = Slot.Part != null ? Slot.Part.Name : "Empty";
     }
 
-    public void Init(PartSchematic schematic, int idx) {
-        ItemIdx = idx;
+    // TODO: only temporary. Once owned items uses a different class than this, we can remove this.
+    public void Init(PartSchematic schematic) {
+        Slot = new PartSlot(schematic, PartSchematic.PartType.Weapon, -1);
 
-        if (schematic != null) {
-            PartSchematic = schematic;
-            partTypeDisplay.SetPart(schematic);
-            partNameDisplay.SetPart(schematic);
-
-        // This case should only happen with weapons.
-        } else {
-            partTypeDisplay.SetTextDirectly("Weapon");
-            partNameDisplay.SetTextDirectly("Empty");
-        }
+        partTypeDisplay.text = Slot.PartType.ToString();
+        partNameDisplay.text = Slot.Part != null ? Slot.Part.Name : "Empty";
     }
 
     public void Cleanup() {
-        PartSchematic = null;
-        ItemIdx = -1;
+        Slot = null;
         this.GetComponent<Button>().onClick.RemoveAllListeners();
         this.GetComponent<Button>().interactable = true;
     }
