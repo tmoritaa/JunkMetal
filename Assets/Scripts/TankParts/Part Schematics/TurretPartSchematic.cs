@@ -37,7 +37,7 @@ public class TurretPartSchematic : PartSchematic
         get; private set;
     }
 
-    public TurretPartSchematic(string name, int _armour, float _rotPerSecond, int _weight, Vector2[] _weaponDirs, Vector2[] _weaponFireOffset, int[] _weaponWeightRestrict) : base(name) {
+    public TurretPartSchematic(string name, int _armour, float _rotPerSecond, int _weight, Vector2[] _weaponDirs, Vector2[] _weaponFireOffset, int[] _weaponWeightRestrict) : base(name, PartType.Turret) {
         Name = name;
         Armour = _armour;
         RotPerSecond = _rotPerSecond;

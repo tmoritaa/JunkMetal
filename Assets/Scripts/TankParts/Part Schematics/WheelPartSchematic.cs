@@ -23,7 +23,7 @@ public class WheelPartSchematic : PartSchematic
         get; private set;
     }
 
-    public WheelPartSchematic(string name, float _energyInc, float _energyDec, int _weight) : base(name) {
+    public WheelPartSchematic(string name, float _energyInc, float _energyDec, int _weight) : base(name, PartType.Wheels) {
         Name = name;
         EnergyInc = _energyInc;
         EnergyDec = _energyDec;

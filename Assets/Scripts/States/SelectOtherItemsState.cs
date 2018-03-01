@@ -20,17 +20,21 @@ public class SelectOtherItemsState : CustomizationState
     }
 
     public override void End() {
-        items.ForEach(e => handler.EquippedPartsItemPool.ReturnObject(e.gameObject));
+        foreach (EquippedPartsItem item in items) {
+            item.Cleanup();
+            handler.EquippedPartsItemPool.ReturnObject(item.gameObject);
+        }
+        items.Clear();
     }
 
     public override void PerformUpdate() {
-        if (Input.GetKeyUp(KeyCode.Joystick1Button1)) {
+        if (Input.GetKeyUp(KeyCode.Joystick1Button1) || Input.GetKeyUp(KeyCode.Mouse1)) {
             handler.GotoState(CustomizationHandler.StateType.EquippedItemSelect);
         }
     }
 
     private void generateOtherItems() {
-        PartSchematic[] parts = PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.PartSchematic.GetType());
+        PartSchematic[] parts = PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.PartSchematicType);
 
         float itemAnchorStep = 1f / 9f;
         for (int i = 0; i < parts.Length; ++i) {
@@ -48,9 +52,20 @@ public class SelectOtherItemsState : CustomizationState
             rect.offsetMin = new Vector2();
             rect.offsetMax = new Vector2();
 
-            item.Init(schem);
-
+            item.Init(schem, i);
+            item.GetComponent<Button>().onClick.AddListener(delegate { ownedItemSelected(item); });
             items.Add(item);
         }
+    }
+
+    private void ownedItemSelected(EquippedPartsItem item) {
+        TankSchematic schem = PlayerManager.Instance.TankSchematic;
+
+        PartSchematic pickedEquippedPart = handler.PickedPartsItem.PartSchematic;
+        PartSchematic newPart = item.PartSchematic;
+
+        PlayerManager.Instance.TankSchematic.UpdateTankSchematic(newPart, pickedEquippedPart, handler.PickedPartsItem.ItemIdx - handler.WeaponStartIdx);
+
+        handler.GotoState(CustomizationHandler.StateType.EquippedItemSelect);
     }
 }

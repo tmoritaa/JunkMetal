@@ -14,18 +14,18 @@ public class SelectEquippedItemsState : CustomizationState
     bool initialized = false;
 
     public override void Start() {
-        if (!initialized) {
-            generateEquippedPartItems();
-            items[0].GetComponent<Button>().Select();
-            initialized = true;
-        } else {
-            handler.PickedPartsItem.GetComponent<Button>().Select();
-            handler.PickedPartsItem = null;
-        }
+        int highlightItemIdx = (handler.PickedPartsItem != null) ? handler.PickedPartsItem .ItemIdx : 0;
+        handler.PickedPartsItem = null;
 
         foreach (EquippedPartsItem item in items) {
-            item.GetComponent<Button>().interactable = true;
+            item.Cleanup();
+            handler.EquippedPartsItemPool.ReturnObject(item.gameObject);
         }
+        items.Clear();
+
+        generateEquippedPartItems();
+
+        items[highlightItemIdx].GetComponent<Button>().Select();
 
         handler.OtherPartsFrame.gameObject.SetActive(false);
     }
@@ -37,7 +37,7 @@ public class SelectEquippedItemsState : CustomizationState
     }
 
     public override void PerformUpdate() {
-        if (Input.GetKeyUp(KeyCode.Joystick1Button1)) {
+        if (Input.GetKeyUp(KeyCode.Joystick1Button1) || Input.GetKeyUp(KeyCode.Mouse1)) {
             handler.BackToMain();
         }
     }
@@ -51,6 +51,7 @@ public class SelectEquippedItemsState : CustomizationState
             playerSchematic.TurretSchematic
         };
         schematics.AddRange(playerSchematic.WeaponSchematics);
+        handler.WeaponStartIdx = 3;
 
         const float itemAnchorStep = 1f / 9f;
         for (int i = 0; i < schematics.Count; ++i) {
@@ -68,7 +69,7 @@ public class SelectEquippedItemsState : CustomizationState
             rect.offsetMin = new Vector2();
             rect.offsetMax = new Vector2();
 
-            item.Init(schem, "Weapon");
+            item.Init(schem, i);
             item.GetComponent<Button>().onClick.AddListener(delegate { equippedItemSelected(item); });
             items.Add(item);
         }

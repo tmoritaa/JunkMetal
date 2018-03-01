@@ -49,7 +49,7 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
-    public WeaponPartSchematic(string name, float _shootImpulse, float _shootBackForce, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name) {
+    public WeaponPartSchematic(string name, float _shootImpulse, float _shootBackForce, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name, PartType.Weapon) {
         Name = name;
         ShootImpulse = _shootImpulse;
         ShootBackForce = _shootBackForce;

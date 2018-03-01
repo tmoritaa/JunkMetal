@@ -28,7 +28,7 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public HullPartSchematic(string name, int armour, Vector2 size, int energyPower, int weight) : base(name) {
+    public HullPartSchematic(string name, int armour, Vector2 size, int energyPower, int weight) : base(name, PartType.Hull) {
 
         Name = name;
         Armour = armour;

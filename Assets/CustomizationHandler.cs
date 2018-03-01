@@ -53,6 +53,10 @@ public class CustomizationHandler : MonoBehaviour
     [HideInInspector]
     public EquippedPartsItem PickedPartsItem;
 
+    [HideInInspector]
+    // TODO: super hacky. Once Tank schematic is rewritten to not use PartSchematics, rewrite this shit.
+    public int WeaponStartIdx = -1;
+
     private Dictionary<StateType, State> states = new Dictionary<StateType, State>();
     private State curState;
     private StateType curStateType;
