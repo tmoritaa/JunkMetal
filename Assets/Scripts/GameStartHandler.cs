@@ -11,23 +11,38 @@ public class GameStartHandler : MonoBehaviour
 {
     [SerializeField]
     private Button continueButton;
+
+    [SerializeField]
+    private List<Button> mainButtons;
+
+    [SerializeField]
+    private GameObject confirmationGO;
+
+    [SerializeField]
+    private Button confirmationNoButton;
     
     void Start() {
+        confirmationGO.SetActive(false);
+
         if (!PlayerManager.Instance.PlayerSaveExists()) {
             continueButton.gameObject.SetActive(false);
+            mainButtons[0].Select();
         } else {
             continueButton.Select();
         }
     }
 
-    public void StartNewGame() {
-        PlayerManager.Instance.ClearSavedPlayerInfo();
-        PlayerManager.Instance.LoadPlayerInfo();
-
-        gotoMainGameScreen();
+    public void StartNewGamePressed() {
+        if (PlayerManager.Instance.PlayerSaveExists()) {
+            confirmationGO.SetActive(true);
+            mainButtons.ForEach(b => b.interactable = false);
+            confirmationNoButton.Select();
+        } else {
+            startNewGame();
+        }
     }
 
-    public void ContinueGame() {
+    public void ContinueGamePressed() {
         PlayerManager.Instance.LoadPlayerInfo();
 
         gotoMainGameScreen();
@@ -38,7 +53,24 @@ public class GameStartHandler : MonoBehaviour
         Application.Quit();
     }
 
+    public void YesButtonPressed() {
+        startNewGame();
+    }
+
+    public void NoButtonPressed() {
+        mainButtons.ForEach(b => b.interactable = true);
+        confirmationGO.SetActive(false);
+        continueButton.Select();
+    }
+
     private void gotoMainGameScreen() {
         SceneManager.LoadScene("Main");
+    }
+
+    private void startNewGame() {
+        PlayerManager.Instance.ClearSavedPlayerInfo();
+        PlayerManager.Instance.LoadPlayerInfo();
+
+        gotoMainGameScreen();
     }
 }
