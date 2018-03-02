@@ -10,7 +10,7 @@ public class GlobalManager : MonoBehaviour
     [SerializeField]
     private bool debugOn;
 
-    void Start() {
+    void Awake() {
         if (debugOn) {
             PlayerManager.Instance.LoadPlayerInfo();
         }
