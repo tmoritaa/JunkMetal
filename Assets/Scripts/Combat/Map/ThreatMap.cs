@@ -63,11 +63,13 @@ public class ThreatMap : Map
 
                 float timeToHitPos = AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position);
                 timeToHitPos += weapon.CalcTimeToReloaded();
-                if (node.TimeToHitTargetFromNode > timeToHitPos) {
-                    node.TimeToHitTargetFromNode = timeToHitPos;
-                    node.WeaponToHitTargetFromNode = weapon;
-                }
+                
                 if (timeToHitPos < MaxTimeInSecs) {
+                    if (node.TimeToHitTargetFromNode > timeToHitPos) {
+                        node.TimeToHitTargetFromNode = timeToHitPos;
+                        node.WeaponToHitTargetFromNode = weapon;
+                    }
+
                     List<Connection> connections = FindConnectedNodes(node, true);
                     foreach (Connection con in connections) {
                         if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
@@ -109,16 +111,16 @@ public class ThreatMap : Map
                 float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.CalculateFirePos(), weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
                 float timeToHitPosWithReloadTime = timeToHitPos + weapon.CalcTimeToReloaded();
 
-                if (node.TimeForTargetToHitNode > timeToHitPosWithReloadTime) {
-                    node.TimeForTargetToHitNode = timeToHitPosWithReloadTime;
-                }
-
-                if (node.TimeForTargetToHitNodeNoReload > timeToHitPos) {
-                    node.TimeForTargetToHitNodeNoReload = timeToHitPos;
-                }
-
                 // If time is over 1 second, we consider it too long and stop searching.
                 if (timeToHitPosWithReloadTime <= MaxTimeInSecs || timeToHitPos <= MaxTimeInSecs) {
+                    if (node.TimeForTargetToHitNode > timeToHitPosWithReloadTime) {
+                        node.TimeForTargetToHitNode = timeToHitPosWithReloadTime;
+                    }
+
+                    if (node.TimeForTargetToHitNodeNoReload > timeToHitPos) {
+                        node.TimeForTargetToHitNodeNoReload = timeToHitPos;
+                    }
+
                     List<Connection> connections = FindConnectedNodes(node, true);
                     foreach (Connection con in connections) {
                         if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
