@@ -86,6 +86,7 @@ public class ThreatMap : Map
 
     public void UpdateTimeForTankToHitNode(Tank tank) {
         nodesMarkedTankToHitNode.Clear();
+        nodesMarkedTankToHitNodeNoReload.Clear();
 
         foreach (WeaponPart weapon in tank.Turret.GetAllWeapons()) {
             List<Node> checkedNodes = new List<Node>();
@@ -107,53 +108,13 @@ public class ThreatMap : Map
                 ThreatNode node = (ThreatNode)openNodes[0];
 
                 float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.CalculateFirePos(), weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
-                timeToHitPos += weapon.CalcTimeToReloaded();
+                float timeToHitPosWithReloadTime = timeToHitPos + weapon.CalcTimeToReloaded();
                 // If time is over 1 second, we consider it too long and stop searching.
-                if (timeToHitPos < MaxTimeInSecs) {
-                    if (node.TimeForTargetToHitNode > timeToHitPos) {
-                        node.TimeForTargetToHitNode = timeToHitPos;
+                if (timeToHitPosWithReloadTime <= MaxTimeInSecs || timeToHitPos <= MaxTimeInSecs) {
+                    if (node.TimeForTargetToHitNode > timeToHitPosWithReloadTime) {
+                        node.TimeForTargetToHitNode = timeToHitPosWithReloadTime;
                     }
 
-                    List<Connection> connections = FindConnectedNodes(node, true);
-                    foreach (Connection con in connections) {
-                        if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
-                            openNodes.Add(con.targetNode);
-                        }
-                    }
-                }
-
-                nodesMarkedTankToHitNode.Add(node);
-                checkedNodes.Add(node);
-                openNodes.RemoveAt(0);
-            }
-        }   
-    }
-
-    public void UpdateTimeForTankToHitNodeNoReload(Tank tank) {
-        nodesMarkedTankToHitNodeNoReload.Clear();
-
-        foreach (WeaponPart weapon in tank.Turret.GetAllWeapons()) {
-            List<Node> checkedNodes = new List<Node>();
-            List<Node> openNodes = new List<Node>();
-
-            Node startNode = PositionToNode(weapon.CalculateFirePos());
-            openNodes.Add(startNode);
-            // Also add surrounding nodes
-            {
-                List<Connection> connections = FindConnectedNodes(startNode, true);
-                foreach (Connection con in connections) {
-                    if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
-                        openNodes.Add(con.targetNode);
-                    }
-                }
-            }
-
-            while (openNodes.Count > 0) {
-                ThreatNode node = (ThreatNode)openNodes[0];
-
-                float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.CalculateFirePos(), weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
-                // If time is over 1 second, we consider it too long and stop searching.
-                if (timeToHitPos < MaxTimeInSecs) {
                     if (node.TimeForTargetToHitNodeNoReload > timeToHitPos) {
                         node.TimeForTargetToHitNodeNoReload = timeToHitPos;
                     }
@@ -166,13 +127,14 @@ public class ThreatMap : Map
                     }
                 }
 
+                nodesMarkedTankToHitNode.Add(node);
                 nodesMarkedTankToHitNodeNoReload.Add(node);
                 checkedNodes.Add(node);
                 openNodes.RemoveAt(0);
             }
-        }
+        }   
     }
-
+    
     protected override float calcHeuristicCost(Node node, Node target) {
         List<Connection> connections = FindStraightPath(node, target);
 

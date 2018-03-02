@@ -50,7 +50,7 @@ public class ManeuverGoal : Goal
 
         ThreatNode newTargetNode = null;
         if (diffNodes.Count != 0) {
-            float lowestCost = 99999;
+            float lowestCost = 999999;
             foreach (ThreatNode node in diffNodes) {
                 Vector2 nodePos = map.NodeToPosition(node);
                 float diffDistToOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
@@ -67,13 +67,13 @@ public class ManeuverGoal : Goal
             diffThresh = curNode.TimeForTargetToHitNodeNoReload;
 
             diffNodes.Clear();
-            foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
+            foreach (ThreatNode node in map.NodesMarkedTankToHitNodeNoReload) {
                 if (node.NodeTraversable() && node.TimeForTargetToHitNodeNoReload > diffThresh) {
                     diffNodes.Add(node);
                 }
             }
 
-            float lowestCost = 99999;
+            float lowestCost = 999999;
             float avgOptimalRange = selfTank.CalcAvgOptimalRange();
             foreach (ThreatNode node in diffNodes) {
                 Vector2 nodePos = map.NodeToPosition(node);
@@ -88,10 +88,15 @@ public class ManeuverGoal : Goal
             }
         }
 
-        // If there's absolutely no nodes to move to (should never happen), then pick current node
+        // If there's absolutely no nodes to move to (generally happens when in a completely safe zone), then try to keep avg optimal distance
         if (newTargetNode == null) {
-            newTargetNode = curNode;
-            Debug.LogWarning("No valid node for TargetNode for Maneuvering. Should never happen");
+            Vector2 diffVec = targetTank.transform.position - selfTank.transform.position;
+            float optimalRangeDiff = diffVec.magnitude - selfTank.CalcAvgOptimalRange();
+
+            diffVec = diffVec.normalized * optimalRangeDiff;
+            Vector2 newPos = diffVec + (Vector2)selfTank.transform.position;
+
+            newTargetNode = (ThreatNode)map.PositionToNode(newPos);
         }
 
         Vector2 diffDir = (targetTank.transform.position - selfTank.transform.position).normalized;
