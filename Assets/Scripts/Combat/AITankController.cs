@@ -46,12 +46,16 @@ public class AITankController : TankController
         threatMap = new ThreatMap(CombatManager.Instance.Map);
     }
 
-    void Update() {
-        TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
-        TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
+    protected override void Update() {
+        base.Update();
 
-        updateThreatMap();
-        updateGoalsAndPerformActions();
+        if (!CombatManager.Instance.DisableMovement) {
+            TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
+            TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
+
+            updateThreatMap();
+            updateGoalsAndPerformActions();
+        }
 
         // TODO: for testing only. Remove once done.
         //rotationTest();

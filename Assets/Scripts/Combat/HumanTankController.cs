@@ -12,7 +12,11 @@ public class HumanTankController : TankController
         this.gameObject.layer = 9; // Player layer
     }
 
-    void Update() {
-        SelfTank.HandleInput();
+    protected override void Update() {
+        base.Update();
+
+        if (!CombatManager.Instance.DisableMovement) {
+            SelfTank.HandleInput();
+        }
     }
 }

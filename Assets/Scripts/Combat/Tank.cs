@@ -161,11 +161,15 @@ public partial class Tank : MonoBehaviour
 
     public void ResetState() {
         CurArmour = MaxArmour;
+        ResetMovement();
+    }
+
+    public void ResetMovement() {
+        Wheels.Reset();
+        Turret.Reset();
     }
 
     public void Damage(int damage) {
-        Debug.Log("Tank has taken damage");
-
         CurArmour -= damage;
         CurArmour = Mathf.Max(0, CurArmour);
 
@@ -176,6 +180,7 @@ public partial class Tank : MonoBehaviour
 
     public void Dead() {
         Debug.Log("Tank is dead");
+        CombatManager.Instance.DeathOccurred(this);
     }
 
     public Vector2 GetForwardVec() {

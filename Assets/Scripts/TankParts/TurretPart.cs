@@ -96,4 +96,8 @@ public class TurretPart
             weapon.PerformFixedUpdate();
         }
     }
+
+    public void Reset() {
+        rotationDir = 0;
+    }
 }

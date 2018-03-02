@@ -54,6 +54,11 @@ public class WheelPart
         PerformPowerChange(leftChangeDir, rightChangeDir);
     }
 
+    public void Reset() {
+        LeftCurPower = 0;
+        RightCurPower = 0;
+    }
+
     public void PerformPowerChange(int leftChangeDir, int rightChangeDir) {
         performPowerChangeForSide(Side.left, leftChangeDir);
         performPowerChangeForSide(Side.right, rightChangeDir);

@@ -28,6 +28,12 @@ public class TankController : MonoBehaviour
         SelfTank = null;
     }
 
+    protected virtual void Update() {
+        if (CombatManager.Instance.DisableMovement) {
+            SelfTank.ResetMovement();
+        }
+    }
+
     public virtual void Init(Vector2 startPos, TankSchematic tankSchematic) {
         if (SelfTank != null) {
             Destroy(SelfTank.gameObject);

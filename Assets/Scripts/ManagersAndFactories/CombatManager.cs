@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CombatManager : MonoBehaviour 
 {
@@ -35,6 +36,9 @@ public class CombatManager : MonoBehaviour
             return mainCamera;
         }
     }
+
+    [SerializeField]
+    private DeathScreen deathScreen;
 
     [SerializeField]
     private GameObject wallPrefab;
@@ -70,8 +74,15 @@ public class CombatManager : MonoBehaviour
         get; private set;
     }
 
+    public bool DisableMovement
+    {
+        get; private set;
+    }
+
     void Awake() {
         instance = this;
+
+        deathScreen.gameObject.SetActive(false);
 
         generateMapBounds();
         generateTileMap();
@@ -87,6 +98,20 @@ public class CombatManager : MonoBehaviour
             PlayerManager.Instance.TankSchematic); // TODO: for now. Later change it so it actually uses Enemy tank schematics
         
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.SelfTank.gameObject);
+
+        DisableMovement = false;
+    }
+
+    public void DeathOccurred(Tank diedTank) {
+        deathScreen.gameObject.SetActive(true);
+
+        Tank wonTank = (diedTank == AITankController.SelfTank) ? HumanTankController.SelfTank : AITankController.SelfTank;
+        deathScreen.SetupDeathScreen(wonTank);
+        DisableMovement = true;
+    }
+
+    public void ReturnToMainScreen() {
+        SceneManager.LoadScene("Main");
     }
 
     private void generateTileMap() {
