@@ -53,7 +53,7 @@ public class SelectOtherItemsState : CustomizationState
             rect.offsetMin = new Vector2();
             rect.offsetMax = new Vector2();
 
-            item.Init(schem);
+            item.Init(schem, handler);
             item.GetComponent<Button>().onClick.AddListener(delegate { ownedItemSelected(item); });
             items.Add(item);
         }

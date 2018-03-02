@@ -27,4 +27,6 @@ public abstract class PartSchematic
         Name = name;
         PType = pType;
     }
+
+    public abstract string GetStatString(PartSchematic equippedSchem);
 }

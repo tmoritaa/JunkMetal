@@ -47,4 +47,26 @@ public class TurretPartSchematic : PartSchematic
         OrigWeaponFirePosOffset = _weaponFireOffset;
         WeaponWeightRestrictions = _weaponWeightRestrict;
     }
+
+    public override string GetStatString(PartSchematic diffSchem) {
+        bool showDiff = diffSchem != null;
+
+        string retStr = string.Empty;
+
+        if (showDiff) {
+            TurretPartSchematic diffHull = (TurretPartSchematic)diffSchem;
+
+            string diffWeightRestrictStr = "[" +  String.Join(", ", new List<int>(diffHull.WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
+            string weightRestrictStr = "[" + String.Join(", ", new List<int>(WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
+
+            retStr = string.Format("{0}\nArmour: {1} => {2}\nRotPerSecond: {3} => {4}\nWeapon Weight Restrictions: {5} => {6}\nWeight: {7} => {8}",
+                Name, diffHull.Armour, Armour, diffHull.RotPerSecond, RotPerSecond, diffWeightRestrictStr, weightRestrictStr, diffHull.Weight, Weight);
+        } else {
+            string weightRestrictStr = "[" + String.Join(", ", new List<int>(WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
+            retStr = string.Format("{0}\nArmour: {1}\nRotPerSecond: {2}\nWeapon Weight Restrictions: {3}\nWeight: {4}",
+                Name, Armour, RotPerSecond, weightRestrictStr, Weight);
+        }
+
+        return retStr;
+    }
 }

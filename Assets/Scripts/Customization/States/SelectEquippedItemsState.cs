@@ -57,7 +57,7 @@ public class SelectEquippedItemsState : CustomizationState
             rect.offsetMin = new Vector2();
             rect.offsetMax = new Vector2();
 
-            item.Init(slot);
+            item.Init(slot, handler);
             item.GetComponent<Button>().onClick.AddListener(delegate { equippedItemSelected(item); });
             items.Add(item);
         }

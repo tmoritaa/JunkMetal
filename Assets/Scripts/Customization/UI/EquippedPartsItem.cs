@@ -5,9 +5,10 @@ using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Button))]
-public class EquippedPartsItem : MonoBehaviour 
+public class EquippedPartsItem : MonoBehaviour, ISelectHandler
 {
     [SerializeField]
     private Text partTypeDisplay;
@@ -20,8 +21,11 @@ public class EquippedPartsItem : MonoBehaviour
         get; private set;
     }
 
-    public void Init(PartSlot slot) {
+    private CustomizationHandler handler;
+
+    public void Init(PartSlot slot, CustomizationHandler _handler) {
         Slot = slot;
+        handler = _handler;
 
         partTypeDisplay.text = Slot.PartType.ToString();
         partNameDisplay.text = Slot.Part != null ? Slot.Part.Name : "Empty";
@@ -31,5 +35,9 @@ public class EquippedPartsItem : MonoBehaviour
         Slot = null;
         this.GetComponent<Button>().onClick.RemoveAllListeners();
         this.GetComponent<Button>().interactable = true;
+    }
+
+    public void OnSelect(BaseEventData eventData) {
+        handler.UpdatePartInfo(Slot.Part);
     }
 }

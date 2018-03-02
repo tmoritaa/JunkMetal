@@ -59,10 +59,12 @@ public class CustomizationHandler : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    PartInfo partInfo;
+
     [HideInInspector]
     public EquippedPartsItem PickedPartsItem;
 
-    [HideInInspector]
     public List<PartSlot> EquippedParts
     {
         get; private set;
@@ -126,6 +128,11 @@ public class CustomizationHandler : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void UpdatePartInfo(PartSchematic part) {
+        PartSchematic equipPart = PickedPartsItem != null ? PickedPartsItem.Slot.Part : null;
+        partInfo.UpdatePartText(part, equipPart);
     }
 
     private void updatePlayerTankSchematic() {
