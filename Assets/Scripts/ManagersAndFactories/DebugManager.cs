@@ -49,6 +49,9 @@ public class DebugManager : MonoBehaviour
     private bool ThreatMapDiffMapDebugOn = true;
 
     [SerializeField]
+    private bool ThreatMapTargetToHitPosNoReloadDebugOn = true;
+
+    [SerializeField]
     private bool ManeuverPathDebugOn = true;
 
     void Awake() {
@@ -130,6 +133,15 @@ public class DebugManager : MonoBehaviour
                         float distToTarget = ((Vector2)CombatManager.Instance.AITankController.TargetTank.transform.position - map.NodeToPosition(node)).magnitude;
                         if (diffVal > 0 && distToTarget <= 500) {
                             Color color = new Color(Mathf.Clamp01(diffVal / ThreatMap.MaxTimeInSecs), 0, Mathf.Clamp01((ThreatMap.MaxTimeInSecs - diffVal)/ ThreatMap.MaxTimeInSecs));
+                            Gizmos.color = color;
+
+                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
+                        }
+                    }
+
+                    if (ThreatMapTargetToHitPosNoReloadDebugOn) {
+                        if (node.TimeForTargetToHitNodeNoReload <= ThreatMap.MaxTimeInSecs) {
+                            Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNodeNoReload) / ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNodeNoReload / ThreatMap.MaxTimeInSecs);
                             Gizmos.color = color;
 
                             Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);

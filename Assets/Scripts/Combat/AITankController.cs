@@ -74,6 +74,7 @@ public class AITankController : TankController
     private void updateThreatMap() {
         threatMap.ResetNodeValues();
         threatMap.UpdateTimeForTankToHitNode(TargetTank);
+        threatMap.UpdateTimeForTankToHitNodeNoReload(TargetTank);
         threatMap.UpdateTimeToHitTargetFromNode(SelfTank, TargetTank);
     }
 

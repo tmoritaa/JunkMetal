@@ -25,6 +25,14 @@ public class ThreatMap : Map
         }
     }
 
+    private HashSet<ThreatNode> nodesMarkedTankToHitNodeNoReload = new HashSet<ThreatNode>();
+    public HashSet<ThreatNode> NodesMarkedTankToHitNodeNoReload
+    {
+        get {
+            return nodesMarkedTankToHitNodeNoReload;
+        }
+    }
+
     public ThreatMap(float _mapWidth, float _mapHeight, float _tileDim, List<Transform> walls = null)
         : base(_mapWidth, _mapHeight, _tileDim, walls) { }
 
@@ -119,6 +127,50 @@ public class ThreatMap : Map
                 openNodes.RemoveAt(0);
             }
         }   
+    }
+
+    public void UpdateTimeForTankToHitNodeNoReload(Tank tank) {
+        nodesMarkedTankToHitNodeNoReload.Clear();
+
+        foreach (WeaponPart weapon in tank.Turret.GetAllWeapons()) {
+            List<Node> checkedNodes = new List<Node>();
+            List<Node> openNodes = new List<Node>();
+
+            Node startNode = PositionToNode(weapon.CalculateFirePos());
+            openNodes.Add(startNode);
+            // Also add surrounding nodes
+            {
+                List<Connection> connections = FindConnectedNodes(startNode, true);
+                foreach (Connection con in connections) {
+                    if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
+                        openNodes.Add(con.targetNode);
+                    }
+                }
+            }
+
+            while (openNodes.Count > 0) {
+                ThreatNode node = (ThreatNode)openNodes[0];
+
+                float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.CalculateFirePos(), weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
+                // If time is over 1 second, we consider it too long and stop searching.
+                if (timeToHitPos < MaxTimeInSecs) {
+                    if (node.TimeForTargetToHitNodeNoReload > timeToHitPos) {
+                        node.TimeForTargetToHitNodeNoReload = timeToHitPos;
+                    }
+
+                    List<Connection> connections = FindConnectedNodes(node, true);
+                    foreach (Connection con in connections) {
+                        if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
+                            openNodes.Add(con.targetNode);
+                        }
+                    }
+                }
+
+                nodesMarkedTankToHitNodeNoReload.Add(node);
+                checkedNodes.Add(node);
+                openNodes.RemoveAt(0);
+            }
+        }
     }
 
     protected override float calcHeuristicCost(Node node, Node target) {

@@ -199,6 +199,17 @@ public partial class Tank : MonoBehaviour
         return rotationAngle / 360f * timeToDoOneFullRot;
     }
 
+    public float CalcAvgOptimalRange() {
+        float totalRange = 0;
+        int count = 0;
+        foreach (WeaponPart part in Turret.GetAllWeapons()) {
+            totalRange += part.Schematic.OptimalRange;
+            count += 1;
+        }
+
+        return totalRange / count;
+    }
+
     private int calculateTotalArmour() {
         int armour = 0;
 

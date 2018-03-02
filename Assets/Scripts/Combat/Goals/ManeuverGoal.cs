@@ -63,7 +63,35 @@ public class ManeuverGoal : Goal
                 }
             }
         } else {
+            // If no diff nodes (occurs when no weapons to fire), just move to a safer space
+            diffThresh = curNode.TimeForTargetToHitNodeNoReload;
+
+            diffNodes.Clear();
+            foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
+                if (node.NodeTraversable() && node.TimeForTargetToHitNodeNoReload > diffThresh) {
+                    diffNodes.Add(node);
+                }
+            }
+
+            float lowestCost = 99999;
+            float avgOptimalRange = selfTank.CalcAvgOptimalRange();
+            foreach (ThreatNode node in diffNodes) {
+                Vector2 nodePos = map.NodeToPosition(node);
+                float diffDistToOptimalRange = Mathf.Abs(avgOptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
+                float distFromSelfToNode = (nodePos - (Vector2)selfTank.transform.position).magnitude;
+
+                float cost = diffDistToOptimalRange + distFromSelfToNode;
+                if (lowestCost > cost) {
+                    lowestCost = cost;
+                    newTargetNode = node;
+                }
+            }
+        }
+
+        // If there's absolutely no nodes to move to (should never happen), then pick current node
+        if (newTargetNode == null) {
             newTargetNode = curNode;
+            Debug.LogWarning("No valid node for TargetNode for Maneuvering. Should never happen");
         }
 
         Vector2 diffDir = (targetTank.transform.position - selfTank.transform.position).normalized;
