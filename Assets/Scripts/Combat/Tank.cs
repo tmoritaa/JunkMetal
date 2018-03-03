@@ -141,14 +141,13 @@ public partial class Tank : MonoBehaviour
         boxCollider.size = hullSize;
         hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(hullSize.x, hullSize.y);
 
-        leftWheelGO.transform.localPosition = leftWheelGO.transform.localPosition + new Vector3(-hullSize.x / 2f, 0, 0);
+        leftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
         leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-hullSize.x / 2f, 0);
 
-        rightWheelGO.transform.localPosition = rightWheelGO.transform.localPosition + new Vector3(hullSize.x / 2f, 0, 0);
+        rightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
         rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(hullSize.x / 2f, 0);
 
         float totalWeight = calculateTotalWeight() / 10f;
-        this.body.mass = totalWeight;
         this.LeftWheelBody.mass = totalWeight / 2f;
         this.RightWheelBody.mass = totalWeight / 2f;
 
@@ -197,6 +196,63 @@ public partial class Tank : MonoBehaviour
         float circumference = (Hull.Schematic.Size.x / 2f) * Mathf.PI;
         float timeToDoOneFullRot = circumference / TerminalVelocityForRotation;
         return rotationAngle / 360f * timeToDoOneFullRot;
+    }
+
+    public float CalcTimeToReachPosWithNoRot(Vector2 targetPos) {
+        Vector2 desiredDir = targetPos - (Vector2)this.transform.position;
+
+        float curVel = Body.velocity.magnitude;
+        float angle = Vector2.Angle(Body.velocity, desiredDir);
+        if (angle >= 90) {
+            curVel *= -1;
+        }
+
+        float f = Hull.Schematic.EnergyPower / 2f;
+        float m = LeftWheelBody.mass;
+        float drag = LeftWheelBody.drag;
+        float a = f / m;
+
+        float newVel = curVel;
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+
+        float distToTarget = desiredDir.magnitude;
+        while (distToTarget > 0) {
+            totalDt += dt;
+            newVel = (newVel + a * dt) * (1f / (1f + drag * dt));
+            distToTarget -= newVel * dt;
+        }
+
+        return totalDt;
+    }
+
+    // This only accounts for reaching terminal vel in forward or backwards. Doesn't take into account rotation.
+    public float CalcTimeToReachTerminalVelInDir(Vector2 desiredDir) {
+        float maxVel = TerminalVelocity - 0.1f;
+        float curVel = Body.velocity.magnitude;
+
+        float angle = Vector2.Angle(Body.velocity, desiredDir);
+
+        bool goingInDir = angle < 90;
+
+        if (!goingInDir) {
+            curVel *= -1;
+        }
+
+        float f = Hull.Schematic.EnergyPower / 2f;
+        float m =  LeftWheelBody.mass;
+        float drag = LeftWheelBody.drag;
+        float a = f / m;
+
+        float newVel = curVel;
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+        while (newVel < maxVel && totalDt < 10) {
+            totalDt += dt;
+            newVel = (newVel + a * dt) * (1f / (1f + drag*dt));
+        }
+
+        return totalDt;
     }
 
     public float CalcAvgOptimalRange() {

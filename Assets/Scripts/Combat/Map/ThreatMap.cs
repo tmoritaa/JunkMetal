@@ -108,7 +108,7 @@ public class ThreatMap : Map
             while (openNodes.Count > 0) {
                 ThreatNode node = (ThreatNode)openNodes[0];
 
-                float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.CalculateFirePos(), weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
+                float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.OwningTank.transform.position, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
                 float timeToHitPosWithReloadTime = timeToHitPos + weapon.CalcTimeToReloaded();
 
                 // If time is over 1 second, we consider it too long and stop searching.

@@ -59,6 +59,8 @@ public class AITankController : TankController
 
         // TODO: for testing only. Remove once done.
         //rotationTest();
+        //velocityTest();
+        //reachPosTest();
     }
 
     public override void Init(Vector2 startPos, TankSchematic tankSchematic) {
@@ -232,6 +234,64 @@ public class AITankController : TankController
     //            float timeToDoOneFullRot = circumference / SelfTank.TerminalVelocityForRotation;
 
     //            Debug.Log("Calculated time for full rot=" + timeToDoOneFullRot);
+    //        }
+    //    }
+    //}
+
+    //bool first = false;
+    //float startTime = 0;
+    //float expectedTimeToReachTerminal = 0;
+    //private void velocityTest() {
+    //    SelfTank.Wheels.PerformPowerChange(1, 1);
+
+    //    if (!first) {
+    //        Debug.Log("Start Vel=" + SelfTank.Body.velocity.magnitude);
+    //        Debug.Log("Terminal Velocity=" + SelfTank.TerminalVelocity);
+    //        expectedTimeToReachTerminal = SelfTank.CalcTimeToReachTerminalVelInDir(new Vector2(0, 1));
+    //        Debug.Log("Calculated time to reach max vel=" + expectedTimeToReachTerminal);
+    //        startTime = Time.time;
+    //        first = true;
+    //    } else {
+    //        if (SelfTank.Body.velocity.magnitude >= SelfTank.TerminalVelocity - 0.1f) {
+    //            Debug.Log("CurVel=" + SelfTank.Body.velocity.magnitude + " MaxVel=" + SelfTank.TerminalVelocity);
+    //            Debug.Log("Time to reach max vel=" + (Time.time - startTime));
+    //            Debug.Log("Calculated time to reach max vel=" + expectedTimeToReachTerminal);
+    //        }
+    //    }
+    //}
+
+    //bool first = false;
+    //bool second = false;
+    //float startTime = 0;
+    //float expectedTime = 0;
+    //Vector2 testTargetPos = new Vector2(300, 0);
+    //private void reachPosTest() {
+    //    if (!second) {
+    //        SelfTank.Wheels.PerformPowerChange(1, 1);
+    //    } else {
+    //        SelfTank.Wheels.PerformPowerChange(-1, -1);
+    //    }
+
+    //    if (!first) {
+    //        expectedTime = SelfTank.CalcTimeToReachPosWithNoRot(testTargetPos);
+    //        startTime = Time.time;
+    //        first = true;
+    //    } else if (!second) {
+    //        float diffMag = ((Vector2)SelfTank.transform.position - testTargetPos).magnitude;
+    //        if (diffMag < 5) {
+    //            Debug.Log("Time to reach first target=" + (Time.time - startTime));
+    //            Debug.Log("Calculated time to reach first target=" + expectedTime);
+
+    //            second = true;
+    //            testTargetPos = new Vector2(300, -600);
+    //            expectedTime = SelfTank.CalcTimeToReachPosWithNoRot(testTargetPos);
+    //            startTime = Time.time;
+    //        }
+    //    } else {
+    //        float diffMag = ((Vector2)SelfTank.transform.position - testTargetPos).magnitude;
+    //        if (diffMag < 5) {
+    //            Debug.Log("Time to reach second target=" + (Time.time - startTime));
+    //            Debug.Log("Calculated time to reach second target=" + expectedTime);
     //        }
     //    }
     //}

@@ -89,12 +89,12 @@ public class CombatManager : MonoBehaviour
 
         HumanTankController = Instantiate(humanTankContPrefab, tankRoot, false);
         HumanTankController.Init(
-            new Vector3(0, -800, 0),
+            new Vector3(300, -800, 0),
             PlayerManager.Instance.TankSchematic);
 
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
-            new Vector3(0, -600, 0),
+            new Vector3(300, -600, 0),
             PlayerManager.Instance.TankSchematic); // TODO: for now. Later change it so it actually uses Enemy tank schematics
         
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.SelfTank.gameObject);
