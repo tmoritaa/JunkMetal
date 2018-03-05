@@ -105,7 +105,7 @@ public class AttackGoal : Goal
             AIAction transposeAction = null;
             if (intersected) {
                 Vector2 transVec = targetMovePos - (Vector2)tank.transform.position;
-                transposeTimeEstimate = transVec.magnitude / tank.TerminalVelocity;
+                transposeTimeEstimate = tank.CalcTimeToReachPosWithNoRot(targetMovePos);
                 transposeAction = new GoInDirAction(transVec.normalized, controller);
             }
 
@@ -122,6 +122,7 @@ public class AttackGoal : Goal
                 result.timeEstimate = rotationTimeEstimate;
                 result.moveAction = rotationAction;
             } else if (transposeTimeEstimate >= 0 && rotationTimeEstimate < 0) {
+                Debug.Log("Transpose solution used for attack");
                 result.timeEstimate = transposeTimeEstimate;
                 result.moveAction = transposeAction;
             } else {

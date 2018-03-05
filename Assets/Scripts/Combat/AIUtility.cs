@@ -47,10 +47,8 @@ public class AIUtility
         // TODO: Implement. Have to finish.
         float moveAmount = Mathf.Max(diffVec.magnitude - schematic.Range, 0);
         if (moveAmount > 0) {
-            //Vector2 newPos = diffVec.normalized * moveAmount + (Vector2)tank.transform.position;
-
-
-            timeToHit += Mathf.Max(diffVec.magnitude - schematic.Range, 0) / tank.TerminalVelocity;
+            Vector2 newPos = diffVec.normalized * moveAmount + (Vector2)tank.transform.position;
+            timeToHit += tank.CalcTimeToReachPosWithNoRot(newPos);
         }
 
         // Finally, calculate bullet travel time.
