@@ -57,6 +57,19 @@ public class AIUtility
         return timeToHit;
     }
 
+    public static float CalcTimeToReachPos(Tank tank, Vector2 targetPos) {
+        Vector2 curPos = tank.transform.position;
+
+        Vector2 diffVec = targetPos - curPos;
+
+        float timeToReach = 0;
+
+        timeToReach += Mathf.Min(tank.CalcTimeToRotate(tank.GetForwardVec(), diffVec), tank.CalcTimeToRotate(tank.GetBackwardVec(), diffVec));
+        timeToReach += tank.CalcTimeToReachPosWithNoRot(targetPos);
+
+        return timeToReach;
+    }
+
     // TODO: probably won't be used once AttackGoal and DodgeGoal are rewritten using threat maps. Check later and confirm that it's not used.
     public static float CalculateRiskValue(WeaponPart weaponPart, Tank targetedTank, Tank targetingTank) {
         const float ThreatRangeMod = 1.1f;
