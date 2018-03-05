@@ -215,26 +215,47 @@ public class AITankController : TankController
         return newDesiredDir;
     }
 
-
     //bool first = false;
+    //bool second = false;
     //Vector2 targetdir;
+    //Vector2 startDir;
     //float startTime = 0;
+    //float expectedTime = 0;
+    //bool finished = false;
     //// TODO: for testing only. Remove once done.
     //private void rotationTest() {
-    //    SelfTank.PerformRotation(SelfTank.GetForwardVec(), SelfTank.GetBackwardVec());
+    //    if (finished) {
+    //        return;
+    //    }
+
     //    if (!first) {
+    //        startDir = SelfTank.GetForwardVec();
     //        targetdir = SelfTank.GetBackwardVec();
+    //        expectedTime = SelfTank.CalcTimeToRotate(startDir, targetdir);
     //        startTime = Time.time;
     //        first = true;
-    //    } else {
+    //    } else if (first && !second) {
     //        if ((targetdir - SelfTank.GetForwardVec()).magnitude < 0.05f) {
-    //            Debug.Log("Time for full rot=" + (2f * (Time.time - startTime)));
+    //            Debug.Log("Time for first half rot=" + (Time.time - startTime));
+    //            Debug.Log("Calculated time for first half rot=" + expectedTime);
 
-    //            float circumference = (SelfTank.Hull.Schematic.Size.x / 2f) * Mathf.PI;
-    //            float timeToDoOneFullRot = circumference / SelfTank.TerminalVelocityForRotation;
-
-    //            Debug.Log("Calculated time for full rot=" + timeToDoOneFullRot);
+    //            targetdir = new Vector2(0, 1);
+    //            expectedTime = SelfTank.CalcTimeToRotate(SelfTank.GetForwardVec(), targetdir);
+    //            startTime = Time.time;
+    //            second = true;
     //        }
+    //    } else if (first && second) {
+    //        if ((targetdir - SelfTank.GetForwardVec()).magnitude < 0.05f) {
+    //            Debug.Log("Time for second half rot=" + (Time.time - startTime));
+    //            Debug.Log("Calculated time for second half rot=" + expectedTime);
+    //            finished = true;
+    //        }
+    //    }
+
+    //    if (first && !second) {
+    //        SelfTank.Wheels.PerformPowerChange(-1, 1);
+    //    } else if (first && second) {
+    //        SelfTank.Wheels.PerformPowerChange(1, -1);
     //    }
     //}
 
@@ -264,8 +285,13 @@ public class AITankController : TankController
     //bool second = false;
     //float startTime = 0;
     //float expectedTime = 0;
+    //bool finished = false;
     //Vector2 testTargetPos = new Vector2(300, 0);
     //private void reachPosTest() {
+    //    if (finished) {
+    //        return;
+    //    }
+
     //    if (!second) {
     //        SelfTank.Wheels.PerformPowerChange(1, 1);
     //    } else {
@@ -292,6 +318,7 @@ public class AITankController : TankController
     //        if (diffMag < 5) {
     //            Debug.Log("Time to reach second target=" + (Time.time - startTime));
     //            Debug.Log("Calculated time to reach second target=" + expectedTime);
+    //            finished = true;
     //        }
     //    }
     //}

@@ -33,16 +33,6 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    public Rigidbody2D LeftWheelBody
-    {
-        get; private set;
-    }
-
-    public Rigidbody2D RightWheelBody
-    {
-        get; private set;
-    }
-
     [SerializeField]
     private BoxCollider2D boxCollider;
 
@@ -88,31 +78,14 @@ public partial class Tank : MonoBehaviour
     public float TerminalVelocity
     {
         get {
-            float unityDrag = LeftWheelBody.drag;
-            float mass = LeftWheelBody.mass;
-            float addedForce = Hull.Schematic.EnergyPower / 2f;
-            return ((addedForce / unityDrag)) / mass;
-        }
-    }
-
-    // We need a different value for this because angular drag is different from linear drag.
-    // TODO: Not completely accurate, but relatively accurate. Maybe enough for our purposes.
-    public float TerminalVelocityForRotation
-    {
-        get {
-            float unityDrag = Body.angularDrag;
-            float mass = LeftWheelBody.mass;
-            float addedForce = Hull.Schematic.EnergyPower / 2f;
+            float unityDrag = body.drag;
+            float mass = body.mass;
+            float addedForce = Hull.Schematic.EnergyPower;
             return ((addedForce / unityDrag)) / mass;
         }
     }
 
     private bool initialized = false;
-
-    private void Awake() {
-        LeftWheelBody = leftWheelGO.GetComponent<Rigidbody2D>();
-        RightWheelBody = rightWheelGO.GetComponent<Rigidbody2D>();
-    }
 
     private void FixedUpdate() {
         if (initialized) {
@@ -142,14 +115,10 @@ public partial class Tank : MonoBehaviour
         hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(hullSize.x, hullSize.y);
 
         leftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
-        leftWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(-hullSize.x / 2f, 0);
-
         rightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
-        rightWheelGO.GetComponent<FixedJoint2D>().connectedAnchor = new Vector2(hullSize.x / 2f, 0);
 
         float totalWeight = calculateTotalWeight() / 10f;
-        this.LeftWheelBody.mass = totalWeight / 2f;
-        this.RightWheelBody.mass = totalWeight / 2f;
+        this.body.mass = totalWeight;
 
         MaxArmour = calculateTotalArmour();
 
@@ -190,12 +159,33 @@ public partial class Tank : MonoBehaviour
         return new Vector2(0, -1).Rotate(body.rotation);
     }
 
-    // TODO: Not completely accurate, but relatively accurate. Maybe enough for our purposes.
     public float CalcTimeToRotate(Vector2 from, Vector2 to) {
         float rotationAngle = Vector2.Angle(from, to);
-        float circumference = (Hull.Schematic.Size.x / 2f) * Mathf.PI;
-        float timeToDoOneFullRot = circumference / TerminalVelocityForRotation;
-        return rotationAngle / 360f * timeToDoOneFullRot;
+
+        float r = Hull.Schematic.Size.x / 2f;
+        float f = Hull.Schematic.EnergyPower;
+        float torque = r * f;
+        float angularDrag = body.angularDrag;
+
+        float angularAccel = torque / body.inertia * Mathf.Rad2Deg;
+
+        float newVel = body.angularVelocity;
+
+        float angle = Vector2.SignedAngle(GetForwardVec(), to);
+
+        newVel *= Mathf.Sign(angle);
+
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+
+        float angleToCover = rotationAngle;
+        while (angleToCover > 0) {
+            totalDt += dt;
+            newVel = (newVel + angularAccel * dt) * (1f / (1f + angularDrag * dt));
+            angleToCover -= newVel * dt;
+        }
+
+        return totalDt;
     }
 
     public float CalcTimeToReachPosWithNoRot(Vector2 targetPos) {
@@ -207,9 +197,9 @@ public partial class Tank : MonoBehaviour
             curVel *= -1;
         }
 
-        float f = Hull.Schematic.EnergyPower / 2f;
-        float m = LeftWheelBody.mass;
-        float drag = LeftWheelBody.drag;
+        float f = Hull.Schematic.EnergyPower;
+        float m = body.mass;
+        float drag = body.drag;
         float a = f / m;
 
         float newVel = curVel;
@@ -239,9 +229,9 @@ public partial class Tank : MonoBehaviour
             curVel *= -1;
         }
 
-        float f = Hull.Schematic.EnergyPower / 2f;
-        float m =  LeftWheelBody.mass;
-        float drag = LeftWheelBody.drag;
+        float f = Hull.Schematic.EnergyPower;
+        float m = body.mass;
+        float drag = body.drag;
         float a = f / m;
 
         float newVel = curVel;
@@ -287,7 +277,20 @@ public partial class Tank : MonoBehaviour
 
     private void handleMovement() {
         Vector2 forwardVec = this.GetForwardVec();
-        this.LeftWheelBody.AddForce(forwardVec * Wheels.LeftCurPower * (Hull.Schematic.EnergyPower / 2f));
-        this.RightWheelBody.AddForce(forwardVec * Wheels.RightCurPower * (Hull.Schematic.EnergyPower / 2f));
+
+        Vector3 leftForceVec = forwardVec * Wheels.LeftCurPower * Hull.Schematic.EnergyPower/ 2f;
+        Vector3 rightForceVec = forwardVec * Wheels.RightCurPower * Hull.Schematic.EnergyPower / 2f;
+
+        Vector2 linearForce = rightForceVec + leftForceVec;
+        body.AddForce(linearForce);
+
+        float width = Hull.Schematic.Size.x;
+        Vector3 rightR = new Vector2(width / 2f, 0).Rotate(body.rotation);
+        Vector3 rightTorque = Vector3.Cross(rightR, rightForceVec);
+
+        Vector3 leftR = new Vector2(-width / 2f, 0).Rotate(body.rotation);
+        Vector3 leftTorque = Vector3.Cross(leftR, leftForceVec);
+
+        body.AddTorque(rightTorque.z + leftTorque.z, ForceMode2D.Force);
     }
 }

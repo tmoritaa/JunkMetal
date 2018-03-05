@@ -60,8 +60,7 @@ public class Bullet : MonoBehaviour
         this.body.AddForce(forwardVec.normalized * shootForce, ForceMode2D.Impulse);
 
         Vector2 backVec = forwardVec.Rotate(180);
-        Owner.LeftWheelBody.AddForce(backVec.normalized * shootBackForce);
-        Owner.RightWheelBody.AddForce(backVec.normalized * shootBackForce);
+        Owner.Body.AddForce(backVec.normalized * shootBackForce);
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
