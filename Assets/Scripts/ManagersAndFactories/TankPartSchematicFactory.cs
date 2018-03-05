@@ -18,7 +18,7 @@ public class TankParSchematictFactory
         return new TurretPartSchematic(name, armour, rotPerSecond, weight, weaponDirs, weaponFireOffset, weightRestrict);
     }
 
-    public static WeaponPartSchematic CreateWeaponPartSchematic(string name, float shootingImpulse, float shootingBackForce, float reloadTime, float range, int weight, Bullet.BulletTypes bulletType, int damage) {
-        return new WeaponPartSchematic(name, shootingImpulse, shootingBackForce, reloadTime, range, weight, bulletType, damage);
+    public static WeaponPartSchematic CreateWeaponPartSchematic(string name, float shootingImpulse, float recoilImpulse, float reloadTime, float range, int weight, Bullet.BulletTypes bulletType, int damage) {
+        return new WeaponPartSchematic(name, shootingImpulse, recoilImpulse, reloadTime, range, weight, bulletType, damage);
     }
 }

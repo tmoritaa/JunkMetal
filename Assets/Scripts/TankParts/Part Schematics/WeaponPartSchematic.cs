@@ -17,7 +17,7 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
-    public float ShootBackForce
+    public float RecoilImpulse
     {
         get; private set;
     }
@@ -49,10 +49,10 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
-    public WeaponPartSchematic(string name, float _shootImpulse, float _shootBackForce, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name, PartType.Weapon) {
+    public WeaponPartSchematic(string name, float _shootImpulse, float _recoilImpulse, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name, PartType.Weapon) {
         Name = name;
         ShootImpulse = _shootImpulse;
-        ShootBackForce = _shootBackForce;
+        RecoilImpulse = _recoilImpulse;
         ReloadTimeInSec = _reloadTime;
         Weight = _weight;
         Range = _range;
@@ -69,11 +69,11 @@ public class WeaponPartSchematic : PartSchematic
             WeaponPartSchematic diffHull = (WeaponPartSchematic)diffSchem;
 
             retStr = string.Format("{0}\nShoot Strength: {1} => {2}\nShoot Recoil: {3} => {4}\nRange: {5} => {6}\nBullet Type: {7} => {8}\nDamage: {9} => {10}\nReload Time:{11} => {12}\nWeight: {13} => {14}",
-                Name, diffHull.ShootImpulse, ShootImpulse, diffHull.ShootBackForce, ShootBackForce, diffHull.Range, Range, 
+                Name, diffHull.ShootImpulse, ShootImpulse, diffHull.RecoilImpulse, RecoilImpulse, diffHull.Range, Range, 
                 diffHull.BulletType, BulletType, diffHull.Damage, Damage, diffHull.ReloadTimeInSec, ReloadTimeInSec, diffHull.Weight, Weight);
         } else {
             retStr = string.Format("{0}\nShoot Strength: {1}\nShoot Recoil: {2}\nRange: {3}\nBullet Type: {4}\nDamage: {5}\nReload Time:{6}\nWeight: {7}",
-                Name, ShootImpulse, ShootBackForce, Range, BulletType, Damage, ReloadTimeInSec, Weight);
+                Name, ShootImpulse, RecoilImpulse, Range, BulletType, Damage, ReloadTimeInSec, Weight);
         }
 
         return retStr;

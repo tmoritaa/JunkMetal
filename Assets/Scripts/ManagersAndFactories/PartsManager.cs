@@ -152,13 +152,13 @@ public class PartsManager : MonoBehaviour
             JObject info = (JObject)partInfo.Value;
             int weight = info.Value<int>("weight");
             float shootImpulse = info.Value<float>("shoot_impulse");
-            float backforce = info.Value<float>("back_force");
+            float recoilImpulse = info.Value<float>("shoot_recoil_impulse");
             float range = info.Value<float>("range");
             float reloadTime = info.Value<float>("reload_time");
             int damage = info.Value<int>("damage");
             Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
 
-            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, shootImpulse, backforce, reloadTime, range, weight, bType, damage);
+            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, shootImpulse, recoilImpulse, reloadTime, range, weight, bType, damage);
 
             schematics.Add(part.Name, part);
         }
