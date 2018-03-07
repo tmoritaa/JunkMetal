@@ -207,14 +207,16 @@ public class ManeuverGoal : Goal
             }
 
             if (costs.Count > 0) {
-                float costSigma = 50f;
+                float costSigma = 100f;
 
+                costs = costs.OrderBy(c => c.cost).ToList();
                 float lowestCost = costs[0].cost;
-                costs.OrderBy(c => c.cost);
 
                 if (targetNode != null) {
                     foreach (CostInfo costInfo in costs) {
-                        if (costInfo.cost < lowestCost + costSigma && costInfo.node.GetTimeDiffForHittingTarget() > targetNode.GetTimeDiffForHittingTarget()) {
+                        float curNodeTimeDiff = costInfo.node.GetTimeDiffForHittingTarget();
+                        float targetNodeTimeDiff = targetNode.GetTimeDiffForHittingTarget();
+                        if (costInfo.cost < lowestCost + costSigma && curNodeTimeDiff > targetNodeTimeDiff) {
                             resultNode = costInfo.node;
                             break;
                         }
