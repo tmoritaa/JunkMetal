@@ -52,6 +52,15 @@ public class DebugManager : MonoBehaviour
     private bool ThreatMapTargetToHitPosNoReloadDebugOn = true;
 
     [SerializeField]
+    private bool ThreatMapMarkedNodesHitTargetFromNodeDebugOn = true;
+
+    [SerializeField]
+    private bool ThreatMapMarkedNodesTankToHitNodeDebugOn = true;
+
+    [SerializeField]
+    private bool displayAITankRange = true;
+
+    [SerializeField]
     private bool ManeuverPathDebugOn = true;
 
     void Awake() {
@@ -129,9 +138,8 @@ public class DebugManager : MonoBehaviour
                     }
 
                     if (ThreatMapDiffMapDebugOn) {
-                        float diffVal = node.TimeForTargetToHitNode - node.TimeToHitTargetFromNode;
-                        float distToTarget = ((Vector2)CombatManager.Instance.AITankController.TargetTank.transform.position - map.NodeToPosition(node)).magnitude;
-                        if (diffVal > 0 && distToTarget <= 500) {
+                        float diffVal = node.GetTimeDiffForHittingTarget();
+                        if (diffVal > 0) {
                             Color color = new Color(Mathf.Clamp01(diffVal / ThreatMap.MaxTimeInSecs), 0, Mathf.Clamp01((ThreatMap.MaxTimeInSecs - diffVal)/ ThreatMap.MaxTimeInSecs));
                             Gizmos.color = color;
 
@@ -146,6 +154,23 @@ public class DebugManager : MonoBehaviour
 
                             Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
                         }
+                    }
+                }
+                if (ThreatMapMarkedNodesHitTargetFromNodeDebugOn) {
+                    foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
+                        Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeToHitTargetFromNode) / ThreatMap.MaxTimeInSecs, 0, node.TimeToHitTargetFromNode / ThreatMap.MaxTimeInSecs);
+                        Gizmos.color = color;
+
+                        Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
+                    }
+                }
+
+                if (ThreatMapMarkedNodesTankToHitNodeDebugOn) {
+                    foreach (ThreatNode node in map.NodesMarkedTankToHitNode) {
+                        Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNode) / ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNode / ThreatMap.MaxTimeInSecs);
+                        Gizmos.color = color;
+
+                        Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
                     }
                 }
             }
@@ -165,6 +190,20 @@ public class DebugManager : MonoBehaviour
                         Gizmos.DrawWireSphere(pos, 15);
                     }
                 }
+            }
+
+            if (displayAITankRange) {
+                Tank tank = CombatManager.Instance.AITankController.SelfTank;
+
+                WeaponPart maxRangeWeapon = null;
+                foreach (WeaponPart part in tank.Turret.GetAllWeapons()) {
+                    if (maxRangeWeapon == null || maxRangeWeapon.Schematic.Range < part.Schematic.Range) {
+                        maxRangeWeapon = part;
+                    }
+                }
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(tank.transform.position, maxRangeWeapon.Schematic.Range);
             }
 
             Gizmos.color = origColor;

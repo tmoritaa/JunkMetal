@@ -11,11 +11,14 @@ public class ThreatNode : Node
 
     public WeaponPart WeaponToHitTargetFromNode;
 
+    public bool Marked = false;
+
     public ThreatNode(int x, int y) : base(x, y) {
         TimeToHitTargetFromNode = 9999;
         TimeForTargetToHitNode = 9999;
         TimeForTargetToHitNodeNoReload = 9999;
         WeaponToHitTargetFromNode = null;
+        Marked = false;
     }
 
     public override void ResetNodeValues() {
@@ -23,6 +26,7 @@ public class ThreatNode : Node
         TimeForTargetToHitNode = 9999;
         TimeForTargetToHitNodeNoReload = 9999;
         WeaponToHitTargetFromNode = null;
+        Marked = false;
     }
 
     public float GetTimeDiffForHittingTarget() {

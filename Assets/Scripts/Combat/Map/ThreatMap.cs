@@ -79,6 +79,7 @@ public class ThreatMap : Map
                 }
 
                 nodesMarkedHitTargetFromNode.Add(node);
+                node.Marked = true;
                 checkedNodes.Add(node);
                 openNodes.RemoveAt(0);
             }
@@ -131,6 +132,7 @@ public class ThreatMap : Map
 
                 nodesMarkedTankToHitNode.Add(node);
                 nodesMarkedTankToHitNodeNoReload.Add(node);
+                node.Marked = true;
                 checkedNodes.Add(node);
                 openNodes.RemoveAt(0);
             }
