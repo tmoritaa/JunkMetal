@@ -212,17 +212,6 @@ public class ManeuverGoal : Goal
         ThreatMap map = controller.ThreatMap;
         ThreatNode curNode = (ThreatNode)map.PositionToNode(selfTank.transform.position);
 
-        // If the current target node fulfills conditions, then don't look for a new one
-        //if (targetNode != null) {
-        //    float distFromOptimalRange = Mathf.Abs(selfTank.CalcAvgOptimalRange() - (map.NodeToPosition(targetNode) - (Vector2)targetTank.transform.position).magnitude);
-
-        //    bool isBestNode = (ThreatMap.MaxTimeInSecs - targetNode.TimeForTargetToHitNodeNoReload) / ThreatMap.MaxTimeInSecs < acceptableSafeNodePercent && distFromOptimalRange < 50f;
-
-        //    if (isBestNode) {
-        //        return targetNode;
-        //    }
-        //}
-
         ThreatNode resultNode = null;
 
         float curTimeDiff = (targetNode != null) ? Mathf.Clamp(targetNode.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs) 
@@ -245,21 +234,40 @@ public class ManeuverGoal : Goal
             List<CostInfo> costs = new List<CostInfo>();
             foreach (ThreatNode node in diffNodes) {
                 Vector2 nodePos = map.NodeToPosition(node);
-                //float distFromPrevTargetNode = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : 0;
-                //float distFromSelfToNode = (nodePos - (Vector2)selfTank.transform.position).magnitude;
-                //float distFromOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
 
                 float approxTravelDist = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : (nodePos - (Vector2)selfTank.transform.position).magnitude;
                 float distFromOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
 
-                //float cost = distFromPrevTargetNode * 0.3f + distFromSelfToNode * 0.3f + distFromOptimalRange * 0.4f;
                 float cost = approxTravelDist * 0.45f + distFromOptimalRange * 0.55f;
                 costs.Add(new CostInfo(node, cost));
             }
 
             if (costs.Count > 0) {
+                float costSigma = 50f;
+
+                float lowestCost = costs[0].cost;
                 costs.OrderBy(c => c.cost);
-                resultNode = costs[0].node; 
+
+                if (targetNode != null) {
+                    foreach (CostInfo costInfo in costs) {
+                        if (costInfo.cost < lowestCost + costSigma && costInfo.node.GetTimeDiffForHittingTarget() > targetNode.GetTimeDiffForHittingTarget()) {
+                            resultNode = costInfo.node;
+                            break;
+                        }
+                    }
+                }
+
+                if (resultNode == null) {
+                    resultNode = costs[0].node;
+                }
+            }
+        }
+
+        if (targetNode != null && resultNode != null) {
+            float timeDiff = Mathf.Abs(targetNode.GetTimeDiffForHittingTarget() - resultNode.GetTimeDiffForHittingTarget());
+            float distDiff = (map.NodeToPosition(targetNode) - map.NodeToPosition(curNode)).magnitude;
+            if (timeDiff < 0.025f && distDiff >= 100f) {
+                resultNode = targetNode;
             }
         }
 
