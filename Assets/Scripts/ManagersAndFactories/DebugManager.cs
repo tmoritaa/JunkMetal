@@ -52,16 +52,13 @@ public class DebugManager : MonoBehaviour
     private bool ThreatMapTargetToHitPosNoReloadDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapMarkedNodesHitTargetFromNodeDebugOn = true;
-
-    [SerializeField]
-    private bool ThreatMapMarkedNodesTankToHitNodeDebugOn = true;
-
-    [SerializeField]
     private bool displayAITankRange = true;
 
     [SerializeField]
     private bool ManeuverPathDebugOn = true;
+
+    [SerializeField]
+    private bool ManeuverDisplayDiffNodesDebugOn = true;
 
     void Awake() {
         instance = this;
@@ -156,23 +153,6 @@ public class DebugManager : MonoBehaviour
                         }
                     }
                 }
-                if (ThreatMapMarkedNodesHitTargetFromNodeDebugOn) {
-                    foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
-                        Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeToHitTargetFromNode) / ThreatMap.MaxTimeInSecs, 0, node.TimeToHitTargetFromNode / ThreatMap.MaxTimeInSecs);
-                        Gizmos.color = color;
-
-                        Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
-                    }
-                }
-
-                if (ThreatMapMarkedNodesTankToHitNodeDebugOn) {
-                    foreach (ThreatNode node in map.NodesMarkedTankToHitNode) {
-                        Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNode) / ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNode / ThreatMap.MaxTimeInSecs);
-                        Gizmos.color = color;
-
-                        Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
-                    }
-                }
             }
 
             if (ManeuverPathDebugOn) {
@@ -186,8 +166,24 @@ public class DebugManager : MonoBehaviour
                     List<Node> path = goal.Path;
 
                     foreach (Node node in path) {
-                        Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
-                        Gizmos.DrawWireSphere(pos, 15);
+                        Gizmos.DrawWireSphere(CombatManager.Instance.Map.NodeToPosition(node), 15);
+                    }
+                }
+            }
+
+            if (ManeuverDisplayDiffNodesDebugOn) {
+                if (CombatManager.Instance.AITankController.CurGoal != null
+                    && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
+                    ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
+
+                    // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
+                    List<ThreatNode> nodes = goal.DebugDiffNodes;
+
+                    foreach (ThreatNode node in nodes) {
+                        Color color = new Color((ThreatMap.MaxTimeInSecs - node.GetTimeDiffForHittingTarget()) / ThreatMap.MaxTimeInSecs, 0, node.GetTimeDiffForHittingTarget() / ThreatMap.MaxTimeInSecs);
+                        Gizmos.color = color;
+
+                        Gizmos.DrawWireSphere(CombatManager.Instance.Map.NodeToPosition(node), 10);
                     }
                 }
             }

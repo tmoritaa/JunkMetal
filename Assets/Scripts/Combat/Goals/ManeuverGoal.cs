@@ -6,7 +6,21 @@ using UnityEngine;
 
 public class ManeuverGoal : Goal
 {
-    private const float acceptableSafeNodePercent = 0.2f;
+    // TODO: only for debugging. Remove once done.
+    public List<ThreatNode> DebugDiffNodes = null;
+
+    private struct CostInfo
+    {
+        public ThreatNode node;
+        public float cost;
+
+        public CostInfo(ThreatNode n, float _cost) {
+            node = n;
+            cost = _cost;
+        }
+    }
+
+    private const float acceptableSafeNodePercent = 0.1f;
 
     private ThreatNode targetNode = null;
     private List<Node> path = new List<Node>();
@@ -44,10 +58,9 @@ public class ManeuverGoal : Goal
         newTargetNode = pickNodeForGoodVantage();
 
         // If no good vantage points, just move to a safer position taking into account optimal range
-        if (newTargetNode == null) {
-            Debug.LogWarning("safety man");
-            newTargetNode = pickNodeForSafety();
-        }
+        //if (newTargetNode == null) {
+        //    newTargetNode = pickNodeForSafety();
+        //}
 
         //// If there's absolutely no nodes to move to (generally happens when in a completely safe zone), then try to keep avg optimal distance
         //if (newTargetNode == null) {
@@ -116,37 +129,17 @@ public class ManeuverGoal : Goal
         float curTimeThresh = curNode.TimeForTargetToHitNodeNoReload;
 
         List<ThreatNode> diffNodes = new List<ThreatNode>();
-        
-        foreach (ThreatNode node in map.NodesMarkedTankToHitNodeNoReload) {
-            bool validCondition = node.NodeTraversable() && node.TimeForTargetToHitNodeNoReload > curTimeThresh;
 
-            if (targetNode != null) {
-                Vector2 targetNodePos = map.NodeToPosition(targetNode);
-                Vector2 curNodePos = map.NodeToPosition(curNode);
-
-                if ((targetNodePos - curNodePos).sqrMagnitude > controller.SqrDistForDistSigma) {
-                    Vector2 curVec = targetNodePos - curNodePos;
-                    Vector2 newVec = map.NodeToPosition(node) - curNodePos;
-
-                    float angle = Vector2.Angle(curVec, newVec);
-                    validCondition &= angle < 90;
-                }
-            }
-
-            if (validCondition) {
-                diffNodes.Add(node);
-            }
-        }
-
-        // Calculate the average diff thresh among the filtered list
         float avgTimeThresh = 0;
-        foreach (ThreatNode node in diffNodes) {
-            avgTimeThresh += Mathf.Clamp(node.TimeForTargetToHitNode, 0, ThreatMap.MaxTimeInSecs);
+        foreach (ThreatNode node in map.NodesMarkedTankToHitNodeNoReload) {
+            if (node.NodeTraversable() && node.TimeForTargetToHitNodeNoReload > curTimeThresh) {
+                diffNodes.Add(node);
+                avgTimeThresh += Mathf.Clamp(node.TimeForTargetToHitNode, 0, ThreatMap.MaxTimeInSecs);
+            }
         }
         avgTimeThresh /= diffNodes.Count;
 
         List<ThreatNode> finalFilteredList = new List<ThreatNode>();
-
         float step = Mathf.Max(Mathf.Abs(avgTimeThresh - curTimeThresh) / 10f, 0.05f);
         while (finalFilteredList.Count == 0 && avgTimeThresh > curTimeThresh) {
             // Get all nodes above a certain diff threshold
@@ -159,10 +152,9 @@ public class ManeuverGoal : Goal
             avgTimeThresh -= step;
         }
 
-        // TODO: currently will not change directions if opponent rotates and self is moving towards risky threats.
-        // Should account for that, while not causing swash back problem again
-        float lowestCost = 999999;
-        float avgOptimalRange = selfTank.CalcAvgOptimalRange();
+        // Calculate cost for each node, then only save up nodes that are within certain sigma from lowest cost.
+        // Then filter out based on direction. If none, then just pick lowest cost.
+        List<CostInfo> costs = new List<CostInfo>();
         foreach (ThreatNode node in finalFilteredList) {
             Vector2 nodePos = map.NodeToPosition(node);
 
@@ -170,94 +162,109 @@ public class ManeuverGoal : Goal
             float distFromSelfToNode = (nodePos - (Vector2)selfTank.transform.position).magnitude;
 
             float cost = distFromPrevTargetNode + distFromSelfToNode;
-            if (lowestCost > cost) {
-                lowestCost = cost;
-                resultNode = node;
+            costs.Add(new CostInfo(node, cost));
+        }
+
+        if (costs.Count > 0) {
+            const float sigma = 100f;
+
+            costs.OrderBy(c => c.cost);
+
+            if (targetNode != null) {
+                Vector2 curPos = map.NodeToPosition(curNode);
+                Vector2 curTargetPos = map.NodeToPosition(targetNode);
+
+                if ((curTargetPos - curPos).sqrMagnitude > controller.SqrDistForDistSigma) {
+                    float lowestCost = costs[0].cost;
+
+                    foreach (CostInfo info in costs) {
+                        if (info.cost > lowestCost + sigma) {
+                            break;
+                        }
+
+                        ThreatNode node = info.node;
+
+                        Vector2 curVec = curTargetPos - curPos;
+                        Vector2 newVec = map.NodeToPosition(node) - curPos;
+
+                        float angle = Vector2.Angle(curVec, newVec);
+                        if (angle < 90) {
+                            resultNode = node;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (resultNode == null) {
+                resultNode = costs[0].node;
             }
         }
+        
 
         return resultNode;
     }
 
     private ThreatNode pickNodeForGoodVantage() {
-        // If the current target node is fine, then don't look for a new one
-        if (targetNode != null && (ThreatMap.MaxTimeInSecs - targetNode.GetTimeDiffForHittingTarget()) / ThreatMap.MaxTimeInSecs < acceptableSafeNodePercent) {
-            return targetNode;
-        }
-
-        ThreatNode resultNode = null;
-
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
         ThreatMap map = controller.ThreatMap;
         ThreatNode curNode = (ThreatNode)map.PositionToNode(selfTank.transform.position);
 
-        float curTimeDiff = Mathf.Clamp(curNode.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs);
-        
+        // If the current target node fulfills conditions, then don't look for a new one
+        //if (targetNode != null) {
+        //    float distFromOptimalRange = Mathf.Abs(selfTank.CalcAvgOptimalRange() - (map.NodeToPosition(targetNode) - (Vector2)targetTank.transform.position).magnitude);
+
+        //    bool isBestNode = (ThreatMap.MaxTimeInSecs - targetNode.TimeForTargetToHitNodeNoReload) / ThreatMap.MaxTimeInSecs < acceptableSafeNodePercent && distFromOptimalRange < 50f;
+
+        //    if (isBestNode) {
+        //        return targetNode;
+        //    }
+        //}
+
+        ThreatNode resultNode = null;
+
+        float curTimeDiff = (targetNode != null) ? Mathf.Clamp(targetNode.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs) 
+            : Mathf.Clamp(curNode.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs);
+
+        curTimeDiff -= 0.025f;
+        curTimeDiff = Mathf.Clamp(curTimeDiff, 0, ThreatMap.MaxTimeInSecs);
+
         List<ThreatNode> diffNodes = new List<ThreatNode>();
 
         // Get all nodes above a certain diff threshold
         foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
             float disttoTarget = (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude;
-
-            bool validCondition = node.NodeTraversable() && node.GetTimeDiffForHittingTarget() > curTimeDiff && disttoTarget < node.WeaponToHitTargetFromNode.Schematic.OptimalRange;
-
-            if (targetNode != null) {
-                Vector2 targetNodePos = map.NodeToPosition(targetNode);
-                Vector2 curNodePos = map.NodeToPosition(curNode);
-
-                if ((targetNodePos - curNodePos).sqrMagnitude > controller.SqrDistForDistSigma) {
-                    Vector2 curVec = targetNodePos - curNodePos;
-                    Vector2 newVec = map.NodeToPosition(node) - curNodePos;
-
-                    float angle = Vector2.Angle(curVec, newVec);
-                    validCondition &= angle < 90;
-                }
-            }
-
-            if (validCondition) {
+            if (node.NodeTraversable() && node.GetTimeDiffForHittingTarget() > curTimeDiff && disttoTarget < node.WeaponToHitTargetFromNode.Schematic.Range) {
                 diffNodes.Add(node);
             }
         }
 
-        // Calculate the average diff thresh among the filtered list
-        float avgTimeDiff = 0;
-        foreach (ThreatNode node in diffNodes) {
-            avgTimeDiff += Mathf.Clamp(node.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs);
-        }
-        avgTimeDiff /= diffNodes.Count;
-
-        List<ThreatNode> finalFilteredList = new List<ThreatNode>();
-
-        float step = Mathf.Max(Mathf.Abs(avgTimeDiff - curTimeDiff) / 10f, 0.05f);
-        while (finalFilteredList.Count == 0 && avgTimeDiff > curTimeDiff) {
-            // Get all nodes above a certain diff threshold
+        if (diffNodes.Count != 0) {
+            List<CostInfo> costs = new List<CostInfo>();
             foreach (ThreatNode node in diffNodes) {
-                if (node.NodeTraversable() && node.GetTimeDiffForHittingTarget() > avgTimeDiff) {
-                    finalFilteredList.Add(node);
-                }
-            }
-
-            avgTimeDiff -= step;
-        }
-
-        if (finalFilteredList.Count != 0) {
-            float lowestCost = 999999;
-            foreach (ThreatNode node in finalFilteredList) {
                 Vector2 nodePos = map.NodeToPosition(node);
-                float distFromPrevTargetNode = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : 0;
-                float distFromSelfToNode = (nodePos - (Vector2)selfTank.transform.position).magnitude;
+                //float distFromPrevTargetNode = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : 0;
+                //float distFromSelfToNode = (nodePos - (Vector2)selfTank.transform.position).magnitude;
+                //float distFromOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
+
+                float approxTravelDist = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : (nodePos - (Vector2)selfTank.transform.position).magnitude;
                 float distFromOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
 
-                float cost = distFromPrevTargetNode + distFromSelfToNode + distFromOptimalRange;
-                if (lowestCost > cost) {
-                    lowestCost = cost;
-                    resultNode = node;
-                }
+                //float cost = distFromPrevTargetNode * 0.3f + distFromSelfToNode * 0.3f + distFromOptimalRange * 0.4f;
+                float cost = approxTravelDist * 0.45f + distFromOptimalRange * 0.55f;
+                costs.Add(new CostInfo(node, cost));
+            }
+
+            if (costs.Count > 0) {
+                costs.OrderBy(c => c.cost);
+                resultNode = costs[0].node; 
             }
         }
 
+        DebugDiffNodes = diffNodes;
+            
         return resultNode;
     }
 }

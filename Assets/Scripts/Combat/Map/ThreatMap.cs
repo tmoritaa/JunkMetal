@@ -61,7 +61,7 @@ public class ThreatMap : Map
                 ThreatNode node = (ThreatNode)openNodes[0];
                 Vector2 nodePos = NodeToPosition(node);
 
-                float timeToHitPos = AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position);
+                float timeToHitPos = AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position, true);
                 timeToHitPos += weapon.CalcTimeToReloaded();
                 
                 if (timeToHitPos < MaxTimeInSecs) {
