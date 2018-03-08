@@ -9,8 +9,6 @@ public class ManeuverGoal : Goal
     // TODO: only for debugging. Remove once done.
     public List<ThreatNode> DebugDiffNodes = new List<ThreatNode>();
 
-    public Vector2 CenterOfZone = new Vector2();
-
     private struct CostInfo
     {
         public ThreatNode node;
@@ -102,8 +100,6 @@ public class ManeuverGoal : Goal
     }
 
     private ThreatNode pickNodeForPursue(HashSet<ThreatNode> markedNodes, Func<ThreatNode, bool> getDangerBoolFunc) {
-        CenterOfZone = new Vector2();
-
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 

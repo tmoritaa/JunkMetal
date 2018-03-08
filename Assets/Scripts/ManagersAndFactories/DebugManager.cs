@@ -187,13 +187,10 @@ public class DebugManager : MonoBehaviour
             if (ManeuverGoalDebugOn && CombatManager.Instance.AITankController.CurGoal != null && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
                 ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
 
-                Gizmos.color = Color.magenta;
-
-                Gizmos.DrawWireSphere(goal.CenterOfZone, 20);
-
                 if (ManeuverPathDebugOn) {
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<Node> path = goal.Path;
+                    Gizmos.color = Color.magenta;
 
                     foreach (Node node in path) {
                         Gizmos.DrawWireSphere(CombatManager.Instance.Map.NodeToPosition(node), 15);
