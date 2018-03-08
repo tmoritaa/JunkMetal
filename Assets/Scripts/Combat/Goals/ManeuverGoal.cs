@@ -9,6 +9,8 @@ public class ManeuverGoal : Goal
     // TODO: only for debugging. Remove once done.
     public List<ThreatNode> DebugDiffNodes = null;
 
+    public Vector2 CenterOfZone = new Vector2();
+
     private struct CostInfo
     {
         public ThreatNode node;
@@ -131,7 +133,7 @@ public class ManeuverGoal : Goal
                 float approxTravelDist = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : (nodePos - (Vector2)selfTank.transform.position).magnitude;
                 float distFromOptimalRange = Mathf.Abs(selfTank.CalcAvgOptimalRange() - (nodePos - (Vector2)targetTank.transform.position).magnitude);
 
-                float cost = approxTravelDist + distFromOptimalRange ;
+                float cost = approxTravelDist + distFromOptimalRange;
                 costs.Add(new CostInfo(node, cost));
             }
 
@@ -170,6 +172,8 @@ public class ManeuverGoal : Goal
     }
 
     private ThreatNode pickNodeForGoodVantage() {
+        CenterOfZone = new Vector2();
+
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
@@ -178,67 +182,109 @@ public class ManeuverGoal : Goal
 
         ThreatNode resultNode = null;
 
-        float curTimeDiff = (targetNode != null) ? Mathf.Clamp(targetNode.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs) 
-            : Mathf.Clamp(curNode.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs);
-
-        curTimeDiff -= 0.025f;
-        curTimeDiff = Mathf.Clamp(curTimeDiff, 0, ThreatMap.MaxTimeInSecs);
-
-        List<ThreatNode> diffNodes = new List<ThreatNode>();
-
-        // Get all nodes above a certain diff threshold
-        foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
-            float disttoTarget = (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude;
-            if (node.NodeTraversable() && node.GetTimeDiffForHittingTarget() > curTimeDiff && disttoTarget < node.WeaponToHitTargetFromNode.Schematic.Range) {
-                diffNodes.Add(node);
-            }
+        if (targetNode != null && targetNode.TimeDiffDangerous) {
+            targetNode = null;
         }
 
-        if (diffNodes.Count != 0) {
-            List<CostInfo> costs = new List<CostInfo>();
-            foreach (ThreatNode node in diffNodes) {
-                Vector2 nodePos = map.NodeToPosition(node);
+        if (curNode.TimeDiffDangerous && targetNode == null) {
+            Debug.Log("On dangerous. Find safe node");
 
-                float approxTravelDist = (targetNode != null) ? (nodePos - map.NodeToPosition(targetNode)).magnitude : (nodePos - (Vector2)selfTank.transform.position).magnitude;
-                float distFromOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (nodePos - (Vector2)targetTank.transform.position).magnitude);
+            // In this case, we want to find a closer node that goes through minimal risk
+            List<CostInfo> distsFromCurNode = new List<CostInfo>();
+            foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
+                float distToNode = selfTank.CalcTimeToReachPosWithNoRot(map.NodeToPosition(node));
+                float distOfNodeToTarget = (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude;
 
-                float cost = approxTravelDist * 0.45f + distFromOptimalRange * 0.55f;
-                costs.Add(new CostInfo(node, cost));
+                bool blocked = false;
+                List<Connection> cons = map.FindStraightPath(curNode, node, out blocked);
+
+                if (!node.TimeDiffDangerous && distOfNodeToTarget < node.WeaponToHitTargetFromNode.Schematic.Range && !blocked) {
+                    distsFromCurNode.Add(new CostInfo(node, distToNode));
+                }
             }
 
-            if (costs.Count > 0) {
-                float costSigma = 100f;
+            distsFromCurNode = distsFromCurNode.OrderBy(c => c.cost).ToList();
+            const float FilterNum = 10;
+            if (distsFromCurNode.Count > FilterNum) {
+                distsFromCurNode.RemoveRange(10, distsFromCurNode.Count - 10);
+            }
 
-                costs = costs.OrderBy(c => c.cost).ToList();
-                float lowestCost = costs[0].cost;
+            List<CostInfo> riskToNode = new List<CostInfo>();
+            foreach (CostInfo info in distsFromCurNode) {
+                ThreatNode node = info.node;
 
-                if (targetNode != null) {
-                    foreach (CostInfo costInfo in costs) {
-                        float curNodeTimeDiff = costInfo.node.GetTimeDiffForHittingTarget();
-                        float targetNodeTimeDiff = targetNode.GetTimeDiffForHittingTarget();
-                        if (costInfo.cost < lowestCost + costSigma && curNodeTimeDiff > targetNodeTimeDiff) {
-                            resultNode = costInfo.node;
-                            break;
-                        }
+                bool blocked = false;
+                List<Connection> cons = map.FindStraightPath(curNode, node, out blocked);
+
+                float cost = 0;
+                foreach (Connection con in cons) {
+                    cost += Mathf.Clamp(ThreatMap.MaxTimeInSecs - ((ThreatNode)con.targetNode).TimeForTargetToHitNode, 0, ThreatMap.MaxTimeInSecs);
+                }
+
+                riskToNode.Add(new CostInfo(node, cost));
+            }
+
+            riskToNode = riskToNode.OrderBy(c => c.cost).ToList();
+
+            if (riskToNode.Count > 0) {
+                resultNode = riskToNode[0].node;
+            }
+
+            // TODO: only for debugging
+            DebugDiffNodes = new List<ThreatNode>();
+            riskToNode.ForEach(c => DebugDiffNodes.Add(c.node));
+        } else if (!curNode.TimeDiffDangerous) {
+            Debug.Log("On safe. Find safer node");
+
+            // If we're already in a safe position, then find a node that is also safe but has optimal range.
+            Vector2 centerOfZone = map.FindCenterOfZone(curNode);
+            CenterOfZone = centerOfZone;
+
+            List<CostInfo> optNodes = new List<CostInfo>();
+            foreach (ThreatNode node in map.NodesMarkedHitTargetFromNode) {
+                if (node.TimeDiffDangerous || node == curNode) {
+                    continue;
+                }
+
+                bool invalid = false;
+                List<Connection> cons = map.FindStraightPath(curNode, node, out invalid);
+
+                foreach (Connection con in cons) {
+                    if (((ThreatNode)con.targetNode).TimeDiffDangerous) {
+                        invalid = true;
+                        break;
                     }
                 }
 
-                if (resultNode == null) {
-                    resultNode = costs[0].node;
+                if (invalid) {
+                    continue;
+                }
+
+                Vector2 toCenterOfZoneVec = centerOfZone - map.NodeToPosition(curNode);
+
+                Vector2 dirToNode = map.NodeToPosition(node) - map.NodeToPosition(curNode);
+                float distToNode = dirToNode.magnitude;
+                float distToOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (map.NodeToPosition(curNode) - (Vector2)targetTank.transform.position).magnitude);
+
+                if (Vector2.Angle(dirToNode, toCenterOfZoneVec) < 90) {
+                    float cost = distToNode + distToOptimalRange;
+                    optNodes.Add(new CostInfo(node, cost));
                 }
             }
-        }
 
-        if (targetNode != null && resultNode != null) {
-            float timeDiff = Mathf.Abs(targetNode.GetTimeDiffForHittingTarget() - resultNode.GetTimeDiffForHittingTarget());
-            float distDiff = (map.NodeToPosition(targetNode) - map.NodeToPosition(curNode)).magnitude;
-            float otherDistDiff = (map.NodeToPosition(targetNode) - map.NodeToPosition(resultNode)).magnitude;
-            if (timeDiff < 0.025f && distDiff >= 100f && otherDistDiff < 100f) {
-                resultNode = targetNode;
-            }
-        }
+            optNodes = optNodes.OrderBy(c => c.cost).ToList();
 
-        DebugDiffNodes = diffNodes;
+            if (optNodes.Count > 0) {
+                resultNode = optNodes[0].node;
+            }            
+
+            DebugDiffNodes = new List<ThreatNode>();
+            optNodes.ForEach(c => DebugDiffNodes.Add(c.node));
+        } else {
+            Debug.Log("Dangerous but have target node");
+
+            resultNode = targetNode;
+        }
             
         return resultNode;
     }

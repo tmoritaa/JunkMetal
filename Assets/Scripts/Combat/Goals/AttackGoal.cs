@@ -30,11 +30,7 @@ public class AttackGoal : Goal
         WeaponPart weapon = node.WeaponToHitTargetFromNode;
         bool weaponFireable = weapon != null && weapon.IsFireable && weapon.Schematic.Range > diffVec.magnitude;;
 
-        List<ThreatNode> markedNodes = map.NodesMarkedHitTargetFromNode.ToList();
-        markedNodes.OrderBy(n => n.GetTimeDiffForHittingTarget());
-        ThreatNode medianNode = markedNodes[markedNodes.Count / 2];
-
-        if (weaponFireable && node.GetTimeDiffForHittingTarget() > medianNode.GetTimeDiffForHittingTarget()) {
+        if (weaponFireable && !node.TimeDiffDangerous) {
             Insistence = 100;
         }
     }

@@ -247,10 +247,11 @@ public class Map
         return connectedNodes;
     }
 
-    public List<Connection> FindStraightPath(Node from, Node to) {
+    public List<Connection> FindStraightPath(Node from, Node to, out bool wasBlocked) {
         List<Connection> pathNodes = new List<Connection>();
         Node curNode = from;
-        
+        wasBlocked = false;
+
         while (curNode != to) {
             int xDiff = to.x - curNode.x;
             int yDiff = to.y - curNode.y;
@@ -276,6 +277,10 @@ public class Map
 
             curNode = closestConnection.targetNode;
             pathNodes.Add(closestConnection);
+
+            if (!closestConnection.targetNode.NodeTraversable()) {
+                wasBlocked = true;
+            }
         }
         
         return pathNodes;

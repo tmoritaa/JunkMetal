@@ -63,11 +63,13 @@ public class ThreatMap : Map
 
                 float timeToHitPos = AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position, true);
                 timeToHitPos += weapon.CalcTimeToReloaded();
-                
+
+                bool marked = false;
                 if (timeToHitPos < MaxTimeInSecs) {
                     if (node.TimeToHitTargetFromNode > timeToHitPos) {
                         node.TimeToHitTargetFromNode = timeToHitPos;
                         node.WeaponToHitTargetFromNode = weapon;
+                        marked = true;
                     }
 
                     List<Connection> connections = FindConnectedNodes(node, true);
@@ -78,9 +80,12 @@ public class ThreatMap : Map
                     }
                 }
 
-                nodesMarkedHitTargetFromNode.Add(node);
-                node.Marked = true;
-                checkedNodes.Add(node);
+                if (marked) {
+                    nodesMarkedHitTargetFromNode.Add(node);
+                    checkedNodes.Add(node);
+                    node.Marked = true;
+                }
+                
                 openNodes.RemoveAt(0);
             }
         }
@@ -132,29 +137,98 @@ public class ThreatMap : Map
 
                 nodesMarkedTankToHitNode.Add(node);
                 nodesMarkedTankToHitNodeNoReload.Add(node);
-                node.Marked = true;
                 checkedNodes.Add(node);
+                node.Marked = true;
                 openNodes.RemoveAt(0);
             }
         }   
     }
     
-    protected override float calcHeuristicCost(Node node, Node target) {
-        List<Connection> connections = FindStraightPath(node, target);
+    public void MarkDangerousNodes() {
+        float avgTimeDiff = 0;
+        List<ThreatNode> markedNodes = new List<ThreatNode>();
+        foreach (ThreatNode node in nodesMarkedHitTargetFromNode) {
+            avgTimeDiff += Mathf.Clamp(node.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs);
+            markedNodes.Add(node);
+        }
+        avgTimeDiff /= markedNodes.Count;
 
-        float totalCost = 0;
-        foreach (Connection con in connections) {
-            ThreatNode threatNode = (ThreatNode)con.targetNode;
-            totalCost += Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
+        foreach (ThreatNode node in markedNodes) {
+            if (node.GetTimeDiffForHittingTarget() < avgTimeDiff) {
+                node.TimeDiffDangerous = true;
+            }
         }
 
-        return totalCost;
+        avgTimeDiff = 0;
+        markedNodes.Clear();
+        foreach (ThreatNode node in nodesMarkedTankToHitNodeNoReload) {
+            avgTimeDiff += Mathf.Clamp(node.TimeForTargetToHitNodeNoReload, 0, ThreatMap.MaxTimeInSecs);
+            markedNodes.Add(node);
+        }
+        avgTimeDiff /= markedNodes.Count;
+
+        foreach (ThreatNode node in markedNodes) {
+            if (node.GetTimeDiffForHittingTarget() < avgTimeDiff) {
+                node.StrictlyDangerous = true;
+            }
+        }
     }
 
-    protected override float calculateConnectionCost(Connection connection) {
-        ThreatNode threatNode = (ThreatNode)connection.targetNode;
-        return Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
+    public Vector2 FindCenterOfZone(ThreatNode startNode) {
+        if (!startNode.Marked) {
+            return NodeToPosition(startNode);
+        }
+
+        List<ThreatNode> openNodes = new List<ThreatNode>();
+        List<ThreatNode> closedNodes = new List<ThreatNode>();
+
+        openNodes.Add(startNode);
+
+        while (openNodes.Count > 0) {
+            ThreatNode node = openNodes[0];
+            List<Connection> cons = FindConnectedNodes(node);
+
+            foreach (Connection con in cons) {
+                ThreatNode otherNode = (ThreatNode)con.targetNode;
+
+                if (otherNode.Marked
+                    && otherNode.TimeDiffDangerous == startNode.TimeDiffDangerous
+                    && openNodes.Find(n => n == otherNode) == null
+                    && closedNodes.Find(n => n == otherNode) == null) {
+
+                    openNodes.Add(otherNode);
+                }
+            }
+
+            closedNodes.Add(node);
+            openNodes.RemoveAt(0);
+        }
+
+        Vector2 pos = new Vector2();
+        foreach (ThreatNode node in closedNodes) {
+            pos += NodeToPosition(node);
+        }
+        pos /= closedNodes.Count;
+
+        return pos;
     }
+
+    //protected override float calcHeuristicCost(Node node, Node target) {
+    //    List<Connection> connections = FindStraightPath(node, target);
+
+    //    float totalCost = 0;
+    //    foreach (Connection con in connections) {
+    //        ThreatNode threatNode = (ThreatNode)con.targetNode;
+    //        totalCost += Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
+    //    }
+
+    //    return totalCost;
+    //}
+
+    //protected override float calculateConnectionCost(Connection connection) {
+    //    ThreatNode threatNode = (ThreatNode)connection.targetNode;
+    //    return Mathf.Clamp(MaxTimeInSecs - threatNode.TimeForTargetToHitNode, 0, MaxTimeInSecs);
+    //}
 
     protected override Node createNode(int x, int y, params object[] values) {
         return new ThreatNode(x, y);

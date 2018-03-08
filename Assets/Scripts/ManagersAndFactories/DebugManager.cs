@@ -52,7 +52,13 @@ public class DebugManager : MonoBehaviour
     private bool ThreatMapTargetToHitPosNoReloadDebugOn = true;
 
     [SerializeField]
+    private bool ThreatMapDangerousNodesDebugOn = true;
+
+    [SerializeField]
     private bool displayAITankRange = true;
+
+    [SerializeField]
+    private bool ManeuverGoalDebugOn = true;
 
     [SerializeField]
     private bool ManeuverPathDebugOn = true;
@@ -152,16 +158,27 @@ public class DebugManager : MonoBehaviour
                             Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
                         }
                     }
+
+                    if (ThreatMapDangerousNodesDebugOn && node.Marked) {
+                        if (node.TimeDiffDangerous) {
+                            Gizmos.color = Color.red;
+                        } else {
+                            Gizmos.color = Color.blue;
+                        }
+
+                        Gizmos.DrawSphere(map.NodeToPosition(node), 10);
+                    }
                 }
             }
 
-            if (ManeuverPathDebugOn) {
-                if (CombatManager.Instance.AITankController.CurGoal != null
-                    && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
-                    Gizmos.color = Color.blue;
+            if (ManeuverGoalDebugOn && CombatManager.Instance.AITankController.CurGoal != null && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
+                ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
 
-                    ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
+                Gizmos.color = Color.magenta;
 
+                Gizmos.DrawWireSphere(goal.CenterOfZone, 20);
+
+                if (ManeuverPathDebugOn) {
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<Node> path = goal.Path;
 
@@ -169,13 +186,8 @@ public class DebugManager : MonoBehaviour
                         Gizmos.DrawWireSphere(CombatManager.Instance.Map.NodeToPosition(node), 15);
                     }
                 }
-            }
 
-            if (ManeuverDisplayDiffNodesDebugOn) {
-                if (CombatManager.Instance.AITankController.CurGoal != null
-                    && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
-                    ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
-
+                if (ManeuverDisplayDiffNodesDebugOn) {
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<ThreatNode> nodes = goal.DebugDiffNodes;
 
