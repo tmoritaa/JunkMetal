@@ -148,7 +148,7 @@ public class ThreatMap : Map
         float avgTimeDiff = 0;
         List<ThreatNode> markedNodes = new List<ThreatNode>();
         foreach (ThreatNode node in nodesMarkedHitTargetFromNode) {
-            avgTimeDiff += Mathf.Clamp(node.GetTimeDiffForHittingTarget(), 0, ThreatMap.MaxTimeInSecs);
+            avgTimeDiff += Mathf.Clamp(node.GetTimeDiffForHittingTarget(), 0, MaxTimeInSecs);
             markedNodes.Add(node);
         }
         avgTimeDiff /= markedNodes.Count;
@@ -162,7 +162,7 @@ public class ThreatMap : Map
         avgTimeDiff = 0;
         markedNodes.Clear();
         foreach (ThreatNode node in nodesMarkedTankToHitNodeNoReload) {
-            avgTimeDiff += Mathf.Clamp(node.TimeForTargetToHitNodeNoReload, 0, ThreatMap.MaxTimeInSecs);
+            avgTimeDiff += Mathf.Clamp(node.TimeForTargetToHitNodeNoReload, 0, MaxTimeInSecs);
             markedNodes.Add(node);
         }
         avgTimeDiff /= markedNodes.Count;

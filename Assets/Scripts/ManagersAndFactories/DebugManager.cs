@@ -52,7 +52,10 @@ public class DebugManager : MonoBehaviour
     private bool ThreatMapTargetToHitPosNoReloadDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapDangerousNodesDebugOn = true;
+    private bool ThreatMapTimeDiffDangerousNodesDebugOn = true;
+
+    [SerializeField]
+    private bool ThreatMapStrictlyDangerousNodesDebugOn = true;
 
     [SerializeField]
     private bool displayAITankRange = true;
@@ -159,8 +162,18 @@ public class DebugManager : MonoBehaviour
                         }
                     }
 
-                    if (ThreatMapDangerousNodesDebugOn && node.Marked) {
+                    if (ThreatMapTimeDiffDangerousNodesDebugOn && node.Marked) {
                         if (node.TimeDiffDangerous) {
+                            Gizmos.color = Color.red;
+                        } else {
+                            Gizmos.color = Color.blue;
+                        }
+
+                        Gizmos.DrawSphere(map.NodeToPosition(node), 10);
+                    }
+
+                    if (ThreatMapStrictlyDangerousNodesDebugOn && node.Marked) {
+                        if (node.StrictlyDangerous) {
                             Gizmos.color = Color.red;
                         } else {
                             Gizmos.color = Color.blue;

@@ -22,6 +22,7 @@ public class ThreatNode : Node
         WeaponToHitTargetFromNode = null;
         Marked = false;
         TimeDiffDangerous = false;
+        StrictlyDangerous = false;
     }
 
     public override void ResetNodeValues() {
@@ -31,6 +32,7 @@ public class ThreatNode : Node
         WeaponToHitTargetFromNode = null;
         Marked = false;
         TimeDiffDangerous = false;
+        StrictlyDangerous = false;
     }
 
     public float GetTimeDiffForHittingTarget() {
