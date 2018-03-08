@@ -232,7 +232,8 @@ public class ManeuverGoal : Goal
         if (targetNode != null && resultNode != null) {
             float timeDiff = Mathf.Abs(targetNode.GetTimeDiffForHittingTarget() - resultNode.GetTimeDiffForHittingTarget());
             float distDiff = (map.NodeToPosition(targetNode) - map.NodeToPosition(curNode)).magnitude;
-            if (timeDiff < 0.025f && distDiff >= 100f) {
+            float otherDistDiff = (map.NodeToPosition(targetNode) - map.NodeToPosition(resultNode)).magnitude;
+            if (timeDiff < 0.025f && distDiff >= 100f && otherDistDiff < 100f) {
                 resultNode = targetNode;
             }
         }
