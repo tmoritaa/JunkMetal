@@ -20,22 +20,14 @@ public class AITankController : TankController
         }
     }
 
-    private ThreatMap threatMap;
-    // TODO: only for debugging.
-    public ThreatMap ThreatMap {
-        get {
-            return threatMap;
-        }
+    public ThreatMap ThreatMap
+    {
+        get; private set;
     }
 
     private List<Goal> goals = new List<Goal>();
 
     private Goal curGoal = null;
-    // NOTE: only for debugging.
-    public Goal CurGoal
-    {
-        get { return curGoal; }
-    }
 
     private int successiveCollisions = 0;
 
@@ -43,7 +35,7 @@ public class AITankController : TankController
         // For 1v1 matches, this will always be true. Maybe later we'll have to change the logic, but for now this is fine.
         TargetTank = CombatManager.Instance.HumanTankController.SelfTank;
 
-        threatMap = new ThreatMap(CombatManager.Instance.Map);
+        ThreatMap = new ThreatMap(CombatManager.Instance.Map);
     }
 
     protected override void Update() {
@@ -58,11 +50,13 @@ public class AITankController : TankController
         } else {
             if (!CombatManager.Instance.DisableMovement) {
                 TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
-                TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
+                TargetTank.MarkCurPositionAsBlockedOnMap(ThreatMap);
 
                 updateThreatMap();
                 updateGoalsAndPerformActions();
             }
+
+            DebugManager.Instance.RegisterObject("goal", curGoal);
         }
 
         // TODO: for testing only. Remove once done.
@@ -82,10 +76,10 @@ public class AITankController : TankController
     }
 
     private void updateThreatMap() {
-        threatMap.ResetNodeValues();
-        threatMap.UpdateTimeForTankToHitNode(TargetTank);
-        threatMap.UpdateTimeToHitTargetFromNode(SelfTank, TargetTank);
-        threatMap.MarkDangerousNodes();
+        ThreatMap.ResetNodeValues();
+        ThreatMap.UpdateTimeForTankToHitNode(TargetTank);
+        ThreatMap.UpdateTimeToHitTargetFromNode(SelfTank, TargetTank);
+        ThreatMap.MarkDangerousNodes();
     }
 
     private void updateGoalsAndPerformActions() {

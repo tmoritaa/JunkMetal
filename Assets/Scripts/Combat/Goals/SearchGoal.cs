@@ -7,22 +7,10 @@ using UnityEngine;
 public class SearchGoal : Goal
 {
     private SearchMap searchQuadrants;
-    // NOTE: only for debugging.
-    public SearchMap SearchQuadrants
-    {
-        get {
-            return searchQuadrants;
-        }
-    }
 
     private SearchNode curDestQuad;
 
     private List<Node> path = new List<Node>();
-    // NOTE: only for debugging.
-    public List<Node> Path
-    {
-        get { return path; }
-    }
 
     public SearchGoal(AITankController tankController) : base(tankController) 
     {}
@@ -83,6 +71,9 @@ public class SearchGoal : Goal
 
         // Also aim in direction of movement
         actions.Add(new AimAction(requestDir.normalized, controller));
+
+        DebugManager.Instance.RegisterObject("search_path", path);
+        DebugManager.Instance.RegisterObject("search_quads", searchQuadrants);
 
         return actions.ToArray();
     }

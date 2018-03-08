@@ -86,6 +86,8 @@ public class DebugManager : MonoBehaviour
         }
     }
 
+    private Dictionary<string, object> debugObjectDict = new Dictionary<string, object>();
+
     void Awake() {
         instance = this;
     }
@@ -100,9 +102,21 @@ public class DebugManager : MonoBehaviour
         }    
     }
 
+    public void RegisterObject(string key, object obj) {
+        if (Application.isEditor) {
+            debugObjectDict[key] = obj;
+        }
+    }
+
+    private object getRegisterdObj(string key) {
+        return debugObjectDict[key];
+    }
+
     void OnDrawGizmos() {
-        if (Application.isPlaying) {
+        if (Application.isPlaying && Application.isEditor) {
             Color origColor = Gizmos.color;
+
+            Goal curGoal = (Goal)getRegisterdObj("goal");
 
             if (moveTestDebugOn) {
                 Gizmos.color = Color.green;
@@ -122,22 +136,20 @@ public class DebugManager : MonoBehaviour
                         Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
                     }
                 }
-
-                if (CombatManager.Instance.AITankController.CurGoal != null 
-                    && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(SearchGoal)) {
+                
+                if (curGoal != null && curGoal.GetType()  == typeof(SearchGoal)) {
                     Gizmos.color = Color.blue;
 
-                    SearchGoal goal = (SearchGoal)CombatManager.Instance.AITankController.CurGoal;
+                    SearchGoal goal = (SearchGoal)curGoal;
 
-                    // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
-                    List<Node> path = goal.Path;
+                    List<Node> path = (List<Node>)getRegisterdObj("search_path");
 
                     foreach (Node node in path) {
                         Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
                         Gizmos.DrawWireSphere(pos, 15);
                     }
 
-                    SearchMap searchQuads = goal.SearchQuadrants;
+                    SearchMap searchQuads = (SearchMap)getRegisterdObj("search_quads");
 
                     foreach (Node _node in searchQuads.MapArray) {
                         SearchNode node = (SearchNode)_node;
@@ -217,12 +229,11 @@ public class DebugManager : MonoBehaviour
                 }
             }
 
-            if (maneuverGoalDebugOn && CombatManager.Instance.AITankController.CurGoal != null && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
-                ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
+            if (maneuverGoalDebugOn && curGoal != null && curGoal.GetType() == typeof(ManeuverGoal)) {
+                ManeuverGoal goal = (ManeuverGoal)curGoal;
 
                 if (maneuverPathDebugOn) {
-                    // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
-                    List<Node> path = goal.Path;
+                    List<Node> path = (List<Node>)getRegisterdObj("maneuver_path");
                     Gizmos.color = Color.magenta;
 
                     foreach (Node node in path) {
@@ -231,8 +242,7 @@ public class DebugManager : MonoBehaviour
                 }
 
                 if (maneuverDisplayDiffNodesDebugOn) {
-                    // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
-                    List<ThreatNode> nodes = goal.DebugDiffNodes;
+                    List<ThreatNode> nodes = (List<ThreatNode>)getRegisterdObj("maneuver_nodes");
 
                     foreach (ThreatNode node in nodes) {
                         Color color = new Color((ThreatMap.MaxTimeInSecs - node.GetTimeDiffForHittingTarget()) / ThreatMap.MaxTimeInSecs, 0, node.GetTimeDiffForHittingTarget() / ThreatMap.MaxTimeInSecs);

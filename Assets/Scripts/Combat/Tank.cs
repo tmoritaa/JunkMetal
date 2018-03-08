@@ -69,7 +69,6 @@ public partial class Tank : MonoBehaviour
     }
 
     // Used link for reference https://answers.unity.com/questions/151724/calculating-rigidbody-top-speed.html
-    // TODO: Right now we're assuming that going to terminal velocity is instantaneous for most calculations. We might have to alleviate this assumption if things are wonky.
     public float TerminalVelocity
     {
         get {

@@ -6,9 +6,6 @@ using UnityEngine;
 
 public class ManeuverGoal : Goal
 {
-    // TODO: only for debugging. Remove once done.
-    public List<ThreatNode> DebugDiffNodes = new List<ThreatNode>();
-
     private struct CostInfo
     {
         public ThreatNode node;
@@ -24,13 +21,6 @@ public class ManeuverGoal : Goal
 
     private ThreatNode targetNode = null;
     private List<Node> path = new List<Node>();
-    // TODO: for debugging only.
-    public List<Node> Path
-    {
-        get {
-            return path;
-        }
-    }
 
     public ManeuverGoal(AITankController _tankController) : base(_tankController) {
     }
@@ -96,6 +86,8 @@ public class ManeuverGoal : Goal
             actions.Add(new GoInDirAction(dir, controller));
         }
 
+        DebugManager.Instance.RegisterObject("maneuver_path", path);
+
         return actions.ToArray();
     }
 
@@ -154,9 +146,9 @@ public class ManeuverGoal : Goal
                 resultNode = riskToNode[0].node;
             }
 
-            // TODO: only for debugging
-            DebugDiffNodes = new List<ThreatNode>();
-            riskToNode.ForEach(c => DebugDiffNodes.Add(c.node));
+            List<ThreatNode> debugDiffNodes = new List<ThreatNode>();
+            riskToNode.ForEach(c => debugDiffNodes.Add(c.node));
+            DebugManager.Instance.RegisterObject("maneuver_nodes", debugDiffNodes);
         } else if (!getDangerBoolFunc(curNode) && distToTargetNode < 50f) {
             // If we're already in a safe position, then find a node that is also safe but has optimal range.
             List<CostInfo> optNodes = new List<CostInfo>();
@@ -197,10 +189,11 @@ public class ManeuverGoal : Goal
 
             if (optNodes.Count > 0) {
                 resultNode = optNodes[0].node;
-            }            
+            }
 
-            DebugDiffNodes = new List<ThreatNode>();
-            optNodes.ForEach(c => DebugDiffNodes.Add(c.node));
+            List<ThreatNode> debugDiffNodes = new List<ThreatNode>();
+            optNodes.ForEach(c => debugDiffNodes.Add(c.node));
+            DebugManager.Instance.RegisterObject("maneuver_nodes", debugDiffNodes);
         } else {
             resultNode = targetNode;
         }
