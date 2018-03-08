@@ -113,6 +113,7 @@ public class ManeuverGoal : Goal
         ThreatNode resultNode = null;
 
         bool targetNodeNoLongerSafe = targetNode == null || (targetNode != null && getDangerBoolFunc(targetNode));
+        float distToTargetNode = (targetNode != null) ? (map.NodeToPosition(curNode) - map.NodeToPosition(targetNode)).magnitude : 0;
 
         if (getDangerBoolFunc(curNode) && targetNodeNoLongerSafe) {
             // In this case, we want to find a closer node that goes through minimal risk
@@ -160,14 +161,11 @@ public class ManeuverGoal : Goal
             // TODO: only for debugging
             DebugDiffNodes = new List<ThreatNode>();
             riskToNode.ForEach(c => DebugDiffNodes.Add(c.node));
-        } else if (!getDangerBoolFunc(curNode)) {
+        } else if (!getDangerBoolFunc(curNode) && distToTargetNode < 50f) {
             // If we're already in a safe position, then find a node that is also safe but has optimal range.
-            Vector2 centerOfZone = map.FindCenterOfZone(curNode);
-            CenterOfZone = centerOfZone;
-
             List<CostInfo> optNodes = new List<CostInfo>();
             foreach (ThreatNode node in markedNodes) {
-                if (getDangerBoolFunc(node) || node == curNode) {
+                if (getDangerBoolFunc(node)) {
                     continue;
                 }
 
@@ -185,14 +183,16 @@ public class ManeuverGoal : Goal
                     continue;
                 }
 
-                Vector2 toCenterOfZoneVec = centerOfZone - map.NodeToPosition(curNode);
+                Vector2 toCenterOfZoneVec = map.NodeToPosition(curNode) - (Vector2)targetTank.transform.position;
+                if (toCenterOfZoneVec.magnitude > node.WeaponToHitTargetFromNode.Schematic.OptimalRange) {
+                    toCenterOfZoneVec *= -1;
+                }
 
                 Vector2 dirToNode = map.NodeToPosition(node) - map.NodeToPosition(curNode);
-                float distToNode = dirToNode.magnitude;
-                float distToOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (map.NodeToPosition(curNode) - (Vector2)targetTank.transform.position).magnitude);
+                float distToOptimalRange = Mathf.Abs(node.WeaponToHitTargetFromNode.Schematic.OptimalRange - (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude);
                 
                 if (Vector2.Angle(dirToNode, toCenterOfZoneVec) < 90) {
-                    float cost = distToOptimalRange + distToNode;
+                    float cost = distToOptimalRange;
                     optNodes.Add(new CostInfo(node, cost));
                 }
             }
