@@ -49,12 +49,20 @@ public class AITankController : TankController
     protected override void Update() {
         base.Update();
 
-        if (!CombatManager.Instance.DisableMovement) {
-            TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
-            TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
+        if (DebugManager.Instance.MoveTestDebugOn) {
+            Vector2 targetPos = DebugManager.Instance.TargetPosForMoveTest;
 
-            updateThreatMap();
-            updateGoalsAndPerformActions();
+            Vector2 requestDir = targetPos - (Vector2)SelfTank.transform.position;
+            requestDir = AvoidWalls(requestDir);
+            SelfTank.PerformActuation(requestDir.normalized);
+        } else {
+            if (!CombatManager.Instance.DisableMovement) {
+                TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
+                TargetTank.MarkCurPositionAsBlockedOnMap(threatMap);
+
+                updateThreatMap();
+                updateGoalsAndPerformActions();
+            }
         }
 
         // TODO: for testing only. Remove once done.
@@ -151,7 +159,7 @@ public class AITankController : TankController
         const int LayerMask = 1 << WallBit | 1 << PlayerBit;
 
         const float DiagRatio = 0.8f;
-        float fanRatio = (float)successiveCollisions / 100f;
+        float fanRatio = Mathf.Clamp01((float)successiveCollisions / 100f);
 
         float maxDistance = Mathf.Max(SelfTank.Body.velocity.magnitude, 150f);
 

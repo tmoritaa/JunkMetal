@@ -34,48 +34,81 @@ public class DebugManager : MonoBehaviour
     }
 
     [SerializeField]
+    private bool moveTestDebugOn = true;
+    public bool MoveTestDebugOn
+    {
+        get {
+            return moveTestDebugOn;
+        }
+    }
+
+    [SerializeField]
     private bool mapDisplayDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapDebugOn = true;
+    private bool threatMapDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapTargetToHitPosDebugOn = true;
+    private bool threatMapTargetToHitPosDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapPosToHitTargetDebugOn = true;
+    private bool threatMapPosToHitTargetDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapDiffMapDebugOn = true;
+    private bool threatMapDiffMapDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapTargetToHitPosNoReloadDebugOn = true;
+    private bool threatMapTargetToHitPosNoReloadDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapTimeDiffDangerousNodesDebugOn = true;
+    private bool threatMapTimeDiffDangerousNodesDebugOn = true;
 
     [SerializeField]
-    private bool ThreatMapStrictlyDangerousNodesDebugOn = true;
+    private bool threatMapStrictlyDangerousNodesDebugOn = true;
 
     [SerializeField]
     private bool displayAITankRange = true;
 
     [SerializeField]
-    private bool ManeuverGoalDebugOn = true;
+    private bool maneuverGoalDebugOn = true;
 
     [SerializeField]
-    private bool ManeuverPathDebugOn = true;
+    private bool maneuverPathDebugOn = true;
 
     [SerializeField]
-    private bool ManeuverDisplayDiffNodesDebugOn = true;
+    private bool maneuverDisplayDiffNodesDebugOn = true;
+
+    private Vector2 targetPosForMoveTest = new Vector2();
+    public Vector2 TargetPosForMoveTest
+    {
+        get {
+            return targetPosForMoveTest;
+        }
+    }
 
     void Awake() {
         instance = this;
     }
 
+    void Start() {
+        targetPosForMoveTest = CombatManager.Instance.AITankController.SelfTank.transform.position;    
+    }
+
+    void Update() {
+        if (Input.GetMouseButton(0)) {
+            targetPosForMoveTest = CombatManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+        }    
+    }
+
     void OnDrawGizmos() {
         if (Application.isPlaying) {
             Color origColor = Gizmos.color;
+
+            if (moveTestDebugOn) {
+                Gizmos.color = Color.green;
+
+                Gizmos.DrawWireSphere(targetPosForMoveTest, 20);
+            }
 
             if (mapDisplayDebugOn) {
                 // Draw Map
@@ -119,13 +152,13 @@ public class DebugManager : MonoBehaviour
                 }
             }
 
-            if (ThreatMapDebugOn) {
+            if (threatMapDebugOn) {
                 ThreatMap map = CombatManager.Instance.AITankController.ThreatMap;
 
                 foreach (Node _node in map.MapArray) {
                     ThreatNode node = (ThreatNode)_node;
 
-                    if (ThreatMapTargetToHitPosDebugOn) {
+                    if (threatMapTargetToHitPosDebugOn) {
                         if (node.TimeForTargetToHitNode <= ThreatMap.MaxTimeInSecs) {
                             Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNode)/ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNode/ThreatMap.MaxTimeInSecs);
                             Gizmos.color = color;
@@ -134,7 +167,7 @@ public class DebugManager : MonoBehaviour
                         }
                     }
 
-                    if (ThreatMapPosToHitTargetDebugOn) {
+                    if (threatMapPosToHitTargetDebugOn) {
                         if (node.TimeToHitTargetFromNode <= ThreatMap.MaxTimeInSecs) {
                             Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeToHitTargetFromNode)/ThreatMap.MaxTimeInSecs, 0, node.TimeToHitTargetFromNode/ThreatMap.MaxTimeInSecs);
                             Gizmos.color = color;
@@ -143,7 +176,7 @@ public class DebugManager : MonoBehaviour
                         }
                     }
 
-                    if (ThreatMapDiffMapDebugOn) {
+                    if (threatMapDiffMapDebugOn) {
                         float diffVal = node.GetTimeDiffForHittingTarget();
                         if (diffVal > 0) {
                             Color color = new Color(Mathf.Clamp01(diffVal / ThreatMap.MaxTimeInSecs), 0, Mathf.Clamp01((ThreatMap.MaxTimeInSecs - diffVal)/ ThreatMap.MaxTimeInSecs));
@@ -153,7 +186,7 @@ public class DebugManager : MonoBehaviour
                         }
                     }
 
-                    if (ThreatMapTargetToHitPosNoReloadDebugOn) {
+                    if (threatMapTargetToHitPosNoReloadDebugOn) {
                         if (node.TimeForTargetToHitNodeNoReload <= ThreatMap.MaxTimeInSecs) {
                             Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNodeNoReload) / ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNodeNoReload / ThreatMap.MaxTimeInSecs);
                             Gizmos.color = color;
@@ -162,7 +195,7 @@ public class DebugManager : MonoBehaviour
                         }
                     }
 
-                    if (ThreatMapTimeDiffDangerousNodesDebugOn && node.Marked) {
+                    if (threatMapTimeDiffDangerousNodesDebugOn && node.Marked) {
                         if (node.TimeDiffDangerous) {
                             Gizmos.color = Color.red;
                         } else {
@@ -172,7 +205,7 @@ public class DebugManager : MonoBehaviour
                         Gizmos.DrawSphere(map.NodeToPosition(node), 10);
                     }
 
-                    if (ThreatMapStrictlyDangerousNodesDebugOn && node.Marked) {
+                    if (threatMapStrictlyDangerousNodesDebugOn && node.Marked) {
                         if (node.StrictlyDangerous) {
                             Gizmos.color = Color.red;
                         } else {
@@ -184,10 +217,10 @@ public class DebugManager : MonoBehaviour
                 }
             }
 
-            if (ManeuverGoalDebugOn && CombatManager.Instance.AITankController.CurGoal != null && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
+            if (maneuverGoalDebugOn && CombatManager.Instance.AITankController.CurGoal != null && CombatManager.Instance.AITankController.CurGoal.GetType() == typeof(ManeuverGoal)) {
                 ManeuverGoal goal = (ManeuverGoal)CombatManager.Instance.AITankController.CurGoal;
 
-                if (ManeuverPathDebugOn) {
+                if (maneuverPathDebugOn) {
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<Node> path = goal.Path;
                     Gizmos.color = Color.magenta;
@@ -197,7 +230,7 @@ public class DebugManager : MonoBehaviour
                     }
                 }
 
-                if (ManeuverDisplayDiffNodesDebugOn) {
+                if (maneuverDisplayDiffNodesDebugOn) {
                     // TODO: a bit hacky right now. Maybe we can clean this up once we have blackboards.
                     List<ThreatNode> nodes = goal.DebugDiffNodes;
 
