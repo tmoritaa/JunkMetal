@@ -1,4 +1,4 @@
 {
-	"Basic Hull":{"weight":250, "armor":100, "width":50, "height":50, "engine_pow":75000},
-	"Faster Hull":{"weight":250, "armor":100, "width":50, "height":50, "engine_pow":75000}
+	"Basic Hull":{"weight":350, "armor":100, "width":50, "height":50, "engine_pow":75000},
+	"Faster Hull":{"weight":350, "armor":100, "width":50, "height":50, "engine_pow":75000}
 }

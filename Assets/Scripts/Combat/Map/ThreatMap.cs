@@ -82,10 +82,10 @@ public class ThreatMap : Map
 
                 if (marked) {
                     nodesMarkedHitTargetFromNode.Add(node);
-                    checkedNodes.Add(node);
                     node.Marked = true;
                 }
-                
+
+                checkedNodes.Add(node);
                 openNodes.RemoveAt(0);
             }
         }

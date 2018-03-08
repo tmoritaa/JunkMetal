@@ -148,9 +148,6 @@ public class CustomizationHandler : MonoBehaviour
                     schem.TurretSchematic = (TurretPartSchematic)slot.Part;
                     schem.WeaponSchematics = new WeaponPartSchematic[schem.TurretSchematic.OrigWeaponDirs.Length];
                     break;
-                case PartSchematic.PartType.Wheels:
-                    schem.WheelSchematic = (WheelPartSchematic)slot.Part;
-                    break;
                 case PartSchematic.PartType.Weapon:
                     schem.WeaponSchematics[weaponCount] = (WeaponPartSchematic)slot.Part;
                     weaponCount += 1;
@@ -166,7 +163,6 @@ public class CustomizationHandler : MonoBehaviour
 
         List<PartSchematic> schematics = new List<PartSchematic> {
             playerSchematic.HullSchematic,
-            playerSchematic.WheelSchematic,
             playerSchematic.TurretSchematic
         };
         schematics.AddRange(playerSchematic.WeaponSchematics);

@@ -10,7 +10,7 @@ public partial class Tank
 
     public void HandleInput() {
         if (initialized) {
-            Wheels.HandleInput();
+            Hull.HandleInput();
             Turret.HandleInput();
         }
     }

@@ -14,7 +14,7 @@ public partial class Tank
 
     public void PerformActuation(Vector2 requestDir) {
         if (requestDir.magnitude == 0) {
-            this.Wheels.PerformPowerChangeToStop();
+            this.Hull.PerformPowerChangeToStop();
             return;
         }
 
@@ -50,12 +50,12 @@ public partial class Tank
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    this.Wheels.PerformPowerChange(0, 1);
+                    this.Hull.PerformPowerChange(0, 1);
                 } else {
-                    this.Wheels.PerformPowerChange(1, 0);
+                    this.Hull.PerformPowerChange(1, 0);
                 }
             } else {
-                this.Wheels.PerformPowerChange(1, 1);
+                this.Hull.PerformPowerChange(1, 1);
             }
 
         // In this case we want the tank to start accelerating backwards
@@ -64,12 +64,12 @@ public partial class Tank
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    this.Wheels.PerformPowerChange(-1, 0);
+                    this.Hull.PerformPowerChange(-1, 0);
                 } else {
-                    this.Wheels.PerformPowerChange(0, -1);
+                    this.Hull.PerformPowerChange(0, -1);
                 }
             } else {
-                this.Wheels.PerformPowerChange(-1, -1);
+                this.Hull.PerformPowerChange(-1, -1);
             }
 
         // In this case we want the tank to start turning
@@ -88,8 +88,8 @@ public partial class Tank
             Vector3 leftWheelPos = this.LeftWheelGO.transform.position;
             Vector3 rightWheelPos = this.RightWheelGO.transform.position;
 
-            Debug.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * this.Wheels.LeftCurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * this.Wheels.RightCurPower), Color.magenta);
+            Debug.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * this.Hull.LeftCurPower), Color.magenta);
+            Debug.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * this.Hull.RightCurPower), Color.magenta);
         }
     }
 
@@ -100,9 +100,9 @@ public partial class Tank
 
     private void applyRotationPowerChange(float angleChange) {
         if (Mathf.Sign(angleChange) >= 0) {
-            this.Wheels.PerformPowerChange(-1, 1);
+            this.Hull.PerformPowerChange(-1, 1);
         } else {
-            this.Wheels.PerformPowerChange(1, -1);
+            this.Hull.PerformPowerChange(1, -1);
         }
     }
 }

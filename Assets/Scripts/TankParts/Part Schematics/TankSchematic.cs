@@ -16,20 +16,14 @@ public class TankSchematic
         get; set;
     }
 
-    public WheelPartSchematic WheelSchematic
-    {
-        get; set;
-    }
-
     public WeaponPartSchematic[] WeaponSchematics
     {
         get; set;
     }
 
-    public TankSchematic(HullPartSchematic hull, TurretPartSchematic turret, WheelPartSchematic wheel, WeaponPartSchematic[] weapons) {
+    public TankSchematic(HullPartSchematic hull, TurretPartSchematic turret, WeaponPartSchematic[] weapons) {
         HullSchematic = hull;
         TurretSchematic = turret;
-        WheelSchematic = wheel;
         WeaponSchematics = weapons;
     }
 }

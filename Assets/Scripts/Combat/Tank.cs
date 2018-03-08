@@ -48,11 +48,6 @@ public partial class Tank : MonoBehaviour
     [SerializeField]
     private GameObject hullGO;
 
-    public WheelPart Wheels
-    {
-        get; private set;
-    }
-
     public HullPart Hull
     {
         get; private set;
@@ -96,7 +91,6 @@ public partial class Tank : MonoBehaviour
 
     public void Init(TankSchematic tankSchematic) {
         Hull = new HullPart(tankSchematic.HullSchematic);
-        Wheels = new WheelPart(tankSchematic.WheelSchematic);
         Turret = new TurretPart(tankSchematic.TurretSchematic);
 
         int count = 0;
@@ -133,7 +127,7 @@ public partial class Tank : MonoBehaviour
     }
 
     public void ResetMovement() {
-        Wheels.Reset();
+        Hull.Reset();
         Turret.Reset();
     }
 
@@ -270,7 +264,6 @@ public partial class Tank : MonoBehaviour
 
         weight += Hull.Schematic.Weight;
         weight += Turret.Schematic.Weight;
-        weight += Wheels.Schematic.Weight;
 
         return weight;
     }
@@ -278,8 +271,8 @@ public partial class Tank : MonoBehaviour
     private void handleMovement() {
         Vector2 forwardVec = this.GetForwardVec();
 
-        Vector3 leftForceVec = forwardVec * Wheels.LeftCurPower * Hull.Schematic.EnergyPower/ 2f;
-        Vector3 rightForceVec = forwardVec * Wheels.RightCurPower * Hull.Schematic.EnergyPower / 2f;
+        Vector3 leftForceVec = forwardVec * Hull.LeftCurPower * Hull.Schematic.EnergyPower/ 2f;
+        Vector3 rightForceVec = forwardVec * Hull.RightCurPower * Hull.Schematic.EnergyPower / 2f;
 
         Vector2 linearForce = rightForceVec + leftForceVec;
         body.AddForce(linearForce);

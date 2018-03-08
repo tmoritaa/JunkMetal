@@ -9,7 +9,6 @@ public abstract class PartSchematic
     {
         Hull,
         Turret,
-        Wheels,
         Weapon
     }
 

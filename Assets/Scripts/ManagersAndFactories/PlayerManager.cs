@@ -44,9 +44,8 @@ public class PlayerManager : MonoBehaviour
             }
         }
         
-        string playerInfoJson = String.Format("{{\"Parts\":{{\"Hull\":\"{0}\",\"Wheels\":\"{1}\",\"Turret\":\"{2}\",\"Weapons\":[{3}]}}}}", 
+        string playerInfoJson = String.Format("{{\"Parts\":{{\"Hull\":\"{0}\",\"Turret\":\"{1}\",\"Weapons\":[{2}]}}}}", 
                                     TankSchematic.HullSchematic.Name,
-                                    TankSchematic.WheelSchematic.Name,
                                     TankSchematic.TurretSchematic.Name,
                                     weaponString);
 
@@ -86,9 +85,6 @@ public class PlayerManager : MonoBehaviour
         string turretName = parts.Value<string>("Turret");
         TurretPartSchematic turret = (TurretPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Turret, turretName);
 
-        string wheelsName = parts.Value<string>("Wheels");
-        WheelPartSchematic wheels = (WheelPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Wheels, wheelsName);
-
         JArray weapons = parts.Value<JArray>("Weapons");
         List<WeaponPartSchematic> weaponsList = new List<WeaponPartSchematic>();
         foreach (string str in weapons) {
@@ -99,6 +95,6 @@ public class PlayerManager : MonoBehaviour
             }
         }
 
-        TankSchematic = new TankSchematic(hull, turret, wheels, weaponsList.ToArray());
+        TankSchematic = new TankSchematic(hull, turret, weaponsList.ToArray());
     }
 }

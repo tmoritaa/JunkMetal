@@ -6,10 +6,6 @@ using UnityEngine;
 
 public class TankParSchematictFactory
 {
-    public static WheelPartSchematic CreateWheelPartSchematic(string name, float energyInc, float energyDec, int weight) {
-        return new WheelPartSchematic(name, energyInc, energyDec, weight);
-    }
-
     public static HullPartSchematic CreateHullPartSchematic(string name, int armour, Vector2 size, int energyPower, int weight) {
         return new HullPartSchematic(name, armour, size, energyPower, weight);
     }

@@ -21,7 +21,6 @@ public class PartsManager : MonoBehaviour
     void Awake() {
         instance = this;
         loadHullParts();
-        loadWheelParts();
         loadTurretParts();
         loadWeaponParts();
     }
@@ -73,29 +72,6 @@ public class PartsManager : MonoBehaviour
         }
 
         partSchematicDics.Add(PartSchematic.PartType.Hull, schematics);
-    }
-
-    private void loadWheelParts() {
-        Dictionary<string, PartSchematic> schematics = new Dictionary<string, PartSchematic>();
-
-        TextAsset jsonText = Resources.Load("WheelPartList") as TextAsset;
-
-        JObject root = JObject.Parse(jsonText.text);
-
-        foreach (var partInfo in root) {
-            string name = partInfo.Key;
-
-            JObject info = (JObject)partInfo.Value;
-            int weight = info.Value<int>("weight");
-            float energyInc = info.Value<float>("energy_inc");
-            float energyDec = info.Value<float>("energy_dec");
-
-            WheelPartSchematic part = TankParSchematictFactory.CreateWheelPartSchematic(name, energyInc, energyDec, weight);
-
-            schematics.Add(part.Name, part);
-        }
-
-        partSchematicDics.Add(PartSchematic.PartType.Wheels, schematics);
     }
 
     private void loadTurretParts() {
