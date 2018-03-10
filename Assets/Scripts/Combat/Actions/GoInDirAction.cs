@@ -17,9 +17,6 @@ public class GoInDirAction : AIAction
 
         // TODO: Makes sense for now, but later if goals are rewritten to take into account walls, take Avoid Walls from here
         Vector2 newRequestDir = controller.AvoidWalls(requestDir);
-        if (Application.isEditor) {
-            Debug.DrawLine(tank.transform.position, tank.transform.position + (Vector3)(newRequestDir.normalized * 50), Color.red);
-        }
 
         tank.PerformActuation(newRequestDir.normalized);
     }

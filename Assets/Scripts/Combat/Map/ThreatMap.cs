@@ -7,7 +7,50 @@ using UnityEngine;
 
 public class ThreatMap : Map
 {
+    public class Cluster
+    {
+        public List<ThreatNode> Nodes
+        {
+            get; private set;
+        }
+
+        public int DangerLevel
+        {
+            get; private set;
+        }
+
+        private bool isCenterPosSaved = false;
+        private Vector2 savedCenterPos = new Vector2();
+
+        public Cluster(List<ThreatNode> nodes, int dangerLevel) {
+            Nodes = nodes;
+            DangerLevel = dangerLevel;
+        }
+
+        // TODO: later, make it not pass a threat map, but threat node should hold own reference of owner map.
+        public Vector2 CalcCenterPos(ThreatMap map) {
+            if (isCenterPosSaved) {
+                return savedCenterPos;
+            }
+
+            Vector2 pos = new Vector2();
+
+            foreach (ThreatNode node in Nodes) {
+                pos += map.NodeToPosition(node);
+            }
+
+            pos /= Nodes.Count;
+
+            savedCenterPos = pos;
+            isCenterPosSaved = true;
+
+            return pos;
+        }
+    }
+
     public const float MaxTimeInSecs = 1f;
+
+    public const int MaxThreatLevel = 2;
 
     private HashSet<ThreatNode> nodesMarkedHitTargetFromNode = new HashSet<ThreatNode>();
     public HashSet<ThreatNode> NodesMarkedHitTargetFromNode
@@ -145,72 +188,51 @@ public class ThreatMap : Map
     }
     
     public void MarkDangerousNodes() {
-        float avgTimeDiff = 0;
-        List<ThreatNode> markedNodes = new List<ThreatNode>();
         foreach (ThreatNode node in nodesMarkedHitTargetFromNode) {
-            avgTimeDiff += Mathf.Clamp(node.GetTimeDiffForHittingTarget(), 0, MaxTimeInSecs);
-            markedNodes.Add(node);
-        }
-        avgTimeDiff /= markedNodes.Count;
-
-        foreach (ThreatNode node in markedNodes) {
-            if (node.GetTimeDiffForHittingTarget() < avgTimeDiff) {
-                node.TimeDiffDangerous = true;
-            }
+            float ratio = Mathf.Clamp(node.GetTimeDiffForHittingTarget(), 0, MaxTimeInSecs) / MaxTimeInSecs;
+            node.TimeDiffDangerLevel = (int)Mathf.Clamp(ratio / (1f / (MaxThreatLevel + 1)), 0, MaxThreatLevel);
         }
 
-        avgTimeDiff = 0;
-        markedNodes.Clear();
-        foreach (ThreatNode node in nodesMarkedTankToHitNodeNoReload) {
-            avgTimeDiff += Mathf.Clamp(node.TimeForTargetToHitNodeNoReload, 0, MaxTimeInSecs);
-            markedNodes.Add(node);
-        }
-        avgTimeDiff /= markedNodes.Count;
-
-        foreach (ThreatNode node in markedNodes) {
-            if (node.GetTimeDiffForHittingTarget() < avgTimeDiff) {
-                node.StrictlyDangerous = true;
-            }
+        foreach (ThreatNode node in nodesMarkedTankToHitNode) {
+            float ratio = node.TimeForTargetToHitNode / MaxTimeInSecs;
+            node.TankToNodeDangerLevel = (int)Mathf.Clamp(ratio / (1f / (MaxThreatLevel + 1)), 0, MaxThreatLevel);
         }
     }
 
-    public Vector2 FindCenterOfZone(ThreatNode startNode) {
-        if (!startNode.Marked) {
-            return NodeToPosition(startNode);
-        }
+    public List<Cluster> FindClusters(List<ThreatNode> _nodes, Func<ThreatNode, float> valFunc) {
+        List<ThreatNode> workingSet = _nodes;
+        List<Cluster> clusters = new List<Cluster>();
 
-        List<ThreatNode> openNodes = new List<ThreatNode>();
-        List<ThreatNode> closedNodes = new List<ThreatNode>();
+        while (workingSet.Count > 0) {
+            List<ThreatNode> checkedNodes = new List<ThreatNode>();
 
-        openNodes.Add(startNode);
+            List<ThreatNode> openNodes = new List<ThreatNode>();
+            openNodes.Add(workingSet[0]);
+            int searchDangerLevel = openNodes[0].TimeDiffDangerLevel;
 
-        while (openNodes.Count > 0) {
-            ThreatNode node = openNodes[0];
-            List<Connection> cons = FindConnectedNodes(node);
+            while (openNodes.Count > 0) {
+                ThreatNode node = openNodes[0];
 
-            foreach (Connection con in cons) {
-                ThreatNode otherNode = (ThreatNode)con.targetNode;
-
-                if (otherNode.Marked
-                    && otherNode.TimeDiffDangerous == startNode.TimeDiffDangerous
-                    && openNodes.Find(n => n == otherNode) == null
-                    && closedNodes.Find(n => n == otherNode) == null) {
-
-                    openNodes.Add(otherNode);
+                if (node.TimeDiffDangerLevel == searchDangerLevel) {
+                    List<Connection> connections = FindConnectedNodes(node, true);
+                    foreach (Connection con in connections) {
+                        if (checkedNodes.Find(n => n == con.targetNode) == null && openNodes.Find(n => n == con.targetNode) == null) {
+                            openNodes.Add((ThreatNode)con.targetNode);
+                        }
+                    }
                 }
+                
+                checkedNodes.Add(node);
+                openNodes.RemoveAt(0);
             }
 
-            closedNodes.Add(node);
-            openNodes.RemoveAt(0);
+            checkedNodes = checkedNodes.FindAll(n => n.TimeDiffDangerLevel == searchDangerLevel);
+
+            clusters.Add(new Cluster(checkedNodes, searchDangerLevel));
+            workingSet = workingSet.Except(checkedNodes).ToList();
         }
 
-        Vector2 pos = new Vector2();
-        foreach (ThreatNode node in closedNodes) {
-            pos += NodeToPosition(node);
-        }
-        pos /= closedNodes.Count;
-
-        return pos;
+        return clusters;
     }
 
     //protected override float calcHeuristicCost(Node node, Node target) {

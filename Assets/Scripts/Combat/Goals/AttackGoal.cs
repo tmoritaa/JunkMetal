@@ -30,7 +30,10 @@ public class AttackGoal : Goal
         WeaponPart weapon = node.WeaponToHitTargetFromNode;
         bool weaponFireable = weapon != null && weapon.IsFireable && weapon.Schematic.Range > diffVec.magnitude;;
 
-        if (weaponFireable && !node.TimeDiffDangerous) {
+        // TODO: improve later
+        // First, should trigger if can fire immediately and would probably hit
+        // Second, if current time to attack target is less than the time for opponent to hit us
+        if (weaponFireable && node.TimeDiffDangerLevel > 0) {
             Insistence = 100;
         }
     }

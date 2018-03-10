@@ -68,7 +68,6 @@ public class CombatManager : MonoBehaviour
         get; private set;
     }
 
-    // TODO: later move to AITankController
     public Map Map
     {
         get; private set;
