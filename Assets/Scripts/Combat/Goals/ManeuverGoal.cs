@@ -23,14 +23,9 @@ public class ManeuverGoal : Goal
     public override AIAction[] CalcActionsToPerform() {
         List<AIAction> actions = new List<AIAction>();
 
-        Tank targetTank = controller.TargetTank;
-        Tank selfTank = controller.SelfTank;
-
         ThreatMap map = controller.ThreatMap;
-        ThreatNode curNode = (ThreatNode)map.PositionToNode(selfTank.transform.position);
 
         Vector2 newMoveDir = new Vector2();
-
         newMoveDir = pickDirToPursue(map.NodesMarkedHitTargetFromNode, (ThreatNode n) => { return n.TimeDiffDangerLevel; });
 
         // If no good vantage points, just move to a safer position taking into account optimal range
@@ -46,32 +41,6 @@ public class ManeuverGoal : Goal
         DebugManager.Instance.RegisterObject("maneuver_move_dir", prevMoveDir);
 
         return actions.ToArray();
-    }
-
-    private Vector2 calcAimVec(Vector2 moveDir) {
-        Tank selfTank = controller.SelfTank;
-        Tank targetTank = controller.TargetTank;
-
-        Vector2 toTargetVec = targetTank.transform.position - selfTank.transform.position;
-
-        Vector2 fireVec = new Vector2();
-        // TODO: later pick from main weapons
-        foreach (WeaponPart part in selfTank.Turret.GetAllWeapons()) {
-            if (!part.IsFireable) {
-                continue;
-            }
-
-            fireVec = part.CalculateFireVec();
-        }
-
-        Vector2 aimDir = moveDir;
-        float rotAngle = Vector2.SignedAngle(fireVec, toTargetVec);
-
-        if (fireVec.magnitude > 0) {
-            aimDir = fireVec.Rotate(90 * Mathf.Sign(rotAngle)).normalized;
-        }
-
-        return aimDir.normalized;
     }
 
     private Vector2 pickDirToPursue(HashSet<ThreatNode> markedNodes, Func<ThreatNode, int> getDangerLevelFunc) {
@@ -95,11 +64,23 @@ public class ManeuverGoal : Goal
             possibleDirs.Add(selfTank.GetForwardVec().Rotate(-90f));
         }
 
-        Func<List<Vector2>, List<Vector2>>[] filterFuncs = new Func<List<Vector2>, List<Vector2>>[] {
-            filterByDodgeNecessity,
-            filterByAimRequirements,
-            filterBySafestClusterDir,
-            filterByPrevMoveDir };
+        Func<List<Vector2>, List<Vector2>>[] filterFuncs = null;
+
+        if (curNode.TimeDiffDangerLevel == 0) {
+            filterFuncs = new Func<List<Vector2>, List<Vector2>>[] {
+                filterByDodgeNecessity,
+                filterByDist,
+                filterBySafestClusterDir,
+                filterByAimRequirements,
+                filterByPrevMoveDir };
+        } else {
+            filterFuncs = new Func<List<Vector2>, List<Vector2>>[] {
+                filterByDodgeNecessity,
+                filterByAimRequirements,
+                filterBySafestClusterDir,
+                filterByDist,
+                filterByPrevMoveDir };
+        }
 
         foreach (Func<List<Vector2>, List<Vector2>> filterFunc in filterFuncs) {
             possibleDirs = filterFunc(possibleDirs);
@@ -279,6 +260,34 @@ public class ManeuverGoal : Goal
 
         return filteredList;
     }
+
+    private List<Vector2> filterByDist(List<Vector2> possibleDirs) {
+        List<Vector2> filteredList = new List<Vector2>();
+
+        Tank selfTank = controller.SelfTank;
+        Tank targetTank = controller.TargetTank;
+
+        Vector2 toTargetVec = targetTank.transform.position - selfTank.transform.position;
+        float dist = toTargetVec.magnitude;
+        // TODO: should be main weapon. Just first weapon for now.
+        if (dist < selfTank.Turret.GetAllWeapons()[0].Schematic.Range / 2f) {
+            Vector2 moveAwayVec = -toTargetVec.normalized;
+
+            foreach (Vector2 vec in possibleDirs) {
+                if (Vector2.Angle(vec, moveAwayVec) < 90f) {
+                    filteredList.Add(vec);
+                }
+            }
+        }
+
+        if (filteredList.Count == 0) {
+            filteredList = possibleDirs;
+        }
+
+        DebugManager.Instance.RegisterObject("maneuver_dist_filter_vecs", filteredList);
+
+        return filteredList;
+    }
     
     private Vector2 calcDodgeVec(out float lowestDistFromFireVec) {
         Tank selfTank = controller.SelfTank;
@@ -316,133 +325,4 @@ public class ManeuverGoal : Goal
 
         return dodgeVec;
     }
-
-    //private ThreatNode pickNodeForPursue(HashSet<ThreatNode> markedNodes, Func<ThreatNode, int> getDangerLevelFunc) {
-    //    Tank selfTank = controller.SelfTank;
-    //    Tank targetTank = controller.TargetTank;
-
-    //    ThreatMap map = controller.ThreatMap;
-    //    ThreatNode curNode = (ThreatNode)map.PositionToNode(selfTank.transform.position);
-
-    //    ThreatNode resultNode = null;
-
-    //    float distToTargetNode = (targetNode != null) ? (map.NodeToPosition(curNode) - map.NodeToPosition(targetNode)).magnitude : 0;
-
-    //    bool findNewTargetNode = targetNode == null || getDangerLevelFunc(curNode) >= getDangerLevelFunc(targetNode) || distToTargetNode < 100f;
-    //    if (findNewTargetNode) {
-    //        List<ThreatNode> saferNodes = new List<ThreatNode>();
-    //        foreach (ThreatNode node in markedNodes) {
-    //            if (getDangerLevelFunc(node) > getDangerLevelFunc(curNode)) {
-    //                saferNodes.Add(node);
-    //            }
-    //        }
-
-    //        Vector2 targetToSelfVec = map.NodeToPosition(curNode) - (Vector2)targetTank.transform.position;
-    //        float lowestDistFromFireVec = 9999;
-    //        Vector2 closestFireVec = new Vector2();
-    //        foreach (WeaponPart part in targetTank.Turret.GetAllWeapons()) {
-    //            Vector2 fireVec = part.CalculateFireVec();
-
-    //            float angle = Vector2.Angle(fireVec, targetToSelfVec);
-
-    //            if (angle < 90f) {
-    //                // Calc dist from fire vector to self.
-    //                Ray ray = new Ray(targetTank.transform.position, fireVec);
-    //                float distToSelfFromFireVec = Vector3.Cross(ray.direction, selfTank.transform.position - ray.origin).magnitude;
-
-    //                if (distToSelfFromFireVec < lowestDistFromFireVec) {
-    //                    closestFireVec = fireVec;
-    //                    lowestDistFromFireVec = distToSelfFromFireVec;
-    //                }
-    //            }
-    //        }
-
-    //        Vector2 dodgeVec = closestFireVec.Perp();
-    //        // Next calculate moving perpendicular from fire vec
-    //        // If perp vector is pointing towards opp, flip it.
-    //        if (Vector2.Angle(targetToSelfVec, dodgeVec) >= 90) {
-    //            dodgeVec = -dodgeVec;
-    //        }
-
-    //        List<ThreatNode> filteredNodes = new List<ThreatNode>();
-
-    //        Func<Node, bool>[] conditionFuncs = new Func<Node, bool>[] {
-    //            (Node node) => {
-    //                float distFromTarget = (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude;
-    //                // TODO: later, implement system where we pick a main weapon we're aiming with, and use the optimal range of that.
-    //                float optRange = selfTank.CalcAvgOptimalRange();
-
-    //                bool blocked;
-    //                map.FindStraightPath(curNode, node, out blocked);
-
-    //                bool validCondition = Mathf.Abs(distFromTarget - optRange) < 100f && !blocked;
-
-    //                if (lowestDistFromFireVec < 100f) {
-    //                    Vector2 selfToNode = map.NodeToPosition(node) - map.NodeToPosition(curNode);
-    //                    float angle = Vector2.Angle(selfToNode, dodgeVec);
-    //                    validCondition &= angle < 90f;
-    //                }
-
-    //                return validCondition;
-    //            },
-    //            (Node node) => {
-    //                float distFromTarget = (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude;
-
-    //                bool blocked;
-    //                map.FindStraightPath(curNode, node, out blocked);
-
-    //                bool validCondition = !blocked;
-
-    //                if (lowestDistFromFireVec < 100f) {
-    //                    Vector2 selfToNode = map.NodeToPosition(node) - map.NodeToPosition(curNode);
-    //                    float angle = Vector2.Angle(selfToNode, dodgeVec);
-    //                    validCondition &= angle < 90f;
-    //                }
-
-    //                return validCondition;
-    //            },
-    //            (Node node) => {
-    //                float distFromTarget = (map.NodeToPosition(node) - (Vector2)targetTank.transform.position).magnitude;
-
-    //                bool blocked;
-    //                map.FindStraightPath(curNode, node, out blocked);
-
-    //                bool validCondition = !blocked;
-
-    //                return validCondition;
-    //            }
-    //        };
-
-    //        foreach (Func<Node, bool> func in conditionFuncs) {
-    //            foreach (ThreatNode node in saferNodes) {
-    //                if (func(node)) {
-    //                    filteredNodes.Add(node);
-    //                }
-    //            }
-
-    //            if (filteredNodes.Count > 0) {
-    //                break;
-    //            }
-    //        }
-
-    //        float lowestDistFromCurPos = 9999;
-    //        ThreatNode nodeToMove = null;
-    //        foreach (ThreatNode node in filteredNodes) {
-    //            float dist = (map.NodeToPosition(node) - (Vector2)selfTank.transform.position).magnitude;
-
-    //            if (dist < lowestDistFromCurPos) {
-    //                nodeToMove = node;
-    //                lowestDistFromCurPos = dist;
-    //            }
-    //        }
-
-    //        resultNode = nodeToMove;
-
-    //        DebugManager.Instance.RegisterObject("maneuver_nodes", filteredNodes);
-    //    } else {
-    //        resultNode = targetNode;
-    //    }
-
-    //    return resultNode;
-    //}
 }

@@ -33,7 +33,7 @@ public class AIUtility
         return targetPos;
     }
     
-    public static float CalcTimeToHitPos(Vector2 curFirePos, Vector2 curFireVec, Tank tank, WeaponPartSchematic schematic, Vector2 targetPos, bool ignoreTimeToAlign=false) {
+    public static float CalcTimeToHitPos(Vector2 curFirePos, Vector2 curFireVec, Tank tank, WeaponPartSchematic schematic, Vector2 targetPos, bool ignoreTimeToAlign=false, bool ignoreTimeToMove=false) {
         float timeToHit = 0;
 
         Vector2 diffVec = targetPos - curFirePos;
@@ -45,11 +45,13 @@ public class AIUtility
             timeToHit += tank.CalcTimeToRotate(curFireVec, diffVec);
         }
 
-        // Next, calculate travel time.
-        float moveAmount = Mathf.Max(diffVec.magnitude - schematic.Range, 0);
-        if (moveAmount > 0) {
-            Vector2 newPos = diffVec.normalized * moveAmount + (Vector2)tank.transform.position;
-            timeToHit += tank.CalcTimeToReachPosWithNoRot(newPos);
+        if (!ignoreTimeToMove) {
+            // Next, calculate travel time.
+            float moveAmount = Mathf.Max(diffVec.magnitude - schematic.Range, 0);
+            if (moveAmount > 0) {
+                Vector2 newPos = diffVec.normalized * moveAmount + (Vector2)tank.transform.position;
+                timeToHit += tank.CalcTimeToReachPosWithNoRot(newPos);
+            }
         }
 
         // Finally, calculate bullet travel time.

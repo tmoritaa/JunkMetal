@@ -104,7 +104,10 @@ public class ThreatMap : Map
                 ThreatNode node = (ThreatNode)openNodes[0];
                 Vector2 nodePos = NodeToPosition(node);
 
-                float timeToHitPos = AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position, true);
+                bool inRange = (nodePos - (Vector2)targetTank.transform.position).magnitude < weapon.Schematic.Range;
+                float timeToHitPos = inRange ?
+                    AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position, true, true)
+                    : 10000;
                 timeToHitPos += weapon.CalcTimeToReloaded();
 
                 bool marked = false;

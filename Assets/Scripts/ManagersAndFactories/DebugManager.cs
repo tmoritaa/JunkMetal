@@ -71,10 +71,7 @@ public class DebugManager : MonoBehaviour
 
     [SerializeField]
     private bool maneuverGoalDebugOn = true;
-
-    [SerializeField]
-    private bool maneuverTargetNodeDebugOn = true;
-
+    
     [SerializeField]
     private bool maneuverDirDebugOn = true;
 
@@ -85,13 +82,13 @@ public class DebugManager : MonoBehaviour
     private bool maneuverAimFilterDebugOn = true;
 
     [SerializeField]
-    private bool maneuverClusterFilterDebugOn = true;    
+    private bool maneuverClusterFilterDebugOn = true;
+
+    [SerializeField]
+    private bool maneuverDistFilterDebugOn = true;
 
     [SerializeField]
     private bool maneuverPrevDirFilterDebugOn = true;
-
-    [SerializeField]
-    private bool maneuverDisplayDiffNodesDebugOn = true;
 
     private Vector2 targetPosForMoveTest = new Vector2();
     public Vector2 TargetPosForMoveTest
@@ -124,7 +121,12 @@ public class DebugManager : MonoBehaviour
     }
 
     private object getRegisterdObj(string key) {
-        return debugObjectDict[key];
+        object retObj = null;
+        if (debugObjectDict.ContainsKey(key)) {
+            retObj = debugObjectDict[key];
+        }
+
+        return retObj;
     }
 
     void OnDrawGizmos() {
@@ -239,60 +241,44 @@ public class DebugManager : MonoBehaviour
             if (maneuverGoalDebugOn && curGoal != null && curGoal.GetType() == typeof(ManeuverGoal)) {
                 ManeuverGoal goal = (ManeuverGoal)curGoal;
 
-                //if (maneuverTargetNodeDebugOn) {
-                //    Node node = (Node)getRegisterdObj("maneuver_target_node");
-                //    Gizmos.color = Color.magenta;
-
-                //    Gizmos.DrawWireSphere(CombatManager.Instance.Map.NodeToPosition(node), 15);
-                //}
-
                 if (maneuverDirDebugOn) {
-                    Vector2 moveDir = (Vector2)getRegisterdObj("maneuver_move_dir");
-                    //Vector2 aimDir = (Vector2)getRegisterdObj("maneuver_aim_dir");
-                    //Vector2 finalMoveDir = (Vector2)getRegisterdObj("maneuver_final_move_dir");
+                    object obj = getRegisterdObj("maneuver_move_dir");
 
-                    Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                    if (obj != null) {
+                        Vector2 moveDir = (Vector2)obj;
 
-                    Gizmos.color = Color.green;
-                    Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)moveDir * 50f);
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
 
-                    //Gizmos.color = Color.red;
-                    //Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)aimDir* 50f);
-
-                    //Gizmos.color = Color.green;
-                    //Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)finalMoveDir * 50f);
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)moveDir * 50f);
+                    }
                 }
 
-                //if (maneuverDisplayDiffNodesDebugOn) {
-                //    List<ThreatNode> nodes = (List<ThreatNode>)getRegisterdObj("maneuver_nodes");
-
-                //    foreach (ThreatNode node in nodes) {
-                //        Color color = new Color((ThreatMap.MaxTimeInSecs - node.GetTimeDiffForHittingTarget()) / ThreatMap.MaxTimeInSecs, 0, node.GetTimeDiffForHittingTarget() / ThreatMap.MaxTimeInSecs);
-                //        Gizmos.color = color;
-
-                //        Gizmos.DrawWireSphere(CombatManager.Instance.Map.NodeToPosition(node), 10);
-                //    }
-                //}
-
                 if (maneuverDodgeFilterDebugOn) {
-                    List<Vector2> vecs = (List<Vector2>)getRegisterdObj("maneuver_dodge_filter_vecs");
+                    object obj = getRegisterdObj("maneuver_dodge_filter_vecs");
+                    if (obj != null) {
+                        List<Vector2> vecs = (List<Vector2>)obj;
 
-                    Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
-                    Vector2 tankPos = aiTank.transform.position;
-                    Gizmos.color = Color.blue;
-                    foreach (Vector2 vec in vecs) {
-                        Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                        Vector2 tankPos = aiTank.transform.position;
+                        Gizmos.color = Color.blue;
+                        foreach (Vector2 vec in vecs) {
+                            Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        }
                     }
                 }
 
                 if (maneuverAimFilterDebugOn) {
-                    List<Vector2> vecs = (List<Vector2>)getRegisterdObj("maneuver_aim_filter_vecs");
+                    object obj = getRegisterdObj("maneuver_aim_filter_vecs");
+                    if (obj != null) {
+                        List<Vector2> vecs = (List<Vector2>)obj;
 
-                    Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
-                    Vector2 tankPos = aiTank.transform.position;
-                    Gizmos.color = Color.blue;
-                    foreach (Vector2 vec in vecs) {
-                        Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                        Vector2 tankPos = aiTank.transform.position;
+                        Gizmos.color = Color.blue;
+                        foreach (Vector2 vec in vecs) {
+                            Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        }
                     }
 
                     // TODO: delete once done
@@ -304,13 +290,16 @@ public class DebugManager : MonoBehaviour
                 }
 
                 if (maneuverClusterFilterDebugOn) {
-                    List<Vector2> vecs = (List<Vector2>)getRegisterdObj("maneuver_cluster_filter_vecs");
+                    object obj = getRegisterdObj("maneuver_cluster_filter_vecs");
+                    if (obj != null) {
+                        List<Vector2> vecs = (List<Vector2>)obj;
 
-                    Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
-                    Vector2 tankPos = aiTank.transform.position;
-                    Gizmos.color = Color.blue;
-                    foreach (Vector2 vec in vecs) {
-                        Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                        Vector2 tankPos = aiTank.transform.position;
+                        Gizmos.color = Color.blue;
+                        foreach (Vector2 vec in vecs) {
+                            Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        }
                     }
 
                     ThreatMap map = CombatManager.Instance.AITankController.ThreatMap;
@@ -325,14 +314,34 @@ public class DebugManager : MonoBehaviour
                     Gizmos.DrawWireSphere(cluster.CalcCenterPos(map), 20);
                 }
 
-                if (maneuverPrevDirFilterDebugOn) {
-                    List<Vector2> vecs = (List<Vector2>)getRegisterdObj("maneuver_prev_dir_filter_vecs");
+                if (maneuverDistFilterDebugOn) {
+                    object obj = getRegisterdObj("maneuver_dist_filter_vecs");
+                    if (obj != null) {
+                        List<Vector2> vecs = (List<Vector2>)obj;
 
-                    Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
-                    Vector2 tankPos = aiTank.transform.position;
-                    Gizmos.color = Color.blue;
-                    foreach (Vector2 vec in vecs) {
-                        Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                        Vector2 tankPos = aiTank.transform.position;
+                        Gizmos.color = Color.blue;
+                        foreach (Vector2 vec in vecs) {
+                            Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        }
+
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawWireSphere(aiTank.transform.position, aiTank.Turret.GetAllWeapons()[0].Schematic.Range / 2f);
+                    }
+                }
+
+                if (maneuverPrevDirFilterDebugOn) {
+                    object obj = getRegisterdObj("maneuver_prev_dir_filter_vecs");
+                    if (obj != null) {
+                        List<Vector2> vecs = (List<Vector2>)obj;
+
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                        Vector2 tankPos = aiTank.transform.position;
+                        Gizmos.color = Color.blue;
+                        foreach (Vector2 vec in vecs) {
+                            Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
+                        }
                     }
                 }
             }
