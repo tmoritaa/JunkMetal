@@ -141,6 +141,28 @@ public class DebugManager : MonoBehaviour
                 Gizmos.DrawWireSphere(targetPosForMoveTest, 20);
             }
 
+            if (actuationDebugOn) {
+                List<Vector2> arcVectors = (List<Vector2>)getRegisterdObj("actuation_arc_vectors");
+                Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[0] * 50f);
+                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[1] * 50f);
+
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[2] * 50f);
+                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[3] * 50f);
+
+
+                Vector3 leftWheelPos = aiTank.LeftWheelGO.transform.position;
+                Vector3 rightWheelPos = aiTank.RightWheelGO.transform.position;
+                Vector2 forwardVec = aiTank.GetForwardVec();
+
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.LeftCurPower));
+                Gizmos.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.RightCurPower));
+            }
+
             if (mapDisplayDebugOn) {
                 // Draw Map
                 Map map = CombatManager.Instance.Map;

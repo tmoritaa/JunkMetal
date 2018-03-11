@@ -68,17 +68,6 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    // Used link for reference https://answers.unity.com/questions/151724/calculating-rigidbody-top-speed.html
-    public float TerminalVelocity
-    {
-        get {
-            float unityDrag = body.drag;
-            float mass = body.mass;
-            float addedForce = Hull.Schematic.EnergyPower;
-            return ((addedForce / unityDrag)) / mass;
-        }
-    }
-
     private bool initialized = false;
 
     private void FixedUpdate() {
@@ -150,103 +139,6 @@ public partial class Tank : MonoBehaviour
 
     public Vector2 GetBackwardVec() {
         return new Vector2(0, -1).Rotate(body.rotation);
-    }
-
-    public float CalcTimeToRotate(Vector2 from, Vector2 to) {
-        float rotationAngle = Vector2.Angle(from, to);
-
-        float r = Hull.Schematic.Size.x / 2f;
-        float f = Hull.Schematic.EnergyPower;
-        float torque = r * f;
-        float angularDrag = body.angularDrag;
-
-        float angularAccel = torque / body.inertia * Mathf.Rad2Deg;
-
-        float newVel = body.angularVelocity;
-
-        float angle = Vector2.SignedAngle(GetForwardVec(), to);
-
-        newVel *= Mathf.Sign(angle);
-
-        float dt = Time.fixedDeltaTime;
-        float totalDt = 0;
-
-        float angleToCover = rotationAngle;
-        while (angleToCover > 0) {
-            totalDt += dt;
-            newVel = (newVel + angularAccel * dt) * (1f / (1f + angularDrag * dt));
-            angleToCover -= newVel * dt;
-        }
-
-        return totalDt;
-    }
-
-    public float CalcTimeToReachPosWithNoRot(Vector2 targetPos) {
-        Vector2 desiredDir = targetPos - (Vector2)this.transform.position;
-
-        float curVel = Body.velocity.magnitude;
-        float angle = Vector2.Angle(Body.velocity, desiredDir);
-        if (angle >= 90) {
-            curVel *= -1;
-        }
-
-        float f = Hull.Schematic.EnergyPower;
-        float m = body.mass;
-        float drag = body.drag;
-        float a = f / m;
-
-        float newVel = curVel;
-        float dt = Time.fixedDeltaTime;
-        float totalDt = 0;
-
-        float distToTarget = desiredDir.magnitude;
-        while (distToTarget > 0) {
-            totalDt += dt;
-            newVel = (newVel + a * dt) * (1f / (1f + drag * dt));
-            distToTarget -= newVel * dt;
-        }
-
-        return totalDt;
-    }
-
-    // This only accounts for reaching terminal vel in forward or backwards. Doesn't take into account rotation.
-    public float CalcTimeToReachTerminalVelInDir(Vector2 desiredDir) {
-        float maxVel = TerminalVelocity - 0.1f;
-        float curVel = Body.velocity.magnitude;
-
-        float angle = Vector2.Angle(Body.velocity, desiredDir);
-
-        bool goingInDir = angle < 90;
-
-        if (!goingInDir) {
-            curVel *= -1;
-        }
-
-        float f = Hull.Schematic.EnergyPower;
-        float m = body.mass;
-        float drag = body.drag;
-        float a = f / m;
-
-        float newVel = curVel;
-        float dt = Time.fixedDeltaTime;
-        float totalDt = 0;
-        while (newVel < maxVel && totalDt < 10) {
-            totalDt += dt;
-            newVel = (newVel + a * dt) * (1f / (1f + drag*dt));
-        }
-
-        return totalDt;
-    }
-
-    public float CalcAvgOptimalRange() {
-        float totalRange = 0;
-        int count = 0;
-        foreach (WeaponPart part in Turret.GetAllWeapons()) {
-            totalRange += part.Schematic.OptimalRange;
-            count += 1;
-        }
-
-        return totalRange / count;
     }
 
     private int calculateTotalArmour() {

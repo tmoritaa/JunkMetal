@@ -12,6 +12,17 @@ public partial class Tank
     const float StartingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
     const float StartingForwardArcAngle = 360f - StartingBackwardArcAngle;
 
+    // Used link for reference https://answers.unity.com/questions/151724/calculating-rigidbody-top-speed.html
+    public float TerminalVelocity
+    {
+        get {
+            float unityDrag = body.drag;
+            float mass = body.mass;
+            float addedForce = Hull.Schematic.EnergyPower;
+            return ((addedForce / unityDrag)) / mass;
+        }
+    }
+
     public void PerformActuation(Vector2 requestDir) {
         if (requestDir.magnitude == 0) {
             this.Hull.PerformPowerChangeToStop();
@@ -30,14 +41,13 @@ public partial class Tank
         Vector2 forwardVec = this.GetForwardVec();
         Vector2 backwardVec = this.GetBackwardVec();
 
-        // Debug stuff
-        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(curForwardArcAngle / 2f) * 50f), Color.blue);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(forwardVec.Rotate(-curForwardArcAngle / 2f) * 50f), Color.blue);
-
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(curBackwardArcAngle / 2f) * 50f), Color.green);
-            Debug.DrawLine(this.transform.position, this.transform.position + (Vector3)(backwardVec.Rotate(-curBackwardArcAngle / 2f) * 50f), Color.green);
-        }
+        List<Vector2> arcVectors = new List<Vector2> {
+            forwardVec.Rotate(curForwardArcAngle / 2f),
+            forwardVec.Rotate(-curForwardArcAngle / 2f),
+            backwardVec.Rotate(curBackwardArcAngle / 2f),
+            backwardVec.Rotate(-curBackwardArcAngle / 2f)
+        };
+        DebugManager.Instance.RegisterObject("actuation_arc_vectors", arcVectors);
 
         float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
         float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);
@@ -82,20 +92,108 @@ public partial class Tank
 
             applyRotationPowerChange(angle);
         }
-
-        // Debug
-        if (Application.isEditor && DebugManager.Instance.ActuationDebugOn) {
-            Vector3 leftWheelPos = this.LeftWheelGO.transform.position;
-            Vector3 rightWheelPos = this.RightWheelGO.transform.position;
-
-            Debug.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * this.Hull.LeftCurPower), Color.magenta);
-            Debug.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * this.Hull.RightCurPower), Color.magenta);
-        }
     }
 
     public void PerformRotation(Vector2 alignAngle, Vector2 requestDir) {
         float angle = Vector2.SignedAngle(alignAngle, requestDir);
         applyRotationPowerChange(angle);
+    }
+
+    public float CalcTimeToRotate(Vector2 from, Vector2 to) {
+        float rotationAngle = Vector2.Angle(from, to);
+
+        float r = Hull.Schematic.Size.x / 2f;
+        float f = Hull.Schematic.EnergyPower;
+        float torque = r * f;
+        float angularDrag = body.angularDrag;
+
+        float angularAccel = torque / body.inertia * Mathf.Rad2Deg;
+
+        float newVel = body.angularVelocity;
+
+        float angle = Vector2.SignedAngle(GetForwardVec(), to);
+
+        newVel *= Mathf.Sign(angle);
+
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+
+        float angleToCover = rotationAngle;
+        while (angleToCover > 0) {
+            totalDt += dt;
+            newVel = (newVel + angularAccel * dt) * (1f / (1f + angularDrag * dt));
+            angleToCover -= newVel * dt;
+        }
+
+        return totalDt;
+    }
+
+    public float CalcTimeToReachPosWithNoRot(Vector2 targetPos) {
+        Vector2 desiredDir = targetPos - (Vector2)this.transform.position;
+
+        float curVel = Body.velocity.magnitude;
+        float angle = Vector2.Angle(Body.velocity, desiredDir);
+        if (angle >= 90) {
+            curVel *= -1;
+        }
+
+        float f = Hull.Schematic.EnergyPower;
+        float m = body.mass;
+        float drag = body.drag;
+        float a = f / m;
+
+        float newVel = curVel;
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+
+        float distToTarget = desiredDir.magnitude;
+        while (distToTarget > 0) {
+            totalDt += dt;
+            newVel = (newVel + a * dt) * (1f / (1f + drag * dt));
+            distToTarget -= newVel * dt;
+        }
+
+        return totalDt;
+    }
+
+    // This only accounts for reaching terminal vel in forward or backwards. Doesn't take into account rotation.
+    public float CalcTimeToReachTerminalVelInDir(Vector2 desiredDir) {
+        float maxVel = TerminalVelocity - 0.1f;
+        float curVel = Body.velocity.magnitude;
+
+        float angle = Vector2.Angle(Body.velocity, desiredDir);
+
+        bool goingInDir = angle < 90;
+
+        if (!goingInDir) {
+            curVel *= -1;
+        }
+
+        float f = Hull.Schematic.EnergyPower;
+        float m = body.mass;
+        float drag = body.drag;
+        float a = f / m;
+
+        float newVel = curVel;
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+        while (newVel < maxVel && totalDt < 10) {
+            totalDt += dt;
+            newVel = (newVel + a * dt) * (1f / (1f + drag * dt));
+        }
+
+        return totalDt;
+    }
+
+    public float CalcAvgOptimalRange() {
+        float totalRange = 0;
+        int count = 0;
+        foreach (WeaponPart part in Turret.GetAllWeapons()) {
+            totalRange += part.Schematic.OptimalRange;
+            count += 1;
+        }
+
+        return totalRange / count;
     }
 
     private void applyRotationPowerChange(float angleChange) {
