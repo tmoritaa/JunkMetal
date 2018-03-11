@@ -34,7 +34,7 @@ public class ManeuverGoal : Goal
         //}
 
         if (newMoveDir.magnitude > 0) {
-            prevMoveDir = newMoveDir;   
+            prevMoveDir = newMoveDir;
         }
 
         actions.Add(new GoInDirAction(prevMoveDir, controller));

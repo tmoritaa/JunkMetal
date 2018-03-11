@@ -24,98 +24,66 @@ public partial class Tank
     }
 
     public void PerformActuation(Vector2 requestDir) {
-        int[] powerChange = CalcPowerChangeBasedOnRequestDir(requestDir);
+        int[] powerChange = calcPowerChangeBasedOnRequestDir(requestDir);
 
         this.Hull.PerformPowerChange(powerChange[0], powerChange[1]);
     }
-
-    public int[] CalcPowerChangeBasedOnRequestDir(Vector2 requestDir) {
-        int[] powerChange = new int[2];
-
-        if (requestDir.magnitude == 0) {
-            powerChange[0] = Mathf.Sign(Hull.LeftCurPower) > 0 ? -1 : 1;
-            powerChange[1] = Mathf.Sign(Hull.RightCurPower) > 0 ? -1 : 1;
-            return powerChange;
-        }
-
-        // First calculate forward and backwards arc angle based on speed
-        float sqrMaxVelocityMag = Mathf.Pow(this.TerminalVelocity, 2);
-        float sqrCurVelocity = this.Body.velocity.sqrMagnitude;
-
-        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, MinRatioCutOff, MaxRatioCutoff);
-
-        float curBackwardArcAngle = ratio * StartingBackwardArcAngle;
-        float curForwardArcAngle = ratio * StartingForwardArcAngle;
-
-        Vector2 forwardVec = this.GetForwardVec();
-        Vector2 backwardVec = this.GetBackwardVec();
-
-        List<Vector2> arcVectors = new List<Vector2> {
-            forwardVec.Rotate(curForwardArcAngle / 2f),
-            forwardVec.Rotate(-curForwardArcAngle / 2f),
-            backwardVec.Rotate(curBackwardArcAngle / 2f),
-            backwardVec.Rotate(-curBackwardArcAngle / 2f)
-        };
-        DebugManager.Instance.RegisterObject("actuation_arc_vectors", arcVectors);
-
-        float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
-        float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);
-
-        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
-
-        // In this case we want the AI to continue accelerating while going towards the requested direction
-        if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
-            float angleToTurn = Vector2.SignedAngle(forwardVec, requestDir);
-
-            if (Mathf.Abs(angleToTurn) > sigma) {
-                if (Mathf.Sign(angleToTurn) > 0) {
-                    powerChange[0] = 0;
-                    powerChange[1] = 1;
-                } else {
-                    powerChange[0] = 1;
-                    powerChange[1] = 0;
-                }
-            } else {
-                powerChange[0] = 1;
-                powerChange[1] = 1;
-            }
-
-            // In this case we want the tank to start accelerating backwards
-        } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
-            float angleToTurn = Vector2.SignedAngle(backwardVec, requestDir);
-
-            if (Mathf.Abs(angleToTurn) > sigma) {
-                if (Mathf.Sign(angleToTurn) > 0) {
-                    powerChange[0] = -1;
-                    powerChange[1] = 0;
-                } else {
-                    powerChange[0] = 0;
-                    powerChange[1] = -1;
-                }
-            } else {
-                powerChange[0] = -1;
-                powerChange[1] = -1;
-            }
-
-            // In this case we want the tank to start turning
-        } else {
-            float angleToTurnFromFront = Vector2.SignedAngle(forwardVec, requestDir);
-            float angleToTurnFromBack = Vector2.SignedAngle(backwardVec, requestDir);
-
-            bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
-            float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
-
-            powerChange = calcPowerChangeForRotation(angle);
-        }
-
-        return powerChange;
-    }
-
+    
     public void PerformRotation(Vector2 alignAngle, Vector2 requestDir) {
         float angle = Vector2.SignedAngle(alignAngle, requestDir);
 
         int[] powerChange = calcPowerChangeForRotation(angle);
         Hull.PerformPowerChange(powerChange[0], powerChange[1]);
+    }
+
+    // Returns Vector3 in the form (Vector2, curRot)
+    public Vector3 CalcPosInFutureWithRequestedDir(Vector2 requestDir, float timeInSecs) {
+        float elapsedTime = 0;
+        Vector2 tankPos = this.transform.position;
+
+        int[] powerChange = calcPowerChangeBasedOnRequestDir(requestDir);
+        
+        Vector2 curVel = Body.velocity;
+
+        float curAngVel = body.angularVelocity;
+
+        float curRot = Body.rotation;
+        float dt = Time.fixedDeltaTime;
+
+        List<Vector2> allPos = new List<Vector2>();
+
+        while (elapsedTime < timeInSecs) {
+            elapsedTime += dt;
+
+            Vector2 forwardVec = new Vector2(0, 1).Rotate(curRot);
+            Vector2 linearForce = calcAppliedLinearForce(forwardVec, powerChange[0], powerChange[1]);
+            float torque = calcAppliedTorque(forwardVec, powerChange[0], powerChange[1]);
+
+            // Pos update
+            {
+                Vector2 f = linearForce;
+                float m = body.mass;
+                float drag = body.drag;
+                Vector2 a = f / m;
+                curVel = (curVel + a * dt) * (1f / (1f + drag * dt));                
+                tankPos += curVel * dt;
+            }
+
+            allPos.Add(tankPos);
+
+            // rot update
+            {
+                float angularDrag = body.angularDrag;
+                float angularAccel = torque / body.inertia * Mathf.Rad2Deg;
+
+                curAngVel = (curAngVel + angularAccel * dt) * (1f / (1f + angularDrag * dt));
+                curRot += curAngVel * dt;
+            }
+        }
+
+        DebugManager.Instance.RegisterObject("debug_pos", allPos);
+
+        return new Vector3(tankPos.x, tankPos.y, curRot);
     }
 
     public float CalcTimeToRotate(Vector2 from, Vector2 to) {
@@ -213,6 +181,88 @@ public partial class Tank
         }
 
         return totalRange / count;
+    }
+
+    private int[] calcPowerChangeBasedOnRequestDir(Vector2 requestDir) {
+        int[] powerChange = new int[2];
+
+        if (requestDir.magnitude == 0) {
+            powerChange[0] = Mathf.Sign(Hull.LeftCurPower) > 0 ? -1 : 1;
+            powerChange[1] = Mathf.Sign(Hull.RightCurPower) > 0 ? -1 : 1;
+            return powerChange;
+        }
+
+        // First calculate forward and backwards arc angle based on speed
+        float sqrMaxVelocityMag = Mathf.Pow(this.TerminalVelocity, 2);
+        float sqrCurVelocity = this.Body.velocity.sqrMagnitude;
+
+        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, MinRatioCutOff, MaxRatioCutoff);
+
+        float curBackwardArcAngle = ratio * StartingBackwardArcAngle;
+        float curForwardArcAngle = ratio * StartingForwardArcAngle;
+
+        Vector2 forwardVec = this.GetForwardVec();
+        Vector2 backwardVec = this.GetBackwardVec();
+
+        List<Vector2> arcVectors = new List<Vector2> {
+            forwardVec.Rotate(curForwardArcAngle / 2f),
+            forwardVec.Rotate(-curForwardArcAngle / 2f),
+            backwardVec.Rotate(curBackwardArcAngle / 2f),
+            backwardVec.Rotate(-curBackwardArcAngle / 2f)
+        };
+        DebugManager.Instance.RegisterObject("actuation_arc_vectors", arcVectors);
+
+        float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
+        float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);
+
+        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
+
+        // In this case we want the AI to continue accelerating while going towards the requested direction
+        if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
+            float angleToTurn = Vector2.SignedAngle(forwardVec, requestDir);
+
+            if (Mathf.Abs(angleToTurn) > sigma) {
+                if (Mathf.Sign(angleToTurn) > 0) {
+                    powerChange[0] = 0;
+                    powerChange[1] = 1;
+                } else {
+                    powerChange[0] = 1;
+                    powerChange[1] = 0;
+                }
+            } else {
+                powerChange[0] = 1;
+                powerChange[1] = 1;
+            }
+
+            // In this case we want the tank to start accelerating backwards
+        } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
+            float angleToTurn = Vector2.SignedAngle(backwardVec, requestDir);
+
+            if (Mathf.Abs(angleToTurn) > sigma) {
+                if (Mathf.Sign(angleToTurn) > 0) {
+                    powerChange[0] = -1;
+                    powerChange[1] = 0;
+                } else {
+                    powerChange[0] = 0;
+                    powerChange[1] = -1;
+                }
+            } else {
+                powerChange[0] = -1;
+                powerChange[1] = -1;
+            }
+
+            // In this case we want the tank to start turning
+        } else {
+            float angleToTurnFromFront = Vector2.SignedAngle(forwardVec, requestDir);
+            float angleToTurnFromBack = Vector2.SignedAngle(backwardVec, requestDir);
+
+            bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
+            float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
+
+            powerChange = calcPowerChangeForRotation(angle);
+        }
+
+        return powerChange;
     }
 
     private int[] calcPowerChangeForRotation(float angleChange) {

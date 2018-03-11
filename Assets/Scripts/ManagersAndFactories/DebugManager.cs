@@ -90,6 +90,12 @@ public class DebugManager : MonoBehaviour
     [SerializeField]
     private bool maneuverPrevDirFilterDebugOn = true;
 
+    [SerializeField]
+    private bool maneuverFuturePosDebugOn = true;
+
+    [SerializeField]
+    private bool predictFutureDebugOn = true;
+
     private Vector2 targetPosForMoveTest = new Vector2();
     public Vector2 TargetPosForMoveTest
     {
@@ -364,6 +370,41 @@ public class DebugManager : MonoBehaviour
                         foreach (Vector2 vec in vecs) {
                             Gizmos.DrawLine(tankPos, tankPos + vec * 50f);
                         }
+                    }
+                }
+
+                if (maneuverFuturePosDebugOn) {
+                    object obj = getRegisterdObj("maneuver_future_pos_list");
+                    if (obj != null) {
+                        List<Vector2> posList = (List<Vector2>)obj;
+
+                        Gizmos.color = Color.green;
+                        foreach (Vector2 pos in posList) {
+                            Gizmos.DrawWireSphere(pos, 20);
+                        }
+                    }
+                }
+            }
+
+            // TODO: for now. remove later.
+            if (predictFutureDebugOn) {
+                object obj = getRegisterdObj("test_future_pos_lis");
+                if (obj != null) {
+                    List<Vector2> posList = (List<Vector2>)obj;
+
+                    Gizmos.color = Color.green;
+                    foreach (Vector2 pos in posList) {
+                        Gizmos.DrawWireSphere(pos, 20);
+                    }
+                }
+
+                obj = getRegisterdObj("debug_pos");
+                if (obj != null) {
+                    List<Vector2> posList = (List<Vector2>)obj;
+
+                    Gizmos.color = Color.blue;
+                    foreach (Vector2 pos in posList) {
+                        Gizmos.DrawWireSphere(pos, 15);
                     }
                 }
             }
