@@ -24,9 +24,18 @@ public partial class Tank
     }
 
     public void PerformActuation(Vector2 requestDir) {
+        int[] powerChange = CalcPowerChangeBasedOnRequestDir(requestDir);
+
+        this.Hull.PerformPowerChange(powerChange[0], powerChange[1]);
+    }
+
+    public int[] CalcPowerChangeBasedOnRequestDir(Vector2 requestDir) {
+        int[] powerChange = new int[2];
+
         if (requestDir.magnitude == 0) {
-            this.Hull.PerformPowerChangeToStop();
-            return;
+            powerChange[0] = Mathf.Sign(Hull.LeftCurPower) > 0 ? -1 : 1;
+            powerChange[1] = Mathf.Sign(Hull.RightCurPower) > 0 ? -1 : 1;
+            return powerChange;
         }
 
         // First calculate forward and backwards arc angle based on speed
@@ -60,29 +69,35 @@ public partial class Tank
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    this.Hull.PerformPowerChange(0, 1);
+                    powerChange[0] = 0;
+                    powerChange[1] = 1;
                 } else {
-                    this.Hull.PerformPowerChange(1, 0);
+                    powerChange[0] = 1;
+                    powerChange[1] = 0;
                 }
             } else {
-                this.Hull.PerformPowerChange(1, 1);
+                powerChange[0] = 1;
+                powerChange[1] = 1;
             }
 
-        // In this case we want the tank to start accelerating backwards
+            // In this case we want the tank to start accelerating backwards
         } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
             float angleToTurn = Vector2.SignedAngle(backwardVec, requestDir);
 
             if (Mathf.Abs(angleToTurn) > sigma) {
                 if (Mathf.Sign(angleToTurn) > 0) {
-                    this.Hull.PerformPowerChange(-1, 0);
+                    powerChange[0] = -1;
+                    powerChange[1] = 0;
                 } else {
-                    this.Hull.PerformPowerChange(0, -1);
+                    powerChange[0] = 0;
+                    powerChange[1] = -1;
                 }
             } else {
-                this.Hull.PerformPowerChange(-1, -1);
+                powerChange[0] = -1;
+                powerChange[1] = -1;
             }
 
-        // In this case we want the tank to start turning
+            // In this case we want the tank to start turning
         } else {
             float angleToTurnFromFront = Vector2.SignedAngle(forwardVec, requestDir);
             float angleToTurnFromBack = Vector2.SignedAngle(backwardVec, requestDir);
@@ -90,13 +105,17 @@ public partial class Tank
             bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
             float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
 
-            applyRotationPowerChange(angle);
+            powerChange = calcPowerChangeForRotation(angle);
         }
+
+        return powerChange;
     }
 
     public void PerformRotation(Vector2 alignAngle, Vector2 requestDir) {
         float angle = Vector2.SignedAngle(alignAngle, requestDir);
-        applyRotationPowerChange(angle);
+
+        int[] powerChange = calcPowerChangeForRotation(angle);
+        Hull.PerformPowerChange(powerChange[0], powerChange[1]);
     }
 
     public float CalcTimeToRotate(Vector2 from, Vector2 to) {
@@ -196,11 +215,17 @@ public partial class Tank
         return totalRange / count;
     }
 
-    private void applyRotationPowerChange(float angleChange) {
+    private int[] calcPowerChangeForRotation(float angleChange) {
+        int[] powerChange = new int[2];
+
         if (Mathf.Sign(angleChange) >= 0) {
-            this.Hull.PerformPowerChange(-1, 1);
+            powerChange[0] = -1;
+            powerChange[1] = 1;
         } else {
-            this.Hull.PerformPowerChange(1, -1);
+            powerChange[0] = 1;
+            powerChange[1] = -1;
         }
+
+        return powerChange;
     }
 }
