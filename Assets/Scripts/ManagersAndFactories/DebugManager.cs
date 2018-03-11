@@ -386,7 +386,6 @@ public class DebugManager : MonoBehaviour
                 }
             }
 
-            // TODO: for now. remove later.
             if (predictFutureDebugOn) {
                 object obj = getRegisterdObj("test_future_pos_lis");
                 if (obj != null) {
@@ -395,16 +394,6 @@ public class DebugManager : MonoBehaviour
                     Gizmos.color = Color.green;
                     foreach (Vector2 pos in posList) {
                         Gizmos.DrawWireSphere(pos, 20);
-                    }
-                }
-
-                obj = getRegisterdObj("debug_pos");
-                if (obj != null) {
-                    List<Vector2> posList = (List<Vector2>)obj;
-
-                    Gizmos.color = Color.blue;
-                    foreach (Vector2 pos in posList) {
-                        Gizmos.DrawWireSphere(pos, 15);
                     }
                 }
             }

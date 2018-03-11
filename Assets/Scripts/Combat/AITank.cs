@@ -81,8 +81,6 @@ public partial class Tank
             }
         }
 
-        DebugManager.Instance.RegisterObject("debug_pos", allPos);
-
         return new Vector3(tankPos.x, tankPos.y, curRot);
     }
 
