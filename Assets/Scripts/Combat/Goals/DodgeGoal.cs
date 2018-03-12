@@ -84,7 +84,7 @@ public class DodgeGoal : Goal
                 // Only consider running away if we're actually in range to get hit. Should probably always be true.
                 if (distToEscape > 0) {
                     float angle = Mathf.Min(Vector2.Angle(selfTank.GetForwardVec(), awayFromTarget), Vector2.Angle(selfTank.GetBackwardVec(), awayFromTarget));
-                    runAwayTimeEstimate = distToEscape / selfTank.TerminalVelocity;
+                    runAwayTimeEstimate = distToEscape / selfTank.StateInfo.TerminalVel;
                 }
 
                 // Next calculate moving perpendicular from fire vec

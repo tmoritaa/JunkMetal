@@ -58,13 +58,15 @@ public class AITankController : TankController
 
             DebugManager.Instance.RegisterObject("goal", curGoal);
         }
-
-        // TODO: for testing only. Remove once done.
-        //rotationTest();
-        //velocityTest();
-        //reachPosTest();
-        //futurePredicTest();
     }
+
+    //protected void FixedUpdate() {
+    //    // TODO: for testing only. Remove once done.
+    //    //rotationTest();
+    //    //velocityTest();
+    //    //reachPosTest();
+    //    //futurePredicTest();
+    //}
 
     public override void Init(Vector2 startPos, TankSchematic tankSchematic) {
         base.Init(startPos, tankSchematic);
@@ -350,61 +352,45 @@ public class AITankController : TankController
     //float curAngle = 0;
     //private void futurePredicTest() {
     //    if (!first) {
-    //        angles = new List<float> { 45f, 0f, 0, -45f, 0 };
+    //        angles = new List<float> { 45f, -45f, -45f, -45f, 45f };
     //        curAngle = angles[0];
 
-    //        DebugManager.Instance.RegisterObject("test_future_pos_lis", calcFuture(curAngle));
+    //        List<Vector2> futurePos = new List<Vector2>();
+    //        TankStateInfo stateInfo = new TankStateInfo(SelfTank);
+    //        foreach (float angle in angles) {
+    //            Vector2 vec = stateInfo.ForwardVec.Rotate(angle);
+    //            stateInfo = AIUtility.CalcPosInFutureWithRequestedDir(vec, 0.5f, stateInfo);
+    //            futurePos.Add(stateInfo.Pos);
+    //        }
+
+    //        DebugManager.Instance.RegisterObject("test_future_pos_lis", futurePos);
 
     //        startTime = Time.time;
     //        first = true;
     //        reached = new List<bool> { false, false, false, false };
-            
+
     //    } else {
     //        if (!reached[0] && Time.time - startTime >= 0.5f) {
     //            reached[0] = true;
     //            curAngle = angles[1];
-    //            DebugManager.Instance.RegisterObject("test_future_pos_lis", calcFuture(curAngle));
     //        }
 
     //        if (!reached[1] && Time.time - startTime >= 1.0f) {
     //            reached[1] = true;
     //            curAngle = angles[2];
-    //            DebugManager.Instance.RegisterObject("test_future_pos_lis", calcFuture(curAngle));
     //        }
 
     //        if (!reached[2] && Time.time - startTime >= 1.5f) {
     //            reached[2] = true;
     //            curAngle = angles[3];
-    //            DebugManager.Instance.RegisterObject("test_future_pos_lis", calcFuture(curAngle));
     //        }
 
     //        if (!reached[3] && Time.time - startTime >= 2.0f) {
     //            reached[3] = true;
     //            curAngle = angles[4];
-    //            DebugManager.Instance.RegisterObject("test_future_pos_lis", calcFuture(curAngle));
     //        }
     //    }
 
     //    SelfTank.PerformActuation(SelfTank.GetForwardVec().Rotate(curAngle));
-    //}
-
-    //private List<Vector2> calcFuture(float angle) {
-    //    List<Vector2> possibleDirs = new List<Vector2> {
-    //            //SelfTank.GetForwardVec(),
-    //            //SelfTank.GetBackwardVec(),
-    //            SelfTank.GetForwardVec().Rotate(angle)
-    //            //SelfTank.GetForwardVec().Rotate(135f),
-    //            //SelfTank.GetForwardVec().Rotate(-45f),
-    //            //SelfTank.GetForwardVec().Rotate(-135f),
-    //            //SelfTank.GetForwardVec().Rotate(90f),
-    //            //SelfTank.GetForwardVec().Rotate(-90f)
-    //        };
-
-    //    List<Vector2> futurePos = new List<Vector2>();
-    //    foreach (Vector2 vec in possibleDirs) {
-    //        futurePos.Add(SelfTank.CalcPosInFutureWithRequestedDir(vec, 0.5f));
-    //    }
-
-    //    return futurePos;
     //}
 }

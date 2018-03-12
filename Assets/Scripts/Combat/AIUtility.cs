@@ -73,6 +73,183 @@ public class AIUtility
         return timeToReach;
     }
 
+    public static TankStateInfo CalcPosInFutureWithRequestedDir(Vector2 _requestDir, float timeInSecs, TankStateInfo tankInfo) {
+        TankStateInfo resultInfo = new TankStateInfo(tankInfo);
+        Vector2 requestDir = _requestDir;
+
+        float elapsedTime = 0;
+        
+        float dt = Time.fixedDeltaTime;
+
+        List<Vector2> allPos = new List<Vector2>();
+        List<Vector2> allRequestDir = new List<Vector2>();
+        while (elapsedTime <= timeInSecs) {
+            elapsedTime += dt;
+
+            int[] powerChange = AIUtility.CalcPowerChangeBasedOnRequestDir(requestDir, resultInfo);
+            resultInfo.LeftCurPower = powerChange[0];
+            resultInfo.RightCurPower = powerChange[1];
+
+            // Pos update
+            {
+                Vector2 f = TankUtility.CalcAppliedLinearForce(resultInfo);
+                float m = resultInfo.Mass;
+                float drag = resultInfo.LinearDrag;
+                Vector2 a = f / m;
+                resultInfo.LinearVel = (resultInfo.LinearVel + a * dt) * (1f / (1f + drag * dt));
+                resultInfo.Pos += resultInfo.LinearVel * dt;
+            }
+
+            // rot update
+            {
+                float torque = TankUtility.CalcAppliedTorque(resultInfo);
+                float angularDrag = resultInfo.AngularDrag;
+                float angularAccel = torque / resultInfo.Inertia * Mathf.Rad2Deg;
+
+                resultInfo.AngularVel = (resultInfo.AngularVel + angularAccel * dt) * (1f / (1f + angularDrag * dt));
+                float rotDiff = resultInfo.AngularVel * dt;
+                resultInfo.Rot += rotDiff;
+
+                requestDir = requestDir.Rotate(rotDiff);
+            }
+        }
+
+        return resultInfo;
+    }
+
+    public static int[] CalcPowerChangeBasedOnRequestDir(Vector2 requestDir, TankStateInfo stateInfo) {
+        const float MinRatioCutOff = 0.4f;
+        const float MaxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
+
+        const float StartingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
+        const float StartingForwardArcAngle = 360f - StartingBackwardArcAngle;
+
+        int[] powerChange = new int[2];
+
+        if (requestDir.magnitude == 0) {
+            powerChange[0] = Mathf.Sign(stateInfo.LeftCurPower) > 0 ? -1 : 1;
+            powerChange[1] = Mathf.Sign(stateInfo.RightCurPower) > 0 ? -1 : 1;
+            return powerChange;
+        }
+
+        // First calculate forward and backwards arc angle based on speed
+        float sqrMaxVelocityMag = Mathf.Pow(stateInfo.TerminalVel, 2);
+        float sqrCurVelocity = stateInfo.LinearVel.sqrMagnitude;
+
+        float ratio = Mathf.Clamp(1.0f - sqrCurVelocity / sqrMaxVelocityMag, MinRatioCutOff, MaxRatioCutoff);
+
+        float curBackwardArcAngle = ratio * StartingBackwardArcAngle;
+        float curForwardArcAngle = ratio * StartingForwardArcAngle;
+
+        Vector2 forwardVec = stateInfo.ForwardVec;
+        Vector2 backwardVec = forwardVec.Rotate(180f);
+
+        List<Vector2> arcVectors = new List<Vector2> {
+            forwardVec.Rotate(curForwardArcAngle / 2f),
+            forwardVec.Rotate(-curForwardArcAngle / 2f),
+            backwardVec.Rotate(curBackwardArcAngle / 2f),
+            backwardVec.Rotate(-curBackwardArcAngle / 2f)
+        };
+        DebugManager.Instance.RegisterObject("actuation_arc_vectors", arcVectors);
+
+        float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
+        float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);
+
+        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
+
+        // In this case we want the AI to continue accelerating while going towards the requested direction
+        if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
+            float angleToTurn = Vector2.SignedAngle(forwardVec, requestDir);
+
+            if (Mathf.Abs(angleToTurn) > sigma) {
+                if (Mathf.Sign(angleToTurn) > 0) {
+                    powerChange[0] = 0;
+                    powerChange[1] = 1;
+                } else {
+                    powerChange[0] = 1;
+                    powerChange[1] = 0;
+                }
+            } else {
+                powerChange[0] = 1;
+                powerChange[1] = 1;
+            }
+
+            // In this case we want the tank to start accelerating backwards
+        } else if ((curBackwardArcAngle / 2f) >= angleDiffFromBack) {
+            float angleToTurn = Vector2.SignedAngle(backwardVec, requestDir);
+
+            if (Mathf.Abs(angleToTurn) > sigma) {
+                if (Mathf.Sign(angleToTurn) > 0) {
+                    powerChange[0] = -1;
+                    powerChange[1] = 0;
+                } else {
+                    powerChange[0] = 0;
+                    powerChange[1] = -1;
+                }
+            } else {
+                powerChange[0] = -1;
+                powerChange[1] = -1;
+            }
+
+            // In this case we want the tank to start turning
+        } else {
+            float angleToTurnFromFront = Vector2.SignedAngle(forwardVec, requestDir);
+            float angleToTurnFromBack = Vector2.SignedAngle(backwardVec, requestDir);
+
+            bool turningToFront = Mathf.Abs(angleToTurnFromFront) <= Mathf.Abs(angleToTurnFromBack);
+            float angle = turningToFront ? angleToTurnFromFront : angleToTurnFromBack;
+
+            powerChange = CalcPowerChangeForRotation(angle);
+        }
+
+        return powerChange;
+    }
+
+    public static int[] CalcPowerChangeForRotation(float angleChange) {
+        int[] powerChange = new int[2];
+
+        if (Mathf.Sign(angleChange) >= 0) {
+            powerChange[0] = -1;
+            powerChange[1] = 1;
+        } else {
+            powerChange[0] = 1;
+            powerChange[1] = -1;
+        }
+
+        return powerChange;
+    }
+
+    public static void SmoothPath(List<Node> path, Tank tank) {
+        const int WallBit = 8;
+        const int PlayerBit = 9;
+        const int LayerMask = 1 << WallBit | 1 << PlayerBit;
+
+        int removeCount = 0;
+        for (int i = 0; i < path.Count; ++i) {
+            Node node = path[i];
+
+            Vector2 leftVec = tank.GetForwardVec().Rotate(-90).normalized;
+            Vector2 rightVec = tank.GetForwardVec().Rotate(90).normalized;
+
+            Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
+            Vector2 diffVec = pos - (Vector2)tank.transform.position;
+
+            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)tank.transform.position + (leftVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)tank.transform.position + (rightVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+
+            // If collision, stop
+            if (leftHit.collider != null || rightHit.collider != null) {
+                break;
+            }
+
+            removeCount = i;
+        }
+
+        if (removeCount > 0) {
+            path.RemoveRange(0, removeCount);
+        }
+    }
+
     // TODO: probably won't be used once AttackGoal and DodgeGoal are rewritten using threat maps. Check later and confirm that it's not used.
     public static float CalculateRiskValue(WeaponPart weaponPart, Tank targetedTank, Tank targetingTank) {
         const float ThreatRangeMod = 1.1f;
@@ -107,36 +284,5 @@ public class AIUtility
         }
 
         return riskValue;
-    }
-
-    public static void SmoothPath(List<Node> path, Tank tank) {
-        const int WallBit = 8;
-        const int PlayerBit = 9;
-        const int LayerMask = 1 << WallBit | 1 << PlayerBit;
-
-        int removeCount = 0;
-        for (int i = 0; i < path.Count; ++i) {
-            Node node = path[i];
-
-            Vector2 leftVec = tank.GetForwardVec().Rotate(-90).normalized;
-            Vector2 rightVec = tank.GetForwardVec().Rotate(90).normalized;
-
-            Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
-            Vector2 diffVec = pos - (Vector2)tank.transform.position;
-
-            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)tank.transform.position + (leftVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
-            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)tank.transform.position + (rightVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
-
-            // If collision, stop
-            if (leftHit.collider != null || rightHit.collider != null) {
-                break;
-            }
-
-            removeCount = i;
-        }
-
-        if (removeCount > 0) {
-            path.RemoveRange(0, removeCount);
-        }
     }
 }

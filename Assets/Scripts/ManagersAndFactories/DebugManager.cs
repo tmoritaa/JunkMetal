@@ -16,13 +16,10 @@ public class DebugManager : MonoBehaviour
     }
 
     [SerializeField]
+    private bool basicTankInfoDebugOn = true;
+
+    [SerializeField]
     private bool actuationDebugOn = true;
-    public bool ActuationDebugOn
-    {
-        get {
-            return actuationDebugOn;
-        }
-    }
 
     [SerializeField]
     private bool avoidWallsDebugOn = true;
@@ -139,7 +136,25 @@ public class DebugManager : MonoBehaviour
         if (Application.isPlaying && Application.isEditor) {
             Color origColor = Gizmos.color;
 
-            Goal curGoal = (Goal)getRegisterdObj("goal");
+            if (basicTankInfoDebugOn) {
+                Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                WeaponPart part = aiTank.Turret.GetAllWeapons()[0];
+
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(
+                    part.CalculateFirePos(),
+                    part.CalculateFirePos() + part.CalculateFireVec() * 50f);
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(
+                    aiTank.transform.position,
+                    (Vector2)aiTank.transform.position + aiTank.GetForwardVec() * 50f);
+
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(
+                    aiTank.transform.position,
+                    (Vector2)aiTank.transform.position + aiTank.GetBackwardVec() * 50f);
+            }
 
             if (moveTestDebugOn) {
                 Gizmos.color = Color.green;
@@ -168,6 +183,8 @@ public class DebugManager : MonoBehaviour
                 Gizmos.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.LeftCurPower));
                 Gizmos.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.RightCurPower));
             }
+
+            Goal curGoal = (Goal)getRegisterdObj("goal");
 
             if (mapDisplayDebugOn) {
                 // Draw Map

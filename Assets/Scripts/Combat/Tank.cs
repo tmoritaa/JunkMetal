@@ -68,6 +68,13 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
+    public TankStateInfo StateInfo
+    {
+        get {
+            return new TankStateInfo(this);
+        }
+    }
+
     private bool initialized = false;
 
     private void FixedUpdate() {
@@ -159,34 +166,11 @@ public partial class Tank : MonoBehaviour
         return weight;
     }
 
-    private Vector2 calcAppliedLinearForce(Vector2 forwardVec, float leftCurPower, float rightCurPower) {
-        Vector3 leftForceVec = forwardVec * leftCurPower * Hull.Schematic.EnergyPower / 2f;
-        Vector3 rightForceVec = forwardVec * rightCurPower * Hull.Schematic.EnergyPower / 2f;
-
-        Vector2 linearForce = rightForceVec + leftForceVec;
-
-        return linearForce;
-    }
-
-    private float calcAppliedTorque(Vector2 forwardVec, float leftCurPower, float rightCurPower) {
-        Vector3 leftForceVec = forwardVec * leftCurPower * Hull.Schematic.EnergyPower / 2f;
-        Vector3 rightForceVec = forwardVec * rightCurPower * Hull.Schematic.EnergyPower / 2f;
-
-        float width = Hull.Schematic.Size.x;
-        Vector3 rightR = new Vector2(width / 2f, 0).Rotate(body.rotation);
-        Vector3 rightTorque = Vector3.Cross(rightR, rightForceVec);
-
-        Vector3 leftR = new Vector2(-width / 2f, 0).Rotate(body.rotation);
-        Vector3 leftTorque = Vector3.Cross(leftR, leftForceVec);
-
-        return rightTorque.z + leftTorque.z;
-    }
-
     private void handleMovement() {
-        Vector2 linearForce = calcAppliedLinearForce(GetForwardVec(), Hull.LeftCurPower, Hull.RightCurPower);
+        Vector2 linearForce = TankUtility.CalcAppliedLinearForce(StateInfo);
         body.AddForce(linearForce);
 
-        float torque = calcAppliedTorque(GetForwardVec(), Hull.LeftCurPower, Hull.RightCurPower);
+        float torque = TankUtility.CalcAppliedTorque(StateInfo);
         body.AddTorque(torque, ForceMode2D.Force);
     }
 }
