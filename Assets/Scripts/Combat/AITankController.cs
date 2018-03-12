@@ -352,7 +352,7 @@ public class AITankController : TankController
     //float curAngle = 0;
     //private void futurePredicTest() {
     //    if (!first) {
-    //        angles = new List<float> { 45f, -45f, -45f, -45f, 45f };
+    //        angles = new List<float> { -45f, 0, 0, -45f, 0, 0, 45f, 45f, 0, -45f, 135f, 180f, 180f, 45f, 0, 0};
     //        curAngle = angles[0];
 
     //        List<Vector2> futurePos = new List<Vector2>();
@@ -367,27 +367,13 @@ public class AITankController : TankController
 
     //        startTime = Time.time;
     //        first = true;
-    //        reached = new List<bool> { false, false, false, false };
+    //    } else if (reached.Count + 1 < angles.Count) {
+    //        int count = reached.Count + 1;
+    //        float time = count * 0.5f;
 
-    //    } else {
-    //        if (!reached[0] && Time.time - startTime >= 0.5f) {
-    //            reached[0] = true;
-    //            curAngle = angles[1];
-    //        }
-
-    //        if (!reached[1] && Time.time - startTime >= 1.0f) {
-    //            reached[1] = true;
-    //            curAngle = angles[2];
-    //        }
-
-    //        if (!reached[2] && Time.time - startTime >= 1.5f) {
-    //            reached[2] = true;
-    //            curAngle = angles[3];
-    //        }
-
-    //        if (!reached[3] && Time.time - startTime >= 2.0f) {
-    //            reached[3] = true;
-    //            curAngle = angles[4];
+    //        if (Time.time - startTime >= time) {
+    //            reached.Add(true);
+    //            curAngle = angles[reached.Count];
     //        }
     //    }
 
