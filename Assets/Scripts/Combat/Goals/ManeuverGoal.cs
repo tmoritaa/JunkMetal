@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ManeuverGoal : Goal
 {
-    const float UpdatePeriod = 0.25f;
+    const float UpdatePeriod = 0.5f;
 
     const float LookaheadTime = 1.0f;
     const float LookaheadTimeStep = 0.5f;
@@ -92,13 +92,13 @@ public class ManeuverGoal : Goal
                 //filterByDoesNotCrossTargetFireVec,
                 filterByAngleToTargetFireVec
             };
-        } else if (angleDiff < 45f && weaponFirable) {
+        } else if (angleDiff < 35f && weaponFirable) {
             // Not too dangerous, but still should run away while trying to aim
             filterOrFindFuncs = new Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
                 filterByDestNotObstructed,
                 //filterByDoesNotCrossTargetFireVec,
-                filterByWithinRange,
+                //filterByWithinRange,
                 filterByAngleToTargetFireVec,
                 filterByAim,
                 findNodeWithBestOptimalRangeDist
@@ -108,7 +108,7 @@ public class ManeuverGoal : Goal
             filterOrFindFuncs = new Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
                 filterByDestNotObstructed,
-                filterByWithinRange,
+                //filterByWithinRange,
                 filterByAim,
                 findNodeWithBestOptimalRangeDist
             };

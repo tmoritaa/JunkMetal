@@ -49,9 +49,9 @@ public class LookaheadNode
             TankInfo.ForwardVec.Rotate(45f),
             TankInfo.ForwardVec.Rotate(135f),
             TankInfo.ForwardVec.Rotate(-45f),
-            TankInfo.ForwardVec.Rotate(-135f)
-            //TankInfo.ForwardVec.Rotate(90f),
-            //TankInfo.ForwardVec.Rotate(-90f)
+            TankInfo.ForwardVec.Rotate(-135f),
+            TankInfo.ForwardVec.Rotate(90f),
+            TankInfo.ForwardVec.Rotate(-90f)
         };
 
         // Remove the largest angle difference which should correspond to the opposite direction of the incoming direction
