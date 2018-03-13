@@ -79,19 +79,16 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDestNotObstructedFilter = true;
 
     [SerializeField]
-    private bool maneuverDistFromFireFilter = true;
+    private bool maneuverDoesNotCrossFireFilter = true;
 
     [SerializeField]
     private bool maneuverInRangeFilter = true;
 
     [SerializeField]
-    private bool maneuverDangerousNodeFilter = true;
+    private bool maneuverAngleFromFireFilter = true;
 
     [SerializeField]
     private bool maneuverAimFilter = true;
-
-    [SerializeField]
-    private bool maneuverClusterFilter = true;
 
     [SerializeField]
     private bool maneuverOptimalRangeFilter = true;
@@ -325,9 +322,9 @@ public class DebugManager : MonoBehaviour
                         }
                     }
                 }
-        
-                if (maneuverDangerousNodeFilter) {
-                    object obj = getRegisterdObj("maneuver_dangerous_node_filter");
+
+                if (maneuverDoesNotCrossFireFilter) {
+                    object obj = getRegisterdObj("maneuver_does_not_cross_fire_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
@@ -337,9 +334,9 @@ public class DebugManager : MonoBehaviour
                         }
                     }
                 }
-
-                if (maneuverDistFromFireFilter) {
-                    object obj = getRegisterdObj("maneuver_dist_from_fire_filter");
+        
+                if (maneuverAngleFromFireFilter) {
+                    object obj = getRegisterdObj("maneuver_angle_from_fire_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
@@ -364,18 +361,6 @@ public class DebugManager : MonoBehaviour
 
                 if (maneuverAimFilter) {
                     object obj = getRegisterdObj("maneuver_aim_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
-
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
-                        }
-                    }
-                }
-
-                if (maneuverClusterFilter) {
-                    object obj = getRegisterdObj("maneuver_cluster_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
