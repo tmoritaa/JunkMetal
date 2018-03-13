@@ -35,7 +35,7 @@ public class WeaponPartSchematic : PartSchematic
     public float OptimalRange
     {
         get {
-            return Range * 0.75f;
+            return Range * 0.9f;
         }
     }
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ManeuverGoal : Goal
 {
-    const float UpdatePeriod = 0.5f;
+    const float UpdatePeriod = 0.25f;
 
     private Vector2 prevMoveDir = new Vector2();
 
