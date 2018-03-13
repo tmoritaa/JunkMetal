@@ -101,6 +101,11 @@ public class Map
         return indices;
     }
 
+    public bool IsPositionWithinBounds(Vector2 pos) {
+        int[] indices = PositionToIdx(pos);
+        return indices[0] >= 0 && indices[0] < Cols && indices[1] >= 0 && indices[1] < Rows;
+    }
+
     public Node PositionToNode(Vector2 position) {
         int[] indices = PositionToIdx(position);
         return MapArray[indices[0], indices[1]];

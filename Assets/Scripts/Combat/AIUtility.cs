@@ -73,7 +73,7 @@ public class AIUtility
         return timeToReach;
     }
 
-    public static TankStateInfo CalcPosInFutureWithRequestedDir(Vector2 _requestDir, float timeInSecs, TankStateInfo tankInfo) {
+    public static TankStateInfo CalcPosInFutureWithRequestedDir(Vector2 _requestDir, float timeInSecs, TankStateInfo tankInfo, out List<Vector2> passedPos) {
         TankStateInfo resultInfo = new TankStateInfo(tankInfo);
         Vector2 requestDir = _requestDir;
 
@@ -82,7 +82,8 @@ public class AIUtility
         float dt = Time.fixedDeltaTime;
 
         List<Vector2> allPos = new List<Vector2>();
-        List<Vector2> allRequestDir = new List<Vector2>();
+        allPos.Add(resultInfo.Pos);
+
         while (elapsedTime <= timeInSecs) {
             elapsedTime += dt;
 
@@ -98,6 +99,8 @@ public class AIUtility
                 Vector2 a = f / m;
                 resultInfo.LinearVel = (resultInfo.LinearVel + a * dt) * (1f / (1f + drag * dt));
                 resultInfo.Pos += resultInfo.LinearVel * dt;
+
+                allPos.Add(resultInfo.Pos);
             }
 
             // rot update
@@ -113,6 +116,8 @@ public class AIUtility
                 requestDir = requestDir.Rotate(rotDiff);
             }
         }
+
+        passedPos = allPos;
 
         return resultInfo;
     }
