@@ -8,8 +8,8 @@ public class LookaheadTree
 {
     private LookaheadNode root = null;
 
-    public void PopulateTree(Tank tank, Map map, float searchTime, float timeStep) {
-        root = new LookaheadNode(null, new Vector2(), tank.StateInfo, 0, new List<Node>());
+    public void PopulateTree(Tank tank, Map map, float searchTime, float timeStep, Vector2 prevDir) {
+        root = new LookaheadNode(null, prevDir, tank.StateInfo, 0, new List<Node>());
 
         float elapsedTime = 0;
         List<LookaheadNode> nodesToPopulate = new List<LookaheadNode>();

@@ -61,7 +61,7 @@ public class ManeuverGoal : Goal
         const float timeStep = 0.5f;
 
         LookaheadTree tree = new LookaheadTree();
-        tree.PopulateTree(selfTank, map, lookaheadTime, timeStep);
+        tree.PopulateTree(selfTank, map, lookaheadTime, timeStep, prevMoveDir);
 
         List<LookaheadNode> nodes = tree.FindAllNodesAtSearchTime(lookaheadTime);
 
@@ -82,20 +82,20 @@ public class ManeuverGoal : Goal
 
         Func<List<LookaheadNode>, bool, List<LookaheadNode>>[] filterOrFindFuncs;
         Debug.Log(angleDiff);
-        if (angleDiff < 5f && weaponFirable) {
+        if (angleDiff < 10f && weaponFirable) {
             // Super dangerous. We just prioritize angle from Fire vec
             filterOrFindFuncs = new Func<List<LookaheadNode>, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
                 filterByDestNotObstructed,
-                filterByDoesNotCrossTargetFireVec,
+                //filterByDoesNotCrossTargetFireVec,
                 filterByAngleToTargetFireVec
             };
-        } else if (angleDiff < 25f && weaponFirable) {
+        } else if (angleDiff < 45f && weaponFirable) {
             // Not too dangerous, but still should run away while trying to aim
             filterOrFindFuncs = new Func<List<LookaheadNode>, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
                 filterByDestNotObstructed,
-                filterByDoesNotCrossTargetFireVec,
+                //filterByDoesNotCrossTargetFireVec,
                 filterByWithinRange,
                 filterByAngleToTargetFireVec,
                 filterByAim,
