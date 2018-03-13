@@ -73,6 +73,28 @@ public class AIUtility
         return timeToReach;
     }
 
+    public static TankStateInfo CalcPosInFutureWithRequestedPowerChange(int[] powerChange, float timeInSecs, TankStateInfo tankInfo, out List<Vector2> passedPos) {
+        Vector2 forwardVec = tankInfo.ForwardVec;
+
+        if (powerChange[0] == powerChange[1]) {
+            forwardVec *= powerChange[0];
+        } else if (powerChange[0] == 0 || powerChange[1] == 0) {
+            if (powerChange[0] != 0) {
+                forwardVec = forwardVec.Rotate(Mathf.Sign(powerChange[0]) > 0 ? -45f : -135f);
+            } else {
+                forwardVec = forwardVec.Rotate(Mathf.Sign(powerChange[1]) > 0 ? 45f : 135f);
+            }
+        } else {
+            if (powerChange[0] > 0) {
+                forwardVec = forwardVec.Rotate(-90f);
+            } else {
+                forwardVec = forwardVec.Rotate(90f);
+            }
+        }
+
+        return CalcPosInFutureWithRequestedDir(forwardVec, timeInSecs, tankInfo, out passedPos);
+    }
+
     public static TankStateInfo CalcPosInFutureWithRequestedDir(Vector2 _requestDir, float timeInSecs, TankStateInfo tankInfo, out List<Vector2> passedPos) {
         TankStateInfo resultInfo = new TankStateInfo(tankInfo);
         Vector2 requestDir = _requestDir;

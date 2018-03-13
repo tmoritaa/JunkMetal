@@ -17,12 +17,12 @@ public class HullPart
         right,
     }
 
-    public float LeftCurPower
+    public int LeftCurPower
     {
         get; private set;
     }
 
-    public float RightCurPower
+    public int RightCurPower
     {
         get; private set;
     }
@@ -65,26 +65,22 @@ public class HullPart
     }
 
     private void performPowerChangeForSide(Side side, int changeDir) {
-        float power = (side == Side.left) ? LeftCurPower : RightCurPower;
+        int power = (side == Side.left) ? LeftCurPower : RightCurPower;
 
         bool handled = false;
 
         // Add power increase and clamp based on key input.
         if (changeDir > 0) {
-            power += 1.0f;
+            power += 1;
             handled = true;
         } else if (changeDir < 0) {
-            power -= 1.0f;
+            power -= 1;
             handled = true;
         }
 
-        if (!handled && Mathf.Abs(power) > 0) {
-            power = 0;
-        }
-        power = Mathf.Clamp(power, -1.0f, 1.0f);
+        power = Math.Min(Math.Max(-1, power), 1);
 
-        // Force 0 if below sigma.
-        if (Mathf.Abs(power) < 0.001f) {
+        if (!handled && Mathf.Abs(power) > 0) {
             power = 0;
         }
 

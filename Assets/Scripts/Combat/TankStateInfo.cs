@@ -6,6 +6,11 @@ using UnityEngine;
 
 public struct TankStateInfo
 {
+    public Tank OwningTank
+    {
+        get; private set;
+    }
+
     public Vector2 ForwardVec
     {
         get {
@@ -62,22 +67,8 @@ public struct TankStateInfo
         get; private set;
     }
 
-    public TankStateInfo(float[] curPower, float mass, Vector2 pos, Vector2 linearVel, float rot, float linearDrag, float angularVel, float angularDrag, float inertia, float energyPower, Vector2 size) {
-        LeftCurPower = curPower[0];
-        RightCurPower = curPower[1];
-        Mass = mass;
-        Pos = pos;
-        LinearVel = linearVel;
-        LinearDrag = linearDrag;
-        AngularVel = angularVel;
-        AngularDrag = angularDrag;
-        Rot = rot;
-        Inertia = inertia;
-        EnergyPower = energyPower;
-        Size = size;
-    }
-
     public TankStateInfo(Tank tank) {
+        OwningTank = tank;
         LeftCurPower = tank.Hull.LeftCurPower;
         RightCurPower = tank.Hull.RightCurPower;
         Mass = tank.Body.mass;
@@ -93,6 +84,7 @@ public struct TankStateInfo
     }
 
     public TankStateInfo(TankStateInfo stateInfo) {
+        OwningTank = stateInfo.OwningTank;
         LeftCurPower = stateInfo.LeftCurPower;
         RightCurPower = stateInfo.RightCurPower;
         Mass = stateInfo.Mass;
@@ -105,5 +97,9 @@ public struct TankStateInfo
         Inertia = stateInfo.Inertia;
         EnergyPower = stateInfo.EnergyPower;
         Size = stateInfo.Size;
+    }
+
+    public Vector2 CalculateFireVecOfWeapon(WeaponPart part) {
+        return OwningTank.Turret.Schematic.OrigWeaponDirs[part.TurretIdx].Rotate(Rot); // TODO: this assumes tank loses turret rotation functionality
     }
 }

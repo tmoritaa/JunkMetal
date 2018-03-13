@@ -70,6 +70,9 @@ public class DebugManager : MonoBehaviour
     private bool maneuverGoalDebugOn = true;
 
     [SerializeField]
+    private bool maneuverFutureTargetTankInfo = true;
+
+    [SerializeField]
     private bool maneuverNodesAtSearchTime = true;
 
     [SerializeField]
@@ -287,6 +290,19 @@ public class DebugManager : MonoBehaviour
             }
 
             if (maneuverGoalDebugOn && curGoal != null && curGoal.GetType() == typeof(ManeuverGoal)) {
+                if (maneuverFutureTargetTankInfo) {
+                    object obj = getRegisterdObj("maneuver_future_target_info");
+                    if (obj != null) {
+                        TankStateInfo tank = (TankStateInfo)obj;
+
+                        Gizmos.color = Color.red;
+                        Gizmos.DrawWireSphere(tank.Pos, 30);
+
+                        Gizmos.color = Color.magenta;
+                        Gizmos.DrawLine(tank.Pos, tank.Pos + new Vector2(0, 1).Rotate(tank.Rot) * 50f);
+                    }
+                }
+
                 if (maneuverNodesAtSearchTime) {
                     object obj = getRegisterdObj("maneuver_nodes_at_searchtime");
                     if (obj != null) {
