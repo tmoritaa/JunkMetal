@@ -70,6 +70,9 @@ public class DebugManager : MonoBehaviour
     private bool maneuverGoalDebugOn = true;
 
     [SerializeField]
+    private bool maneuverCurMoveDir = true;
+
+    [SerializeField]
     private bool maneuverNodesAtSearchTime = true;
 
     [SerializeField]
@@ -308,6 +311,17 @@ public class DebugManager : MonoBehaviour
             }
 
             if (maneuverGoalDebugOn && curGoal != null && curGoal.GetType() == typeof(ManeuverGoal)) {
+                if (maneuverCurMoveDir) {
+                    object obj = getRegisterdObj("maneuver_move_dir");
+                    if (obj != null) {
+                        Vector2 vec = (Vector2)obj;
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawLine(aiTank.transform.position, (Vector2)aiTank.transform.position + vec.normalized * 50f);
+                    }
+                }
+
                 if (maneuverNodesAtSearchTime) {
                     object obj = getRegisterdObj("maneuver_nodes_at_searchtime");
                     if (obj != null) {

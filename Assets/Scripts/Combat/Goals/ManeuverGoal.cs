@@ -68,6 +68,8 @@ public class ManeuverGoal : Goal
         float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
         actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
 
+        DebugManager.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
+
         return actions.ToArray();
     }
 
@@ -170,7 +172,7 @@ public class ManeuverGoal : Goal
 
         nodes = filterByAngleToTargetFireVec(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", nodes);
-
+        
         LookaheadNode bestNode = findBestNodeWithOptimalRangeDist(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_best_node", bestNode);
 
