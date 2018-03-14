@@ -197,17 +197,24 @@ public class ManeuverGoal : Goal
         nodes = filterByDangerousNodes(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_aim_dangerous_filter", nodes);
 
+        nodes = filterByWithinTargetRange(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_in_target_range_filter", nodes);
+
         // Next find good nodes that increase angle between target fire vec.
         nodes = filterByAngleToTargetFireVec(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_aim_angle_diff_filter", nodes);
 
+        Vector2 targetToSelfVec = controller.SelfTank.transform.position - controller.TargetTank.transform.position;
+
+        if (targetToSelfVec.magnitude < controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange) {
+            // If still multiple exist, find good nodes for aiming
+            nodes = filterbyAim(nodes);
+            DebugManager.Instance.RegisterObject("maneuver_dodge_aim_aim_filter", nodes);
+        }
+        
         // Next find good nodes that get us closer to optimal range distance 
         nodes = filterByOptimalRangeDist(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_aim_opt_dist_filter", nodes);
-
-        // If still multiple exist, find good nodes for aiming
-        nodes = filterbyAim(nodes);
-        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_aim_filter", nodes);
 
         // Finally, find the best node with the largest angle increase between target fire vec.
         LookaheadNode bestNode = findBestNodeWithAngleToTargetFireVec(nodes);
@@ -535,6 +542,25 @@ public class ManeuverGoal : Goal
         }
 
         return nodes;
+    }
+
+    private List<LookaheadNode> filterByWithinTargetRange(List<LookaheadNode> nodes) {
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+
+        Tank targetTank = controller.TargetTank;
+        Vector2 targetPos = targetTank.transform.position;
+        float range = targetTank.Turret.GetAllWeapons()[0].Schematic.ThreatRange;
+        foreach (LookaheadNode node in nodes) {
+            if (range >= (targetPos - node.TankInfo.Pos).magnitude) {
+                filteredNodes.Add(node);
+            }
+        }
+
+        if (filteredNodes.Count == 0) {
+            filteredNodes = nodes;
+        }
+
+        return filteredNodes;
     }
 
     private bool IsAllNodesWithinOptimalDistSigma(List<LookaheadNode> nodes) {
