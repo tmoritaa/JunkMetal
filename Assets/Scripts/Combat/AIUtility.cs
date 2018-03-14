@@ -154,8 +154,14 @@ public class AIUtility
         int[] powerChange = new int[2];
 
         if (requestDir.magnitude == 0) {
-            powerChange[0] = Mathf.Sign(stateInfo.LeftCurPower) > 0 ? -1 : 1;
-            powerChange[1] = Mathf.Sign(stateInfo.RightCurPower) > 0 ? -1 : 1;
+            if (stateInfo.LeftCurPower != 0) {
+                powerChange[0] = Mathf.Sign(stateInfo.LeftCurPower) > 0 ? -1 : 1;
+            }
+
+            if (stateInfo.RightCurPower != 0) {
+                powerChange[1] = Mathf.Sign(stateInfo.RightCurPower) > 0 ? -1 : 1;
+            }
+            
             return powerChange;
         }
 

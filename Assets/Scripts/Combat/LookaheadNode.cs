@@ -51,7 +51,8 @@ public class LookaheadNode
             TankInfo.ForwardVec.Rotate(-45f),
             TankInfo.ForwardVec.Rotate(-135f),
             TankInfo.ForwardVec.Rotate(90f),
-            TankInfo.ForwardVec.Rotate(-90f)
+            TankInfo.ForwardVec.Rotate(-90f),
+            new Vector2()
         };
 
         // Remove the largest angle difference which should correspond to the opposite direction of the incoming direction
@@ -105,29 +106,6 @@ public class LookaheadNode
         return !obstructed;
     }
 
-    public bool PathFromRootDoesNotCrossDangerNode() {
-        LookaheadNode curSearchNode = this;
-
-        bool crossedDanger = false;
-        while (curSearchNode != null) {
-            foreach (Node node in curSearchNode.passedNodes) {
-                ThreatNode tNode = (ThreatNode)node;
-                if (tNode.TimeDiffDangerLevel == 0) {
-                    crossedDanger = true;
-                    break;
-                }
-            }
-
-            if (crossedDanger) {
-                break;
-            }
-
-            curSearchNode = curSearchNode.ParentNode;
-        }
-
-        return !crossedDanger;
-    }
-
     public bool HasOverlappedTargetWithWeapon(Vector2 targetPos, WeaponPart part) {
         LookaheadNode curSearchNode = this;
 
@@ -156,5 +134,26 @@ public class LookaheadNode
         }
 
         return crossedTarget;
+    }
+
+    // TODO: later change map to be a reference from node, aka we don't pass map
+    public bool CrossesOppFireVector(Vector2 targetPos, WeaponPart part, ThreatMap map) {
+        Vector2 fireVec = part.CalculateFireVec();
+        bool crossedFire = false;
+
+        const float sigma = 1f;
+        for (int i = 0; i < passedNodes.Count - 1; ++i) {
+            Vector2 pos = map.NodeToPosition(passedNodes[i]);
+            Vector2 nextPos = map.NodeToPosition(passedNodes[i + 1]);
+
+            float angleDiff = Vector2.SignedAngle(pos - targetPos, fireVec);
+            float nextAngleDiff = Vector2.SignedAngle(nextPos - targetPos, fireVec);
+
+            if (Mathf.Abs(angleDiff) < sigma || Mathf.Abs(nextAngleDiff) < sigma || Mathf.Sign(angleDiff) != Mathf.Sign(nextAngleDiff)) {
+                crossedFire = true;
+            }
+        }
+
+        return crossedFire;
     }
 }

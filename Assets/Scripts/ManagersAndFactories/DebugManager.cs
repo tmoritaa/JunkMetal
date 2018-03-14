@@ -70,9 +70,6 @@ public class DebugManager : MonoBehaviour
     private bool maneuverGoalDebugOn = true;
 
     [SerializeField]
-    private bool maneuverFutureTargetTankInfo = true;
-
-    [SerializeField]
     private bool maneuverNodesAtSearchTime = true;
 
     [SerializeField]
@@ -82,19 +79,16 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDestNotObstructedFilter = true;
 
     [SerializeField]
-    private bool maneuverDoesNotCrossFireFilter = true;
+    private bool maneuverDodgeBehaviour = true;
 
     [SerializeField]
-    private bool maneuverInRangeFilter = true;
+    private bool maneuverDodgeDoesNotCrossFireFilter = true;
 
     [SerializeField]
-    private bool maneuverAngleFromFireFilter = true;
+    private bool maneuverDodgeAngleDiffFilter = true;
 
     [SerializeField]
-    private bool maneuverAimFilter = true;
-
-    [SerializeField]
-    private bool maneuverOptimalRangeFilter = true;
+    private bool maneuverDodgeBestNode = true;
 
     [SerializeField]
     private bool predictFutureDebugOn = true;
@@ -290,19 +284,6 @@ public class DebugManager : MonoBehaviour
             }
 
             if (maneuverGoalDebugOn && curGoal != null && curGoal.GetType() == typeof(ManeuverGoal)) {
-                if (maneuverFutureTargetTankInfo) {
-                    object obj = getRegisterdObj("maneuver_future_target_info");
-                    if (obj != null) {
-                        TankStateInfo tank = (TankStateInfo)obj;
-
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawWireSphere(tank.Pos, 30);
-
-                        Gizmos.color = Color.magenta;
-                        Gizmos.DrawLine(tank.Pos, tank.Pos + new Vector2(0, 1).Rotate(tank.Rot) * 50f);
-                    }
-                }
-
                 if (maneuverNodesAtSearchTime) {
                     object obj = getRegisterdObj("maneuver_nodes_at_searchtime");
                     if (obj != null) {
@@ -338,62 +319,38 @@ public class DebugManager : MonoBehaviour
                         }
                     }
                 }
+                
+                if (maneuverDodgeBehaviour) {
+                    if (maneuverDodgeDoesNotCrossFireFilter) {
+                        object obj = getRegisterdObj("maneuver_dodge_does_not_cross_fire_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
-                if (maneuverDoesNotCrossFireFilter) {
-                    object obj = getRegisterdObj("maneuver_does_not_cross_fire_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
-
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
                         }
                     }
-                }
-        
-                if (maneuverAngleFromFireFilter) {
-                    object obj = getRegisterdObj("maneuver_angle_from_fire_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                    if (maneuverDodgeAngleDiffFilter) {
+                        object obj = getRegisterdObj("maneuver_dodge_largest_angle_diff_filter");
+                        if (obj != null) {
+                            List<ManeuverGoal.CostInfo> infoList = (List<ManeuverGoal.CostInfo>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (ManeuverGoal.CostInfo info in infoList) {
+                                Gizmos.DrawWireSphere(info.Node.TankInfo.Pos, 20);
+                            }
                         }
                     }
-                }
 
-                if (maneuverInRangeFilter) {
-                    object obj = getRegisterdObj("maneuver_in_range_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+                    if (maneuverDodgeBestNode) {
+                        object obj = getRegisterdObj("maneuver_dodge_best_node");
+                        if (obj != null) {
+                            LookaheadNode node = (LookaheadNode)obj;
 
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
-                        }
-                    }
-                }
-
-                if (maneuverAimFilter) {
-                    object obj = getRegisterdObj("maneuver_aim_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
-
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
-                        }
-                    }
-                }
-
-                if (maneuverOptimalRangeFilter) {
-                    object obj = getRegisterdObj("maneuver_optimal_range_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
-
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
+                            Gizmos.color = Color.green;
                             Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
                         }
                     }

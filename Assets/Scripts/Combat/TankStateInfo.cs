@@ -4,7 +4,7 @@ using System.Linq;
 
 using UnityEngine;
 
-public struct TankStateInfo
+public class TankStateInfo
 {
     public Tank OwningTank
     {
