@@ -84,7 +84,7 @@ public class ManeuverGoal : Goal
 
         float angleDiff = Vector2.Angle(targetToSelfVec, targetTank.Turret.GetAllWeapons()[0].CalculateFireVec());
         float targetWeaponReloadTime = targetTank.Turret.GetAllWeapons()[0].CalcTimeToReloaded();
-        bool inTargetRange = targetToSelfVec.magnitude < targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.5f;
+        bool inTargetRange = targetToSelfVec.magnitude < targetTank.Turret.GetAllWeapons()[0].Schematic.ThreatRange;
         bool inSelfRange = targetToSelfVec.magnitude < selfTank.Turret.GetAllWeapons()[0].Schematic.Range;
         float selfWeaponReloadTime = selfTank.Turret.GetAllWeapons()[0].CalcTimeToReloaded();
 
@@ -192,6 +192,10 @@ public class ManeuverGoal : Goal
         nodes = filterByAngleToTargetFireVec(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_aim_angle_diff_filter", nodes);
 
+        // Next find good nodes that get us closer to optimal range distance 
+        nodes = filterByOptimalRangeDist(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_opt_dist_filter", nodes);
+
         // If still multiple exist, find good nodes for aiming
         nodes = filterbyAim(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_aim_aim_filter", nodes);
@@ -281,7 +285,7 @@ public class ManeuverGoal : Goal
         Tank targetTank = controller.TargetTank;
         Vector2 targetTankPos = targetTank.transform.position;
         Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
-        float range = targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.5f;
+        float range = targetTank.Turret.GetAllWeapons()[0].Schematic.ThreatRange;
 
         List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
         foreach (LookaheadNode node in nodes) {

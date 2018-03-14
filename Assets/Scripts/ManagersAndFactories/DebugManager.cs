@@ -100,6 +100,9 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDodgeAimAngleDiffFilter = true;
 
     [SerializeField]
+    private bool maneuverDodgeAimOptDistFilter = true;
+
+    [SerializeField]
     private bool maneuverDodgeAimAimFilter = true;
 
     [SerializeField]
@@ -406,6 +409,18 @@ public class DebugManager : MonoBehaviour
 
                     if (maneuverDodgeAimAngleDiffFilter) {
                         object obj = getRegisterdObj("maneuver_dodge_aim_angle_diff_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
+                        }
+                    }
+
+                    if (maneuverDodgeAimOptDistFilter) {
+                        object obj = getRegisterdObj("maneuver_dodge_aim_opt_dist_filter");
                         if (obj != null) {
                             List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 

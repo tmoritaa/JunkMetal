@@ -39,6 +39,13 @@ public class WeaponPartSchematic : PartSchematic
         }
     }
 
+    public float ThreatRange
+    {
+        get {
+            return Range * 1.5f;
+        }
+    }
+
     public Bullet.BulletTypes BulletType
     {
         get; private set;
