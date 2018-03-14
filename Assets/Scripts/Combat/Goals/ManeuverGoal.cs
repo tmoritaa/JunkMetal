@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ManeuverGoal : Goal
 {
-    const float UpdatePeriod = 0.5f;
+    const float UpdatePeriod = 0.25f;
 
     const float LookaheadTime = 1.0f;
     const float LookaheadTimeStep = 0.5f;
@@ -63,7 +63,7 @@ public class ManeuverGoal : Goal
         LookaheadTree tree = new LookaheadTree();
         tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, prevMoveDir);
 
-        TankStateInfo futureTargetTank = calcFutureTargetTankInfo();
+        TankStateInfo futureTargetTank = targetTank.StateInfo;
         DebugManager.Instance.RegisterObject("maneuver_future_target_info", futureTargetTank);
 
         List<LookaheadNode> nodes = tree.FindAllNodesAtSearchTime(LookaheadTime);
@@ -81,10 +81,14 @@ public class ManeuverGoal : Goal
 
         // TODO: for now, just use first weapon. Later should be closest weapon
         float angleDiff = Vector2.Angle((Vector2)selfTank.transform.position - futureTargetTank.Pos, futureTargetTank.CalculateFireVecOfWeapon(targetTank.Turret.GetAllWeapons()[0]));
-        bool weaponFirable = targetTank.Turret.GetAllWeapons()[0].IsFireable;
+        bool targetWeaponFireable = targetTank.Turret.GetAllWeapons()[0].IsFireable;
+        bool inTargetRange = (futureTargetTank.Pos - (Vector2)selfTank.transform.position).magnitude < targetTank.Turret.GetAllWeapons()[0].Schematic.Range;
+        bool inSelfRange = (futureTargetTank.Pos - (Vector2)selfTank.transform.position).magnitude < selfTank.Turret.GetAllWeapons()[0].Schematic.Range;
 
         Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] filterOrFindFuncs;
-        if (angleDiff < 10f && weaponFirable) {
+        if (angleDiff < 10f && targetWeaponFireable && inTargetRange) {
+            Debug.Log("super dangerous");
+
             // Super dangerous. We just prioritize angle from Fire vec
             filterOrFindFuncs = new Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
@@ -92,25 +96,37 @@ public class ManeuverGoal : Goal
                 //filterByDoesNotCrossTargetFireVec,
                 filterByAngleToTargetFireVec
             };
-        } else if (angleDiff < 35f && weaponFirable) {
+        } else if (angleDiff < 35f && targetWeaponFireable && inTargetRange) {
+            Debug.Log("kind of dangerous");
+
             // Not too dangerous, but still should run away while trying to aim
             filterOrFindFuncs = new Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
                 filterByDestNotObstructed,
-                //filterByDoesNotCrossTargetFireVec,
-                //filterByWithinRange,
+                filterByDoesNotCrossTargetFireVec,
                 filterByAngleToTargetFireVec,
                 filterByAim,
                 findNodeWithBestOptimalRangeDist
             };
-        } else {
+        } else if (inSelfRange) {
+            Debug.Log("pretty safe and in range to attack");
+
             // Now we should be relatively safe
             filterOrFindFuncs = new Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] {
                 filterByPathNotObstructed,
                 filterByDestNotObstructed,
-                //filterByWithinRange,
-                filterByAim,
-                findNodeWithBestOptimalRangeDist
+                filterByAim
+                //findNodeWithBestOptimalRangeDist
+            };
+        } else {
+            Debug.Log("pretty safe but not in range to attack");
+
+            // Now we should be relatively safe
+            filterOrFindFuncs = new Func<List<LookaheadNode>, TankStateInfo, bool, List<LookaheadNode>>[] {
+                filterByPathNotObstructed,
+                filterByDestNotObstructed,
+                findNodeWithBestOptimalRangeDist,
+                filterByAim
             };
         }
 
@@ -136,7 +152,7 @@ public class ManeuverGoal : Goal
 
         // Something terrible has happened
         if (nodes.Count != 1) {
-            Debug.LogWarning("Searching for direction to go to using future prediction has resulted in too much or nothing. Should never happen");
+            Debug.LogWarning("Searching for direction to go to using future prediction has resulted in too much or nothing. Should never happen. Count=" + nodes.Count);
         }
 
         return requestDir;
@@ -309,7 +325,11 @@ public class ManeuverGoal : Goal
         }
 
         if (lastFunc) {
-            filteredNodes.Add(bestNode);
+            if (filteredNodes.Count == 0) {
+                filteredNodes.Add(bestNode);
+            } else {
+                filteredNodes.RemoveRange(1, filteredNodes.Count - 1);
+            }
         } else {
             foreach (LookaheadNode node in nodes) {
                 Vector2 toTargetVec = targetTankInfo.Pos - node.TankInfo.Pos;
@@ -324,11 +344,6 @@ public class ManeuverGoal : Goal
                 }
             }
         }
-
-        if (filteredNodes.Count == 0) {
-            Debug.LogWarning("Aim filter resulted in no options");
-            filteredNodes = nodes;
-        }
         
         DebugManager.Instance.RegisterObject("maneuver_aim_filter", filteredNodes);
 
@@ -336,10 +351,6 @@ public class ManeuverGoal : Goal
     }
 
     private List<LookaheadNode> findNodeWithBestOptimalRangeDist(List<LookaheadNode> nodes, TankStateInfo targetTankInfo, bool lastFunc) {
-        if (!lastFunc) {
-            Debug.LogWarning("Best optimal range dist find is not last filter function. Should never happen");
-        }
-
         Tank selfTank = controller.SelfTank;
 
         WeaponPart part = selfTank.Turret.GetAllWeapons()[0]; // TODO: for now. Later should use main weapon system
@@ -358,8 +369,20 @@ public class ManeuverGoal : Goal
             }
         }
 
-        List<LookaheadNode> filteredList = new List<LookaheadNode>() { bestNode };
+        List<LookaheadNode> filteredList = new List<LookaheadNode>();
+        if (lastFunc) {
+            filteredList.Add(bestNode);
+        } else {
+            foreach (LookaheadNode node in nodes) {
+                float distFromTarget = (node.TankInfo.Pos - targetTankInfo.Pos).magnitude;
+                float optimalRangeDiff = Mathf.Abs(distFromTarget - optimalRange);
 
+                if (optimalRangeDiff - smallestOptimalRangedist / 3f < smallestOptimalRangedist) {
+                    filteredList.Add(node);
+                }
+            }
+        }
+        
         DebugManager.Instance.RegisterObject("maneuver_optimal_range_filter", filteredList);
 
         return filteredList;
