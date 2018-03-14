@@ -91,6 +91,33 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDodgeBestNode = true;
 
     [SerializeField]
+    private bool maneuverDodgeAimBehaviour = true;
+
+    [SerializeField]
+    private bool maneuverDodgeAimDangerousFilter = true;
+
+    [SerializeField]
+    private bool maneuverDodgeAimAngleDiffFilter = true;
+
+    [SerializeField]
+    private bool maneuverDodgeAimAimFilter = true;
+
+    [SerializeField]
+    private bool maneuverDodgeAimBestNode= true;
+
+    [SerializeField]
+    private bool maneuverAimOptBehaviour = true;
+
+    [SerializeField]
+    private bool maneuverAimOptDangerousFilter = true;
+
+    [SerializeField]
+    private bool maneuverAimOptAimFilter = true;
+
+    [SerializeField]
+    private bool maneuverAimOptBestNode = true;
+
+    [SerializeField]
     private bool predictFutureDebugOn = true;
 
     private Vector2 targetPosForMoveTest = new Vector2();
@@ -336,17 +363,101 @@ public class DebugManager : MonoBehaviour
                     if (maneuverDodgeAngleDiffFilter) {
                         object obj = getRegisterdObj("maneuver_dodge_largest_angle_diff_filter");
                         if (obj != null) {
-                            List<ManeuverGoal.CostInfo> infoList = (List<ManeuverGoal.CostInfo>)obj;
+                            List<LookaheadNode> nodes = (List<LookaheadNode>)obj;
 
                             Gizmos.color = Color.green;
-                            foreach (ManeuverGoal.CostInfo info in infoList) {
-                                Gizmos.DrawWireSphere(info.Node.TankInfo.Pos, 20);
+                            foreach (LookaheadNode node in nodes) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
                             }
                         }
                     }
 
                     if (maneuverDodgeBestNode) {
                         object obj = getRegisterdObj("maneuver_dodge_best_node");
+                        if (obj != null) {
+                            LookaheadNode node = (LookaheadNode)obj;
+
+                            Gizmos.color = Color.green;
+                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        }
+                    }
+                }
+
+                if (maneuverDodgeAimBehaviour) {
+                    if (maneuverDodgeAimDangerousFilter) {
+                        object obj = getRegisterdObj("maneuver_dodge_aim_dangerous_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
+                        }
+                    }
+
+                    if (maneuverDodgeAimAngleDiffFilter) {
+                        object obj = getRegisterdObj("maneuver_dodge_aim_angle_diff_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
+                        }
+                    }
+
+                    if (maneuverDodgeAimAimFilter) {
+                        object obj = getRegisterdObj("maneuver_dodge_aim_aim_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
+                        }
+                    }
+
+                    if (maneuverDodgeAimBestNode) {
+                        object obj = getRegisterdObj("maneuver_dodge_aim_best_node");
+                        if (obj != null) {
+                            LookaheadNode node = (LookaheadNode)obj;
+
+                            Gizmos.color = Color.green;
+                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        }
+                    }
+                }
+
+                if (maneuverAimOptBehaviour) {
+                    if (maneuverAimOptDangerousFilter) {
+                        object obj = getRegisterdObj("maneuver_aim_opt_dangerous_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
+                        }
+                    }
+
+                    if (maneuverAimOptAimFilter) {
+                        object obj = getRegisterdObj("maneuver_aim_opt_aim_filter");
+                        if (obj != null) {
+                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                            Gizmos.color = Color.green;
+                            foreach (LookaheadNode node in nodeList) {
+                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                            }
+                        }
+                    }
+
+                    if (maneuverAimOptBestNode) {
+                        object obj = getRegisterdObj("maneuver_aim_opt_best_node");
                         if (obj != null) {
                             LookaheadNode node = (LookaheadNode)obj;
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ManeuverGoal : Goal
 {
-    public struct CostInfo
+    private struct CostInfo
     {
         public LookaheadNode Node
         {
@@ -76,14 +76,7 @@ public class ManeuverGoal : Goal
         Tank targetTank = controller.TargetTank;
 
         ThreatMap map = controller.ThreatMap;
-        ThreatNode curNode = (ThreatNode)map.PositionToNode(selfTank.transform.position);
 
-        LookaheadTree tree = new LookaheadTree();
-        tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, new Vector2());
-
-        List<LookaheadNode> nodes = tree.FindAllNodesAtSearchTime(LookaheadTime);
-
-        DebugManager.Instance.RegisterObject("maneuver_nodes_at_searchtime", nodes);
         // TODO: for now, just use first weapon. Later should be closest weapon
         Vector2 targetToSelfVec = selfTank.transform.position - targetTank.transform.position;
 
@@ -93,26 +86,55 @@ public class ManeuverGoal : Goal
         bool inSelfRange = targetToSelfVec.magnitude < selfTank.Turret.GetAllWeapons()[0].Schematic.Range;
         float selfWeaponReloadTime = selfTank.Turret.GetAllWeapons()[0].CalcTimeToReloaded();
 
+        bool shouldDodge = angleDiff < 20f && inTargetRange && (targetWeaponReloadTime < 0.5f || selfWeaponReloadTime >= 0.5f);
+        bool shouldDodgeAim = !shouldDodge && angleDiff < 50f && inTargetRange && (targetWeaponReloadTime < 0.5f || selfWeaponReloadTime >= 0.5f);
+        bool shouldAimOpt = !shouldDodge && !shouldDodgeAim && inSelfRange;
+        bool shouldApproachAim = !shouldDodge && !shouldDodgeAim && !shouldAimOpt;
+
+        List<float> possibleRotAngles = new List<float>() {
+            0,
+            180f,
+            45f,
+            135f,
+            -45f,
+            -135f
+        };
+        if (shouldAimOpt) {
+            possibleRotAngles.Add(90f);
+            possibleRotAngles.Add(-90f);
+        }
+
+        LookaheadTree tree = new LookaheadTree();
+        tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, possibleRotAngles);
+        
+        List<LookaheadNode> nodes = tree.FindAllNodesAtSearchTime(LookaheadTime);
+        DebugManager.Instance.RegisterObject("maneuver_nodes_at_searchtime", nodes);
+
         // First perform general filter
         nodes = filterByPathNotObstructed(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_path_unobstructed_filter", nodes);
+
         nodes = filterByDestNotObstructed(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", nodes);
+
+        clearManeuverBehaviourDebugObjects();
 
         Vector2 requestDir = new Vector2();
-        if (angleDiff < 20f && inTargetRange && (targetWeaponReloadTime < 0.5f || selfWeaponReloadTime >= 0.5f)) {
+        if (shouldDodge) {
             // We want to dodge straight up
             requestDir = calcDodgeDir(nodes);
             Debug.Log("dodge");
-        } else if (angleDiff < 50f && inTargetRange && (targetWeaponReloadTime < 0.5f || selfWeaponReloadTime >= 0.5f)) {
+        } else if (shouldDodgeAim) {
             // We want to dodge-aim
             // Prioritize dodging, while aiming as well if dodge results are similar
             requestDir = calcDodgeAimDir(nodes);
             Debug.Log("dodge-aim");
-        } else if (inSelfRange) {
+        } else if (shouldAimOpt) {
             // We want to aim-dodge
             // Prioritize aiming, while dodging as well if aim results are similar
-            requestDir = calcAimDodgeDir(nodes);
-            Debug.Log("aim-dodge");
-        } else {
+            requestDir = calcAimOptDistDir(nodes);
+            Debug.Log("aim-optdist");
+        } else if (shouldApproachAim) {
             // We want to approach-aim
             // Prioritize approaching, while also aiming if aim results are similar
             requestDir = calcApproachAimDir(nodes);
@@ -120,6 +142,19 @@ public class ManeuverGoal : Goal
         }
 
         return requestDir;
+    }
+
+    private void clearManeuverBehaviourDebugObjects() {
+        DebugManager.Instance.RegisterObject("maneuver_dodge_does_not_cross_fire_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_best_node", null);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_dangerous_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_angle_diff_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_aim_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_best_node", null);
+        DebugManager.Instance.RegisterObject("maneuver_aim_opt_dangerous_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_aim_opt_aim_filter", null);
+        DebugManager.Instance.RegisterObject("maneuver_aim_opt_best_node", null);
     }
 
     // We just want to dodge. 
@@ -139,47 +174,62 @@ public class ManeuverGoal : Goal
         nodes = filterByDoesNotCrossTargetFireVec(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_does_not_cross_fire_filter", nodes);
 
-        // Calc angle diff for each node.
-        List<CostInfo> infos = new List<CostInfo>();
-        foreach (LookaheadNode node in nodes) {
-            float angleDiff = Vector2.Angle(node.TankInfo.Pos - targetTankPos, fireVec);
+        nodes = filterByAngleToTargetFireVec(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", nodes);
 
-            infos.Add(new CostInfo(node, angleDiff));
-        }
-
-        float largestAngleDiff = infos.Max(c => c.Cost);
-        // Pick nodes that are within acceptable diff of largest angle diff
-        List<CostInfo> filteredInfos = new List<CostInfo>();
-        foreach (CostInfo info in infos) {
-            if (info.Cost + largestAngleDiff / 4f > largestAngleDiff) {
-                filteredInfos.Add(info);
-            }
-        }
-        DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", filteredInfos);
-
-        float optimalRange = controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange;
-        LookaheadNode bestNode = null;
-        float closestDist = 9999f;
-        foreach (CostInfo info in filteredInfos) {
-            float distToOptimal = Mathf.Abs(optimalRange - (info.Node.TankInfo.Pos - targetTankPos).magnitude);
-
-            if (closestDist > distToOptimal) {
-                closestDist = distToOptimal;
-                bestNode = info.Node;
-            }
-
-        }
+        LookaheadNode bestNode = findBestNodeWithOptimalRangeDist(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_best_node", bestNode);
 
         return bestNode.IncomingDir;
     }
 
-    private Vector2 calcDodgeAimDir(List<LookaheadNode> nodes) {
-        return new Vector2();
+    // We still want to dodge, but also aim if possible
+    // also in this state, we never want to return to the dodge state.
+    private Vector2 calcDodgeAimDir(List<LookaheadNode> _nodes) {
+        List<LookaheadNode> nodes = _nodes;
+
+        // First, remove all nodes that would return us to the dodge state
+        nodes = filterByDangerousNodes(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_dangerous_filter", nodes);
+
+        // Next find good nodes that increase angle between target fire vec.
+        nodes = filterByAngleToTargetFireVec(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_angle_diff_filter", nodes);
+
+        // If still multiple exist, find good nodes for aiming
+        nodes = filterbyAim(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_aim_filter", nodes);
+
+        // Finally, find the best node with the largest angle increase between target fire vec.
+        LookaheadNode bestNode = findBestNodeWithAngleToTargetFireVec(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_dodge_aim_best_node", bestNode);
+
+        return bestNode.IncomingDir;
     }
 
-    private Vector2 calcAimDodgeDir(List<LookaheadNode> nodes) {
-        return new Vector2();
+    // We now want to aim, while also trying to get to optimal range
+    private Vector2 calcAimOptDistDir(List<LookaheadNode> _nodes) {
+        List<LookaheadNode> nodes = _nodes;
+
+        // First, remove all nodes that would return us to the dodge state. We still want to do this
+        nodes = filterByDangerousNodes(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_aim_opt_dangerous_filter", nodes);
+
+        // Next find nodes that let us aim well
+        nodes = filterbyAim(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_aim_opt_aim_filter", nodes);
+
+        // Finally, find the best node that results in the closest optimal range dist
+        LookaheadNode bestNode = null;
+        if (!IsAllNodesWithinOptimalDistSigma(nodes)) {
+            bestNode = findBestNodeWithOptimalRangeDist(nodes);
+        } else {
+            bestNode = findBestNodeForAim(nodes);
+        }
+
+        DebugManager.Instance.RegisterObject("maneuver_aim_opt_best_node", bestNode);
+
+        return bestNode.IncomingDir;
     }
 
     private Vector2 calcApproachAimDir(List<LookaheadNode> nodes) {
@@ -199,8 +249,6 @@ public class ManeuverGoal : Goal
             filteredNode = nodes;
         }
 
-        DebugManager.Instance.RegisterObject("maneuver_path_unobstructed_filter", filteredNode);
-
         return filteredNode;
     }
     
@@ -217,20 +265,24 @@ public class ManeuverGoal : Goal
         if (filteredNode.Count == 0) {
             filteredNode = nodes;
         }
-        
-        DebugManager.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", filteredNode);
 
         return filteredNode;
     }
 
     private List<LookaheadNode> filterByDoesNotCrossTargetFireVec(List<LookaheadNode> nodes) {
         Tank targetTank = controller.TargetTank;
-
+        Vector2 targetPos = targetTank.transform.position;
         ThreatMap map = controller.ThreatMap;
+
+        Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
 
         List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
         foreach (LookaheadNode node in nodes) {
-            if (!node.CrossesOppFireVector(targetTank.transform.position, targetTank.Turret.GetAllWeapons()[0], map)) {
+            Vector2 pos = node.TankInfo.Pos;
+
+            float angleDiff = Vector2.SignedAngle(pos - targetPos, fireVec);
+
+            if (angleDiff > 5f && !node.CrossesOppFireVector(targetTank.transform.position, targetTank.Turret.GetAllWeapons()[0], map)) {
                 filteredNodes.Add(node);
             }
         }
@@ -242,41 +294,75 @@ public class ManeuverGoal : Goal
         return filteredNodes;
     }
 
-    private List<LookaheadNode> filterByAngleToTargetFireVec(List<LookaheadNode> nodes, TankStateInfo targetTankInfo, bool lastFunc) {
-        float largestAngle = 0;
-
+    private List<LookaheadNode> filterByDangerousNodes(List<LookaheadNode> nodes) {
         Tank targetTank = controller.TargetTank;
-        Vector2 fireVec = targetTankInfo.CalculateFireVecOfWeapon(targetTank.Turret.GetAllWeapons()[0]); // TODO: for now. Should really be closest fire vec.
+        Vector2 targetTankPos = targetTank.transform.position;
+        Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
+        float range = targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.1f;
 
-        LookaheadNode bestNode = null;
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
         foreach (LookaheadNode node in nodes) {
-            float angle = Vector2.Angle(node.TankInfo.Pos - targetTankInfo.Pos, fireVec);
+            Vector2 diffVec = node.TankInfo.Pos - targetTankPos;
+            float angleDiff = Vector2.Angle(diffVec, fireVec);
 
-            if (angle > largestAngle) {
-                bestNode = node;
-                largestAngle = angle;
+            if (!(angleDiff < 20f && range > diffVec.magnitude)) {
+                filteredNodes.Add(node);
             }
         }
 
-        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
-        if (lastFunc) {
-            filteredNode.Add(bestNode);
-        } else {
-            foreach (LookaheadNode node in nodes) {
-                float angle = Vector2.Angle(node.TankInfo.Pos - targetTankInfo.Pos, fireVec);
-
-                if (largestAngle <= (angle + largestAngle / 3f)) {
-                    filteredNode.Add(node);
-                }
-            }
+        if (filteredNodes.Count == 0) {
+            filteredNodes = nodes;
         }
-        
-        DebugManager.Instance.RegisterObject("maneuver_angle_from_fire_filter", filteredNode);
 
-        return filteredNode;
+        return filteredNodes;
     }
 
-    private List<LookaheadNode> filterByAim(List<LookaheadNode> nodes, TankStateInfo targetTankInfo, bool lastFunc) {
+    private List<LookaheadNode> filterByAngleToTargetFireVec(List<LookaheadNode> nodes) {
+        Tank targetTank = controller.TargetTank;
+        Vector2 targetTankPos = targetTank.transform.position;
+        Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
+
+        // Calc angle diff for each node.
+        List<CostInfo> infos = new List<CostInfo>();
+        foreach (LookaheadNode node in nodes) {
+            float angleDiff = Vector2.Angle(node.TankInfo.Pos - targetTankPos, fireVec);
+
+            infos.Add(new CostInfo(node, angleDiff));
+        }
+
+        float largestAngleDiff = infos.Max(c => c.Cost);
+        // Pick nodes that are within acceptable diff of largest angle diff
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+        foreach (CostInfo info in infos) {
+            if (info.Cost + largestAngleDiff / 4f > largestAngleDiff) {
+                filteredNodes.Add(info.Node);
+            }
+        }
+
+        return filteredNodes;
+    }
+
+    private LookaheadNode findBestNodeWithAngleToTargetFireVec(List<LookaheadNode> nodes) {
+        Tank targetTank = controller.TargetTank;
+        Vector2 targetTankPos = targetTank.transform.position;
+        Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
+
+        // Calc angle diff for each node.
+        LookaheadNode bestNode = null;
+        float largestAngleDiff = -1;
+        foreach (LookaheadNode node in nodes) {
+            float angleDiff = Vector2.Angle(node.TankInfo.Pos - targetTankPos, fireVec);
+
+            if (largestAngleDiff < angleDiff) {
+                largestAngleDiff = angleDiff;
+                bestNode = node;
+            }
+        }
+
+        return bestNode;
+    }
+
+    private LookaheadNode findBestNodeForAim(List<LookaheadNode> nodes) {
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
@@ -285,88 +371,108 @@ public class ManeuverGoal : Goal
         List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
         // Check for overlap.
         foreach (LookaheadNode node in nodes) {
-            if (node.HasOverlappedTargetWithWeapon(targetTankInfo.Pos, part)) {
+            if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
                 filteredNodes.Add(node);
             }
         }
 
-        float smallestAngleDiffInRange = 9999;
         LookaheadNode bestNode = null;
-        foreach (LookaheadNode node in nodes) {
-            Vector2 toTargetVec = targetTankInfo.Pos - node.TankInfo.Pos;
-
-            float range = part.Schematic.Range;
-            Vector2 curFireVec = node.TankInfo.CalculateFireVecOfWeapon(part);
-
-            float angleDiff = Vector2.Angle(toTargetVec, curFireVec);
-
-            if (angleDiff < smallestAngleDiffInRange) {
-                bestNode = node;
-                smallestAngleDiffInRange = angleDiff;
-            }
-        }
-
-        if (lastFunc) {
-            if (filteredNodes.Count == 0) {
-                filteredNodes.Add(bestNode);
-            } else {
-                filteredNodes.RemoveRange(1, filteredNodes.Count - 1);
-            }
+        if (filteredNodes.Count > 0) {
+            bestNode = filteredNodes[0];
         } else {
+            float smallestAngleDiff = 9999;
             foreach (LookaheadNode node in nodes) {
-                Vector2 toTargetVec = targetTankInfo.Pos - node.TankInfo.Pos;
+                Vector2 toTargetVec = (Vector2)targetTank.transform.position - node.TankInfo.Pos;
 
                 float range = part.Schematic.Range;
                 Vector2 curFireVec = node.TankInfo.CalculateFireVecOfWeapon(part);
 
                 float angleDiff = Vector2.Angle(toTargetVec, curFireVec);
 
-                if (angleDiff - smallestAngleDiffInRange / 2f <= smallestAngleDiffInRange) {
-                    filteredNodes.Add(node);
+                if (angleDiff < smallestAngleDiff) {
+                    smallestAngleDiff = angleDiff;
+                    bestNode = node;
+                }
+            }
+        }
+
+        return bestNode;
+    }
+
+    private List<LookaheadNode> filterbyAim(List<LookaheadNode> nodes) {
+        Tank selfTank = controller.SelfTank;
+        Tank targetTank = controller.TargetTank;
+
+        WeaponPart part = selfTank.Turret.GetAllWeapons()[0]; // TODO: for now. Later should use main weapon system
+
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+        // Check for overlap.
+        foreach (LookaheadNode node in nodes) {
+            if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
+                filteredNodes.Add(node);
+            }
+        }
+
+        if (filteredNodes.Count == 0) {
+            List<CostInfo> infos = new List<CostInfo>();
+            foreach (LookaheadNode node in nodes) {
+                Vector2 toTargetVec = (Vector2)targetTank.transform.position - node.TankInfo.Pos;
+
+                float range = part.Schematic.Range;
+                Vector2 curFireVec = node.TankInfo.CalculateFireVecOfWeapon(part);
+
+                float angleDiff = Vector2.Angle(toTargetVec, curFireVec);
+
+                infos.Add(new CostInfo(node, angleDiff));
+            }
+
+            float smallestAngleDiffInRange = infos.Min(c => c.Cost);
+
+            foreach (CostInfo info in infos) {
+                if (info.Cost - smallestAngleDiffInRange / 4f <= smallestAngleDiffInRange) {
+                    filteredNodes.Add(info.Node);
                 }
             }
         }
         
-        DebugManager.Instance.RegisterObject("maneuver_aim_filter", filteredNodes);
-
         return filteredNodes;
     }
 
-    private List<LookaheadNode> findNodeWithBestOptimalRangeDist(List<LookaheadNode> nodes, TankStateInfo targetTankInfo, bool lastFunc) {
-        Tank selfTank = controller.SelfTank;
+    private bool IsAllNodesWithinOptimalDistSigma(List<LookaheadNode> nodes) {
+        bool withinDistSigma = true;
+        const float sigma = 50f;
 
-        WeaponPart part = selfTank.Turret.GetAllWeapons()[0]; // TODO: for now. Later should use main weapon system
-        float optimalRange = part.Schematic.OptimalRange;
-
-        LookaheadNode bestNode = null;
-        float smallestOptimalRangedist = 9999;
+        Vector2 targetTankPos = controller.TargetTank.transform.position;
+        float optimalRange = controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange;
         foreach (LookaheadNode node in nodes) {
-            float distFromTarget = (node.TankInfo.Pos - targetTankInfo.Pos).magnitude;
+            float distToOptimal = Mathf.Abs(optimalRange - (node.TankInfo.Pos - targetTankPos).magnitude);
 
-            float optimalRangeDiff = Mathf.Abs(distFromTarget - optimalRange);
-
-            if (optimalRangeDiff < smallestOptimalRangedist) {
-                bestNode = node;
-                smallestOptimalRangedist = optimalRangeDiff;
+            if (distToOptimal > sigma) {
+                withinDistSigma = false;
+                break;
             }
         }
 
-        List<LookaheadNode> filteredList = new List<LookaheadNode>();
-        if (lastFunc) {
-            filteredList.Add(bestNode);
-        } else {
-            foreach (LookaheadNode node in nodes) {
-                float distFromTarget = (node.TankInfo.Pos - targetTankInfo.Pos).magnitude;
-                float optimalRangeDiff = Mathf.Abs(distFromTarget - optimalRange);
-
-                if (optimalRangeDiff - smallestOptimalRangedist / 3f < smallestOptimalRangedist) {
-                    filteredList.Add(node);
-                }
-            }
-        }
-        
-        DebugManager.Instance.RegisterObject("maneuver_optimal_range_filter", filteredList);
-
-        return filteredList;
+        return withinDistSigma;
     }
+    
+    private LookaheadNode findBestNodeWithOptimalRangeDist(List<LookaheadNode> nodes) {
+        LookaheadNode bestNode = null;
+
+        Vector2 targetTankPos = controller.TargetTank.transform.position;
+        float optimalRange = controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange;
+
+        float closestDist = 9999f;
+        foreach (LookaheadNode node in nodes) {
+            float distToOptimal = Mathf.Abs(optimalRange - (node.TankInfo.Pos - targetTankPos).magnitude);
+
+            if (closestDist > distToOptimal) {
+                closestDist = distToOptimal;
+                bestNode = node;
+            }
+        }
+
+        return bestNode;
+    }
+    
 }

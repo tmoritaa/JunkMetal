@@ -42,18 +42,11 @@ public class LookaheadNode
         ChildNodes = new List<LookaheadNode>();
     }
 
-    public void PopulateChildren(Map map, float searchStepTime) {
-        List<Vector2> possibleDirs = new List<Vector2>() {
-            TankInfo.ForwardVec,
-            TankInfo.ForwardVec.Rotate(180f),
-            TankInfo.ForwardVec.Rotate(45f),
-            TankInfo.ForwardVec.Rotate(135f),
-            TankInfo.ForwardVec.Rotate(-45f),
-            TankInfo.ForwardVec.Rotate(-135f),
-            TankInfo.ForwardVec.Rotate(90f),
-            TankInfo.ForwardVec.Rotate(-90f),
-            new Vector2()
-        };
+    public void PopulateChildren(Map map, float searchStepTime, List<float> possibleRots) {
+        List<Vector2> possibleDirs = new List<Vector2>();
+        foreach (float rot in possibleRots) {
+            possibleDirs.Add(TankInfo.ForwardVec.Rotate(rot));
+        }
 
         // Remove the largest angle difference which should correspond to the opposite direction of the incoming direction
         if (IncomingDir.magnitude > 0) {
@@ -141,7 +134,6 @@ public class LookaheadNode
         Vector2 fireVec = part.CalculateFireVec();
         bool crossedFire = false;
 
-        const float sigma = 1f;
         for (int i = 0; i < passedNodes.Count - 1; ++i) {
             Vector2 pos = map.NodeToPosition(passedNodes[i]);
             Vector2 nextPos = map.NodeToPosition(passedNodes[i + 1]);
@@ -149,8 +141,9 @@ public class LookaheadNode
             float angleDiff = Vector2.SignedAngle(pos - targetPos, fireVec);
             float nextAngleDiff = Vector2.SignedAngle(nextPos - targetPos, fireVec);
 
-            if (Mathf.Abs(angleDiff) < sigma || Mathf.Abs(nextAngleDiff) < sigma || Mathf.Sign(angleDiff) != Mathf.Sign(nextAngleDiff)) {
+            if (Mathf.Sign(angleDiff) != Mathf.Sign(nextAngleDiff)) {
                 crossedFire = true;
+                break;
             }
         }
 
