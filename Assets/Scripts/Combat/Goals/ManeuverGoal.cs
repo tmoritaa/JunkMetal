@@ -228,8 +228,20 @@ public class ManeuverGoal : Goal
         return bestNode.IncomingDir;
     }
 
-    private Vector2 calcApproachAimDir(List<LookaheadNode> nodes) {
-        return new Vector2();
+    // For approach aim, first we filter dangerous nodes.
+    // Then we filter nodes based on dist from optimal dist
+    // Finally we pick node with best aim if optimal dist is not so different.
+    private Vector2 calcApproachAimDir(List<LookaheadNode> _nodes) {
+        List<LookaheadNode> nodes = _nodes;
+
+        // Next we filter nodes based on dist from optimal dist
+        nodes = filterByOptimalRangeDist(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_approach_aim_opt_range_filter", nodes);
+
+        LookaheadNode bestNode = findBestNodeForAim(nodes);
+        DebugManager.Instance.RegisterObject("maneuver_approach_aim_best_node", bestNode);
+
+        return bestNode.IncomingDir;
     }
 
     private List<LookaheadNode> filterByPathNotObstructed(List<LookaheadNode> nodes) {
@@ -408,24 +420,6 @@ public class ManeuverGoal : Goal
         
         return filteredNodes;
     }
-
-    private bool IsAllNodesWithinOptimalDistSigma(List<LookaheadNode> nodes) {
-        bool withinDistSigma = true;
-        const float sigma = 50f;
-
-        Vector2 targetTankPos = controller.TargetTank.transform.position;
-        float optimalRange = controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange;
-        foreach (LookaheadNode node in nodes) {
-            float distToOptimal = Mathf.Abs(optimalRange - (node.TankInfo.Pos - targetTankPos).magnitude);
-
-            if (distToOptimal > sigma) {
-                withinDistSigma = false;
-                break;
-            }
-        }
-
-        return withinDistSigma;
-    }
     
     private LookaheadNode findBestNodeWithOptimalRangeDist(List<LookaheadNode> nodes) {
         LookaheadNode bestNode = null;
@@ -446,4 +440,46 @@ public class ManeuverGoal : Goal
         return bestNode;
     }
     
+    private List<LookaheadNode> filterByOptimalRangeDist(List<LookaheadNode> nodes) {
+        Vector2 targetTankPos = controller.TargetTank.transform.position;
+        float optimalRange = controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange;
+
+        // Calc angle diff for each node.
+        List<CostInfo> infos = new List<CostInfo>();
+        foreach (LookaheadNode node in nodes) {
+            float distDiff = Mathf.Abs((targetTankPos - node.TankInfo.Pos).magnitude - optimalRange);
+
+            infos.Add(new CostInfo(node, distDiff));
+        }
+
+        float smallestDistDiff = infos.Min(c => c.Cost);
+        // Pick nodes that are within acceptable diff of smallest dist diff
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+        foreach (CostInfo info in infos) {
+            if (info.Cost - smallestDistDiff / 4f <= smallestDistDiff) {
+                filteredNodes.Add(info.Node);
+            }
+        }
+
+        return filteredNodes;
+    }
+
+
+    private bool IsAllNodesWithinOptimalDistSigma(List<LookaheadNode> nodes) {
+        bool withinDistSigma = true;
+        const float sigma = 50f;
+
+        Vector2 targetTankPos = controller.TargetTank.transform.position;
+        float optimalRange = controller.SelfTank.Turret.GetAllWeapons()[0].Schematic.OptimalRange;
+        foreach (LookaheadNode node in nodes) {
+            float distToOptimal = Mathf.Abs(optimalRange - (node.TankInfo.Pos - targetTankPos).magnitude);
+
+            if (distToOptimal > sigma) {
+                withinDistSigma = false;
+                break;
+            }
+        }
+
+        return withinDistSigma;
+    }
 }

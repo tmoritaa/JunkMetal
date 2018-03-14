@@ -118,6 +118,15 @@ public class DebugManager : MonoBehaviour
     private bool maneuverAimOptBestNode = true;
 
     [SerializeField]
+    private bool maneuverApproachAimBehaviour = true;
+
+    [SerializeField]
+    private bool maneuverApproachAimOptDistFilter = true;
+
+    [SerializeField]
+    private bool maneuverApproachAimBestNode = true;
+
+    [SerializeField]
     private bool predictFutureDebugOn = true;
 
     private Vector2 targetPosForMoveTest = new Vector2();
@@ -463,6 +472,30 @@ public class DebugManager : MonoBehaviour
                             Gizmos.color = Color.green;
                             Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
                         }
+                    }
+                }
+            }
+
+            if (maneuverApproachAimBehaviour) {
+                if (maneuverApproachAimOptDistFilter) {
+                    object obj = getRegisterdObj("maneuver_approach_aim_opt_range_filter");
+                    if (obj != null) {
+                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                        Gizmos.color = Color.green;
+                        foreach (LookaheadNode node in nodeList) {
+                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        }
+                    }
+                }
+
+                if (maneuverApproachAimBestNode) {
+                    object obj = getRegisterdObj("maneuver_approach_aim_best_node");
+                    if (obj != null) {
+                        LookaheadNode node = (LookaheadNode)obj;
+
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
                     }
                 }
             }
