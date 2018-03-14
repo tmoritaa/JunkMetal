@@ -82,7 +82,7 @@ public class ManeuverGoal : Goal
 
         float angleDiff = Vector2.Angle(targetToSelfVec, targetTank.Turret.GetAllWeapons()[0].CalculateFireVec());
         float targetWeaponReloadTime = targetTank.Turret.GetAllWeapons()[0].CalcTimeToReloaded();
-        bool inTargetRange = targetToSelfVec.magnitude < targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.1f;
+        bool inTargetRange = targetToSelfVec.magnitude < targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.5f;
         bool inSelfRange = targetToSelfVec.magnitude < selfTank.Turret.GetAllWeapons()[0].Schematic.Range;
         float selfWeaponReloadTime = selfTank.Turret.GetAllWeapons()[0].CalcTimeToReloaded();
 
@@ -131,7 +131,7 @@ public class ManeuverGoal : Goal
             Debug.Log("dodge-aim");
         } else if (shouldAimOpt) {
             // We want to aim-dodge
-            // Prioritize aiming, while dodging as well if aim results are similar
+            // Prioritize aiming, while approaching optimal dist as well if aim results are similar
             requestDir = calcAimOptDistDir(nodes);
             Debug.Log("aim-optdist");
         } else if (shouldApproachAim) {
@@ -145,7 +145,6 @@ public class ManeuverGoal : Goal
     }
 
     private void clearManeuverBehaviourDebugObjects() {
-        DebugManager.Instance.RegisterObject("maneuver_dodge_does_not_cross_fire_filter", null);
         DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", null);
         DebugManager.Instance.RegisterObject("maneuver_dodge_best_node", null);
         DebugManager.Instance.RegisterObject("maneuver_dodge_aim_dangerous_filter", null);
@@ -168,11 +167,6 @@ public class ManeuverGoal : Goal
         Tank targetTank = controller.TargetTank;
         Vector2 targetTankPos = targetTank.transform.position;
         Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
-
-        // Filter any nodes that cross fire vector.
-        // NOTE: If we're up against a wall, sometimes we do want to move cross towards the fire vec. For now ignore case.
-        nodes = filterByDoesNotCrossTargetFireVec(nodes);
-        DebugManager.Instance.RegisterObject("maneuver_dodge_does_not_cross_fire_filter", nodes);
 
         nodes = filterByAngleToTargetFireVec(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", nodes);
@@ -269,36 +263,11 @@ public class ManeuverGoal : Goal
         return filteredNode;
     }
 
-    private List<LookaheadNode> filterByDoesNotCrossTargetFireVec(List<LookaheadNode> nodes) {
-        Tank targetTank = controller.TargetTank;
-        Vector2 targetPos = targetTank.transform.position;
-        ThreatMap map = controller.ThreatMap;
-
-        Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
-
-        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
-        foreach (LookaheadNode node in nodes) {
-            Vector2 pos = node.TankInfo.Pos;
-
-            float angleDiff = Vector2.SignedAngle(pos - targetPos, fireVec);
-
-            if (angleDiff > 5f && !node.CrossesOppFireVector(targetTank.transform.position, targetTank.Turret.GetAllWeapons()[0], map)) {
-                filteredNodes.Add(node);
-            }
-        }
-
-        if (filteredNodes.Count == 0) {
-            filteredNodes = nodes;
-        }
-
-        return filteredNodes;
-    }
-
     private List<LookaheadNode> filterByDangerousNodes(List<LookaheadNode> nodes) {
         Tank targetTank = controller.TargetTank;
         Vector2 targetTankPos = targetTank.transform.position;
         Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
-        float range = targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.1f;
+        float range = targetTank.Turret.GetAllWeapons()[0].Schematic.Range * 1.5f;
 
         List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
         foreach (LookaheadNode node in nodes) {

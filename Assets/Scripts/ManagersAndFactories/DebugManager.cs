@@ -82,9 +82,6 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDodgeBehaviour = true;
 
     [SerializeField]
-    private bool maneuverDodgeDoesNotCrossFireFilter = true;
-
-    [SerializeField]
     private bool maneuverDodgeAngleDiffFilter = true;
 
     [SerializeField]
@@ -348,18 +345,6 @@ public class DebugManager : MonoBehaviour
                 }
                 
                 if (maneuverDodgeBehaviour) {
-                    if (maneuverDodgeDoesNotCrossFireFilter) {
-                        object obj = getRegisterdObj("maneuver_dodge_does_not_cross_fire_filter");
-                        if (obj != null) {
-                            List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
-
-                            Gizmos.color = Color.green;
-                            foreach (LookaheadNode node in nodeList) {
-                                Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
-                            }
-                        }
-                    }
-
                     if (maneuverDodgeAngleDiffFilter) {
                         object obj = getRegisterdObj("maneuver_dodge_largest_angle_diff_filter");
                         if (obj != null) {

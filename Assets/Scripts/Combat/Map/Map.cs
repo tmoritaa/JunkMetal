@@ -399,14 +399,6 @@ public class Map
                     }
                 }
             }
-
-            foreach (Node node in markedNodes) {
-                List<Connection> connections = FindConnectedNodes(node);
-
-                foreach (Connection connection in connections) {
-                    connection.targetNode.fullyBlocked = true;
-                }
-            }
         }
     }
 
