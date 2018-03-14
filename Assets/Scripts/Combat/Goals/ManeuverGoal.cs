@@ -139,8 +139,8 @@ public class ManeuverGoal : Goal
         } else if (shouldApproachAim) {
             // We want to approach-aim
             // Prioritize approaching, while also aiming if aim results are similar
-            requestDir = calcApproachAimDir(nodes);
-            Debug.Log("approach-aim");
+            requestDir = calcApproach(nodes);
+            Debug.Log("approach");
         }
 
         return requestDir;
@@ -244,12 +244,12 @@ public class ManeuverGoal : Goal
     // For approach aim, first we filter dangerous nodes.
     // Then we filter nodes based on dist from optimal dist
     // Finally we pick node with best aim if optimal dist is not so different.
-    private Vector2 calcApproachAimDir(List<LookaheadNode> _nodes) {
+    private Vector2 calcApproach(List<LookaheadNode> _nodes) {
         List<LookaheadNode> nodes = _nodes;
 
         // Next we filter nodes based on dist from optimal dist
         nodes = filterByOptimalRangeDist(nodes);
-        DebugManager.Instance.RegisterObject("maneuver_approach_aim_opt_range_filter", nodes);
+        DebugManager.Instance.RegisterObject("maneuver_approach_opt_range_filter", nodes);
 
         Tank targetTank = controller.TargetTank;
         Vector2 targetTankPos = targetTank.transform.position;
@@ -268,7 +268,7 @@ public class ManeuverGoal : Goal
             bestNode = findBestNodeForAim(nodes);
         }
         
-        DebugManager.Instance.RegisterObject("maneuver_approach_aim_best_node", bestNode);
+        DebugManager.Instance.RegisterObject("maneuver_approach_best_node", bestNode);
 
         return bestNode.IncomingDir;
     }

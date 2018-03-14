@@ -121,7 +121,7 @@ public class DebugManager : MonoBehaviour
     private bool maneuverAimOptBestNode = true;
 
     [SerializeField]
-    private bool maneuverApproachAimBehaviour = true;
+    private bool maneuverApproachBehaviour = true;
 
     [SerializeField]
     private bool maneuverApproachAimOptDistFilter = true;
@@ -491,9 +491,9 @@ public class DebugManager : MonoBehaviour
                 }
             }
 
-            if (maneuverApproachAimBehaviour) {
+            if (maneuverApproachBehaviour) {
                 if (maneuverApproachAimOptDistFilter) {
-                    object obj = getRegisterdObj("maneuver_approach_aim_opt_range_filter");
+                    object obj = getRegisterdObj("maneuver_approach_opt_range_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
@@ -505,7 +505,7 @@ public class DebugManager : MonoBehaviour
                 }
 
                 if (maneuverApproachAimBestNode) {
-                    object obj = getRegisterdObj("maneuver_approach_aim_best_node");
+                    object obj = getRegisterdObj("maneuver_approach_best_node");
                     if (obj != null) {
                         LookaheadNode node = (LookaheadNode)obj;
 
