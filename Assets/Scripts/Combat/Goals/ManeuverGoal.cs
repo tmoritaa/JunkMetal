@@ -170,11 +170,20 @@ public class ManeuverGoal : Goal
         Vector2 targetTankPos = targetTank.transform.position;
         Vector2 fireVec = targetTank.Turret.GetAllWeapons()[0].CalculateFireVec();
 
-        nodes = filterByAngleToTargetFireVec(nodes);
+        nodes = filterByTargetFireDist(nodes);
         DebugManager.Instance.RegisterObject("maneuver_dodge_largest_angle_diff_filter", nodes);
-        
+
         LookaheadNode bestNode = findBestNodeWithOptimalRangeDist(nodes);
+        
+        if (Vector2.Angle(bestNode.IncomingDir, prevMoveDir) >= 90f) {
+            bestNode = findBestNodeByTargetFireDist(nodes);
+        }
+
         DebugManager.Instance.RegisterObject("maneuver_dodge_best_node", bestNode);
+
+        if (bestNode == null) {
+            return prevMoveDir;
+        }
 
         return bestNode.IncomingDir;
     }
@@ -242,7 +251,23 @@ public class ManeuverGoal : Goal
         nodes = filterByOptimalRangeDist(nodes);
         DebugManager.Instance.RegisterObject("maneuver_approach_aim_opt_range_filter", nodes);
 
-        LookaheadNode bestNode = findBestNodeForAim(nodes);
+        Tank targetTank = controller.TargetTank;
+        Vector2 targetTankPos = targetTank.transform.position;
+        WeaponPart part = targetTank.Turret.GetAllWeapons()[0];
+        Vector2 fireVec = part.CalculateFireVec();
+
+        Vector2 targetToSelfVec = (Vector2)controller.SelfTank.transform.position - targetTankPos;
+        float angleToFireVec = Vector2.Angle(targetToSelfVec, fireVec);
+
+        LookaheadNode bestNode;
+        if (targetToSelfVec.magnitude > part.Schematic.ThreatRange * 1.2f) {
+            bestNode = findBestNodeWithOptimalRangeDist(nodes);
+        } else if (angleToFireVec < 20f) {
+            bestNode = findBestNodeWithAngleToTargetFireVec(nodes);
+        } else {
+            bestNode = findBestNodeForAim(nodes);
+        }
+        
         DebugManager.Instance.RegisterObject("maneuver_approach_aim_best_node", bestNode);
 
         return bestNode.IncomingDir;
@@ -468,6 +493,49 @@ public class ManeuverGoal : Goal
         return filteredNodes;
     }
 
+    private LookaheadNode findBestNodeByTargetFireDist(List<LookaheadNode> nodes) {
+        float maxDist = -1;
+        LookaheadNode bestNode = null;
+        foreach (LookaheadNode node in nodes) {
+            float dist;
+            bool success = calcClosestDistFromFireVec(node.TankInfo, out dist);
+
+            if (success && dist > maxDist) {
+                maxDist = dist;
+                bestNode = node;
+            }
+        }
+
+        return bestNode;
+    }
+
+    private List<LookaheadNode> filterByTargetFireDist(List<LookaheadNode> nodes) {
+        // Calc angle diff for each node.
+        List<CostInfo> infos = new List<CostInfo>();
+        foreach (LookaheadNode node in nodes) {
+            float cost = 0;
+            bool success = calcClosestDistFromFireVec(node.TankInfo, out cost);
+
+            if (success) {
+                infos.Add(new CostInfo(node, cost));
+            }
+        }
+
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+        if (infos.Count > 0) {
+            float maxDist = infos.Max(c => c.Cost);
+
+            foreach (CostInfo info in infos) {
+                if (info.Cost + maxDist / 4f > maxDist) {
+                    filteredNodes.Add(info.Node);
+                }
+            }
+        } else {
+            filteredNodes = nodes;
+        }
+
+        return nodes;
+    }
 
     private bool IsAllNodesWithinOptimalDistSigma(List<LookaheadNode> nodes) {
         bool withinDistSigma = true;
@@ -485,5 +553,34 @@ public class ManeuverGoal : Goal
         }
 
         return withinDistSigma;
+    }
+
+    private bool calcClosestDistFromFireVec(TankStateInfo tankInfo, out float lowestDistFromFireVec) {
+        Tank targetTank = controller.TargetTank;
+
+        Vector2 targetToSelfVec = tankInfo.Pos - (Vector2)targetTank.transform.position;
+        lowestDistFromFireVec = 9999;
+        Vector2 closestFireVec = new Vector2();
+
+        bool success = false;
+        foreach (WeaponPart part in targetTank.Turret.GetAllWeapons()) {
+            Vector2 fireVec = part.CalculateFireVec();
+
+            float angle = Vector2.Angle(fireVec, targetToSelfVec);
+
+            if (angle < 90f) {
+                // Calc dist from fire vector to self.
+                Ray ray = new Ray(targetTank.transform.position, fireVec);
+                float distToSelfFromFireVec = Vector3.Cross(ray.direction, (Vector3)tankInfo.Pos - ray.origin).magnitude;
+
+                if (distToSelfFromFireVec < lowestDistFromFireVec) {
+                    closestFireVec = fireVec;
+                    lowestDistFromFireVec = distToSelfFromFireVec;
+                    success = true;
+                }
+            }
+        }
+
+        return success;
     }
 }
