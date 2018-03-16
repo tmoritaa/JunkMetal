@@ -13,12 +13,12 @@ public class ManeuverGoal : Goal
             get; private set;
         }
 
-        public float Cost
+        public int Cost
         {
             get; private set;
         }
 
-        public CostInfo(LookaheadNode node, float cost) {
+        public CostInfo(LookaheadNode node, int cost) {
             Node = node;
             Cost = cost;
         }
@@ -86,12 +86,12 @@ public class ManeuverGoal : Goal
 
         ThreatMap map = controller.ThreatMap;
 
-        float timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Turret.GetAllWeapons());
-        float timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Turret.GetAllWeapons());
+        int timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Turret.GetAllWeapons());
+        int timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Turret.GetAllWeapons());
 
-        float safeTime = prevBehaviour == Behaviour.GoingforIt ? 0.5f : 1.0f;
-        float diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
-        bool runaway = timeForTargetToHitSelf < timeForSelfToHitTarget && timeForTargetToHitSelf < safeTime && diff > 0.25f;
+        int safeTime = prevBehaviour == Behaviour.GoingforIt ? 50 : 100;
+        int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
+        bool runaway = timeForTargetToHitSelf < timeForSelfToHitTarget && timeForTargetToHitSelf < safeTime && diff > 25;
 
         List<float> possibleRotAngles = new List<float>() {
                 0,
@@ -143,26 +143,32 @@ public class ManeuverGoal : Goal
 
         List<CostInfo> nodeCosts = new List<CostInfo>();
         foreach (LookaheadNode node in possibleNodes) {
-            float targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Turret.GetAllWeapons());
-            float selfTime = calcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Turret.GetAllWeapons());
+            int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Turret.GetAllWeapons());
+            int selfTime = calcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Turret.GetAllWeapons());
 
-            float cost = targetTime - selfTime;
+            int cost = targetTime - selfTime;
 
             nodeCosts.Add(new CostInfo(node, cost));
         }
         
         DebugManager.Instance.RegisterObject("maneuver_going_cost_infos", nodeCosts);
 
-        CostInfo pickedNode = null;
+        Debug.Log("Infos=========================================");
+        CostInfo bestInfo = null;
         foreach (CostInfo info in nodeCosts) {
-            if (pickedNode == null || info.Cost > pickedNode.Cost) {
-                pickedNode = info;
+            Debug.Log("Info: Pos=" + info.Node.TankInfo.Pos + " Rot=" + info.Node.TankInfo.Rot + " Cost=" + info.Cost);
+            if (bestInfo == null || info.Cost > bestInfo.Cost) {
+                bestInfo = info;
             }
         }
-        
-        DebugManager.Instance.RegisterObject("maneuver_best_node", pickedNode.Node);
 
-        return pickedNode.Node.IncomingDir;
+        bestInfo = handleSameCostCostInfos(bestInfo, nodeCosts);
+
+        Debug.Log("BestInfo: Pos=" + bestInfo.Node.TankInfo.Pos + " Rot=" + bestInfo.Node.TankInfo.Rot + " Cost=" + bestInfo.Cost);
+
+        DebugManager.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
+
+        return bestInfo.Node.IncomingDir;
     }
 
     private Vector2 runawayBehaviour(List<LookaheadNode> possibleNodes) {
@@ -171,7 +177,7 @@ public class ManeuverGoal : Goal
         List<CostInfo> nodeCosts = new List<CostInfo>();
         bool reachableFirst = false;
         foreach (LookaheadNode node in possibleNodes) {
-            float time = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Turret.GetAllWeapons());
+            int time = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Turret.GetAllWeapons());
 
             nodeCosts.Add(new CostInfo(node, time));
 
@@ -182,31 +188,59 @@ public class ManeuverGoal : Goal
 
         DebugManager.Instance.RegisterObject("maneuver_runaway_cost_infos", nodeCosts);
 
-        CostInfo pickedInfo = null;
+        CostInfo bestInfo = null;
         if (reachableFirst) {
             foreach (CostInfo info in nodeCosts) {
-                if (info.Cost > LookaheadTime && (pickedInfo == null || pickedInfo.Cost < info.Cost)) {
-                    pickedInfo = info;
+                if (info.Cost > LookaheadTime && (bestInfo == null || bestInfo.Cost < info.Cost)) {
+                    bestInfo = info;
                 }
             }
         } else {
             foreach (CostInfo info in nodeCosts) {
-                if (pickedInfo == null || pickedInfo.Cost < info.Cost) {
+                if (bestInfo == null || bestInfo.Cost < info.Cost) {
+                    bestInfo = info;
+                }
+            }
+        }
+
+        bestInfo = handleSameCostCostInfos(bestInfo, nodeCosts);
+
+        DebugManager.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
+
+        return bestInfo.Node.IncomingDir;
+    }
+
+    private CostInfo handleSameCostCostInfos(CostInfo bestInfo, List<CostInfo> allCostInfos) {
+        CostInfo pickedInfo = bestInfo;
+
+        List<CostInfo> sameCosts = new List<CostInfo>();
+        foreach (CostInfo info in allCostInfos) {
+            if (info.Cost == bestInfo.Cost) {
+                sameCosts.Add(info);
+            }
+        }
+
+        if (sameCosts.Count > 1) {
+            float smallestAngleDiff = 9999f;
+
+            foreach (CostInfo info in sameCosts) {
+                float angleDiff = Vector2.Angle(prevMoveDir, info.Node.IncomingDir);
+
+                if (angleDiff < smallestAngleDiff) {
+                    smallestAngleDiff = angleDiff;
                     pickedInfo = info;
                 }
             }
         }
 
-        DebugManager.Instance.RegisterObject("maneuver_best_node", pickedInfo.Node);
-
-        return pickedInfo.Node.IncomingDir;
+        return pickedInfo;
     }
 
-    private float calcMinTimeForAimerToHitAimee(TankStateInfo aimingTankInfo, TankStateInfo aimeeTankInfo, List<WeaponPart> aimerWeapons) {
-        float minTime = 9999f;
+    private int calcMinTimeForAimerToHitAimee(TankStateInfo aimingTankInfo, TankStateInfo aimeeTankInfo, List<WeaponPart> aimerWeapons) {
+        int minTime = 9999;
         foreach (WeaponPart weapon in aimerWeapons) {
             Vector2 fireVec = weapon.OwningTank.Turret.Schematic.OrigWeaponDirs[weapon.TurretIdx].Rotate(aimingTankInfo.Rot);
-            float time = AIUtility.CalcTimeToHitPos(aimingTankInfo.Pos, fireVec, aimingTankInfo, weapon.Schematic, aimeeTankInfo.Pos);
+            int time = convertFloatSecondToIntCentiSecond(AIUtility.CalcTimeToHitPos(aimingTankInfo.Pos, fireVec, aimingTankInfo, weapon.Schematic, aimeeTankInfo.Pos) + weapon.CalcTimeToReloaded());
 
             if (time < minTime) {
                 minTime = time;
@@ -247,6 +281,10 @@ public class ManeuverGoal : Goal
         }
 
         return filteredNode;
+    }
+
+    private int convertFloatSecondToIntCentiSecond(float time) {
+        return Mathf.RoundToInt(time * 100);
     }
 
     private void clearManeuverBehaviourDebugObjects() {
