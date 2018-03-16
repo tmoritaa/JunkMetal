@@ -121,6 +121,9 @@ public class ManeuverGoal : Goal
         possibleNodes = filterByDestNotObstructed(possibleNodes);
         DebugManager.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
 
+        possibleNodes = filterByTooCloseToTarget(possibleNodes);
+        DebugManager.Instance.RegisterObject("maneuver_too_close_filter", possibleNodes);
+
         Vector2 requestDir = new Vector2();
         if (runaway) {
             Debug.Log("We runnin");
@@ -299,6 +302,25 @@ public class ManeuverGoal : Goal
 
         foreach (LookaheadNode node in nodes) {
             if (map.PositionToNode(node.TankInfo.Pos).NodeTraversable()) {
+                filteredNode.Add(node);
+            }
+        }
+
+        if (filteredNode.Count == 0) {
+            filteredNode = nodes;
+        }
+
+        return filteredNode;
+    }
+
+    private List<LookaheadNode> filterByTooCloseToTarget(List<LookaheadNode> nodes) {
+        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
+
+        Vector2 targetTankPos = controller.TargetTank.transform.position;
+        foreach (LookaheadNode node in nodes) {
+            float diff = (targetTankPos - node.TankInfo.Pos).magnitude;
+
+            if (diff > 50f) {
                 filteredNode.Add(node);
             }
         }

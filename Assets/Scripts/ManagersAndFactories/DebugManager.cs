@@ -82,6 +82,9 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDestNotObstructedFilter = true;
 
     [SerializeField]
+    private bool maneuverTooCloseFilter = true;
+
+    [SerializeField]
     private bool maneuverRunawayNodes = true;
 
     [SerializeField]
@@ -321,6 +324,18 @@ public class DebugManager : MonoBehaviour
 
                 if (maneuverDestNotObstructedFilter) {
                     object obj = getRegisterdObj("maneuver_dest_not_obstructed_filter");
+                    if (obj != null) {
+                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                        Gizmos.color = Color.green;
+                        foreach (LookaheadNode node in nodeList) {
+                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        }
+                    }
+                }
+
+                if (maneuverTooCloseFilter) {
+                    object obj = getRegisterdObj("maneuver_too_close_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 

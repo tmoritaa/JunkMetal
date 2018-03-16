@@ -49,8 +49,8 @@ public class AITankController : TankController
             SelfTank.PerformActuation(requestDir.normalized);
         } else {
             if (!CombatManager.Instance.DisableMovement) {
-                //TargetTank.MarkCurPositionAsBlockedOnMap(ThreatMap);
-                //TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
+                TargetTank.MarkCurPositionAsBlockedOnMap(ThreatMap);
+                TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
 
                 updateThreatMap();
                 updateGoalsAndPerformActions();
