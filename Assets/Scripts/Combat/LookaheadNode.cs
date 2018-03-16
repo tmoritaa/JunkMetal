@@ -128,25 +128,4 @@ public class LookaheadNode
 
         return crossedTarget;
     }
-
-    // TODO: later change map to be a reference from node, aka we don't pass map
-    public bool CrossesOppFireVector(Vector2 targetPos, WeaponPart part, ThreatMap map) {
-        Vector2 fireVec = part.CalculateFireVec();
-        bool crossedFire = false;
-
-        for (int i = 0; i < passedNodes.Count - 1; ++i) {
-            Vector2 pos = map.NodeToPosition(passedNodes[i]);
-            Vector2 nextPos = map.NodeToPosition(passedNodes[i + 1]);
-
-            float angleDiff = Vector2.SignedAngle(pos - targetPos, fireVec);
-            float nextAngleDiff = Vector2.SignedAngle(nextPos - targetPos, fireVec);
-
-            if (Mathf.Sign(angleDiff) != Mathf.Sign(nextAngleDiff)) {
-                crossedFire = true;
-                break;
-            }
-        }
-
-        return crossedFire;
-    }
 }

@@ -19,11 +19,11 @@ public partial class Tank
         Hull.PerformPowerChange(powerChange[0], powerChange[1]);
     }
 
-    public float CalcAvgOptimalRange() {
+    public float CalcAvgRange() {
         float totalRange = 0;
         int count = 0;
         foreach (WeaponPart part in Turret.GetAllWeapons()) {
-            totalRange += part.Schematic.OptimalRange;
+            totalRange += part.Schematic.Range;
             count += 1;
         }
 

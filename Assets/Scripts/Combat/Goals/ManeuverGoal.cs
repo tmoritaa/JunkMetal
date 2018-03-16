@@ -142,29 +142,56 @@ public class ManeuverGoal : Goal
         Tank targetTank = controller.TargetTank;
 
         List<CostInfo> nodeCosts = new List<CostInfo>();
-        foreach (LookaheadNode node in possibleNodes) {
+
+        bool overlapNodeExists = false;
+        Vector2 diffVec = targetTank.transform.position - selfTank.transform.position;
+        List<bool> overlaps = new List<bool>();
+
+        // TODO: should probably change later to pick one with fastest time to hit opp.
+        if (diffVec.magnitude < selfTank.CalcAvgRange()) {
+            foreach (LookaheadNode node in possibleNodes) {
+                bool nodeOverlaps = false;
+                foreach (WeaponPart part in selfTank.Turret.GetAllWeapons()) {
+                    if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
+                        overlapNodeExists = true;
+                        nodeOverlaps = true;
+                        break;
+                    }
+                }
+
+                overlaps.Add(nodeOverlaps);
+            }
+            Debug.Assert(possibleNodes.Count == overlaps.Count, "Possible nodes and overlap count don't match. Should never happen");
+        }
+
+        for (int i = 0; i < possibleNodes.Count; ++i) {
+            LookaheadNode node = possibleNodes[i];
+
             int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Turret.GetAllWeapons());
             int selfTime = calcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Turret.GetAllWeapons());
 
             int cost = targetTime - selfTime;
 
-            nodeCosts.Add(new CostInfo(node, cost));
+            bool overlapCondition = true;
+            if (overlapNodeExists) {
+                overlapCondition = overlaps[i];
+            }
+
+            if (overlapCondition) {
+                nodeCosts.Add(new CostInfo(node, cost));
+            }
         }
         
         DebugManager.Instance.RegisterObject("maneuver_going_cost_infos", nodeCosts);
 
-        Debug.Log("Infos=========================================");
         CostInfo bestInfo = null;
         foreach (CostInfo info in nodeCosts) {
-            Debug.Log("Info: Pos=" + info.Node.TankInfo.Pos + " Rot=" + info.Node.TankInfo.Rot + " Cost=" + info.Cost);
             if (bestInfo == null || info.Cost > bestInfo.Cost) {
                 bestInfo = info;
             }
         }
 
         bestInfo = handleSameCostCostInfos(bestInfo, nodeCosts);
-
-        Debug.Log("BestInfo: Pos=" + bestInfo.Node.TankInfo.Pos + " Rot=" + bestInfo.Node.TankInfo.Rot + " Cost=" + bestInfo.Cost);
 
         DebugManager.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
