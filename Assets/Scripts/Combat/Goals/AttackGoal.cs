@@ -104,7 +104,7 @@ public class AttackGoal : Goal
             AIAction transposeAction = null;
             if (intersected) {
                 Vector2 transVec = targetMovePos - (Vector2)tank.transform.position;
-                transposeTimeEstimate = tank.CalcTimeToReachPosWithNoRot(targetMovePos);
+                transposeTimeEstimate = tank.StateInfo.CalcTimeToReachPosWithNoRot(targetMovePos);
                 transposeAction = new GoInDirAction(transVec.normalized, controller);
             }
 
@@ -113,7 +113,7 @@ public class AttackGoal : Goal
             AIAction rotationAction = null;
 
             rotationAction = new RotateAction(result.weapon.CalculateFireVec(), diffVec.normalized, controller);
-            rotationTimeEstimate = tank.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
+            rotationTimeEstimate = tank.StateInfo.CalcTimeToRotate(part.CalculateFireVec(), diffVec);
 
             if (transposeTimeEstimate < 0 && rotationTimeEstimate < 0) {
                 Debug.LogWarning("Could not find transpose or rotation solution for attacking. Probably shouldn't happen.");

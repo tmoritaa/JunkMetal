@@ -33,24 +33,24 @@ public class AIUtility
         return targetPos;
     }
     
-    public static float CalcTimeToHitPos(Vector2 curFirePos, Vector2 curFireVec, Tank tank, WeaponPartSchematic schematic, Vector2 targetPos, bool ignoreTimeToAlign=false, bool ignoreTimeToMove=false) {
+    public static float CalcTimeToHitPos(Vector2 curPos, Vector2 curFireVec, TankStateInfo aimingTankInfo, WeaponPartSchematic schematic, Vector2 targetPos, bool ignoreTimeToAlign=false, bool ignoreTimeToMove=false) {
         float timeToHit = 0;
 
-        Vector2 diffVec = targetPos - curFirePos;
+        Vector2 diffVec = targetPos - curPos;
 
         // We have to calculate three things: rotation time, travel time to in range, and bullet travel time.
 
         // First calculate rotation time.
         if (!ignoreTimeToAlign) {
-            timeToHit += tank.CalcTimeToRotate(curFireVec, diffVec);
+            timeToHit += aimingTankInfo.CalcTimeToRotate(curFireVec, diffVec);
         }
 
         if (!ignoreTimeToMove) {
             // Next, calculate travel time.
             float moveAmount = Mathf.Max(diffVec.magnitude - schematic.Range, 0);
             if (moveAmount > 0) {
-                Vector2 newPos = diffVec.normalized * moveAmount + (Vector2)tank.transform.position;
-                timeToHit += tank.CalcTimeToReachPosWithNoRot(newPos);
+                Vector2 newPos = diffVec.normalized * moveAmount + curPos;
+                timeToHit += aimingTankInfo.CalcTimeToReachPosWithNoRot(newPos);
             }
         }
 
@@ -60,15 +60,15 @@ public class AIUtility
         return timeToHit;
     }
 
-    public static float CalcTimeToReachPos(Tank tank, Vector2 targetPos) {
-        Vector2 curPos = tank.transform.position;
+    public static float CalcTimeToReachPos(TankStateInfo tankInfo, Vector2 targetPos) {
+        Vector2 curPos = tankInfo.Pos;
 
         Vector2 diffVec = targetPos - curPos;
 
         float timeToReach = 0;
 
-        timeToReach += Mathf.Min(tank.CalcTimeToRotate(tank.GetForwardVec(), diffVec), tank.CalcTimeToRotate(tank.GetBackwardVec(), diffVec));
-        timeToReach += tank.CalcTimeToReachPosWithNoRot(targetPos);
+        timeToReach += Mathf.Min(tankInfo.CalcTimeToRotate(tankInfo.ForwardVec, diffVec), tankInfo.CalcTimeToRotate(tankInfo.ForwardVec.Rotate(180f), diffVec));
+        timeToReach += tankInfo.CalcTimeToReachPosWithNoRot(targetPos);
 
         return timeToReach;
     }
