@@ -191,7 +191,7 @@ public class DebugManager : MonoBehaviour
 
             if (mapDisplayDebugOn) {
                 // Draw Map
-                Map map = CombatManager.Instance.Map;
+                Map map = CombatManager.Instance.AITankController.ThreatMap;
                 for (int x = 0; x < map.Cols; ++x) {
                     for (int y = 0; y < map.Rows; ++y) {
                         bool blocked = !map.GetNodeAtIdx(x, y).NodeTraversable();

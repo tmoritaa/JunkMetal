@@ -11,15 +11,6 @@ public class AITankController : TankController
         get; private set;
     }
 
-    [SerializeField]
-    private float sqrDistForDistSigma = 2500;
-    public float SqrDistForDistSigma
-    {
-        get {
-            return sqrDistForDistSigma;
-        }
-    }
-
     public ThreatMap ThreatMap
     {
         get; private set;
@@ -30,13 +21,6 @@ public class AITankController : TankController
     private Goal curGoal = null;
 
     private int successiveCollisions = 0;
-
-    void Awake() {
-        // For 1v1 matches, this will always be true. Maybe later we'll have to change the logic, but for now this is fine.
-        TargetTank = CombatManager.Instance.HumanTankController.SelfTank;
-
-        ThreatMap = new ThreatMap(CombatManager.Instance.Map);
-    }
 
     protected override void Update() {
         base.Update();
@@ -50,7 +34,6 @@ public class AITankController : TankController
         } else {
             if (!CombatManager.Instance.DisableMovement) {
                 TargetTank.MarkCurPositionAsBlockedOnMap(ThreatMap);
-                TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
 
                 updateThreatMap();
                 updateGoalsAndPerformActions();
@@ -68,8 +51,11 @@ public class AITankController : TankController
     //    //futurePredicTest();
     //}
 
-    public override void Init(Vector2 startPos, TankSchematic tankSchematic) {
+    public void Init(Vector2 startPos, TankSchematic tankSchematic, Tank playerTank, List<Transform> walls) {
         base.Init(startPos, tankSchematic);
+
+        TargetTank = playerTank;
+        ThreatMap = new ThreatMap(CombatManager.Instance.MapWidth, CombatManager.Instance.MapHeight, CombatManager.Instance.TileDim, walls);
 
         // TODO: for now, just manually fill up goals list.
         goals.Add(new AttackGoal(this));

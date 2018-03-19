@@ -253,7 +253,7 @@ public class AIUtility
         return powerChange;
     }
 
-    public static void SmoothPath(List<Node> path, Tank tank) {
+    public static void SmoothPath(Map map, List<Node> path, Tank tank) {
         const int WallBit = 8;
         const int PlayerBit = 9;
         const int LayerMask = 1 << WallBit | 1 << PlayerBit;
@@ -265,7 +265,7 @@ public class AIUtility
             Vector2 leftVec = tank.GetForwardVec().Rotate(-90).normalized;
             Vector2 rightVec = tank.GetForwardVec().Rotate(90).normalized;
 
-            Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
+            Vector2 pos = map.NodeToPosition(node);
             Vector2 diffVec = pos - (Vector2)tank.transform.position;
 
             RaycastHit2D leftHit = Physics2D.Raycast((Vector2)tank.transform.position + (leftVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);

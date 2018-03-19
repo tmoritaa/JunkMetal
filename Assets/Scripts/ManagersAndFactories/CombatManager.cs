@@ -18,12 +18,30 @@ public class CombatManager : MonoBehaviour
 
     [SerializeField]
     private float mapWidth = 500;
+    public float MapWidth
+    {
+        get {
+            return mapWidth;
+        }
+    }
 
     [SerializeField]
     private float mapHeight = 500;
+    public float MapHeight
+    {
+        get {
+            return mapHeight;
+        }
+    }
 
     [SerializeField]
     private float tileDim = 25;
+    public float TileDim
+    {
+        get {
+            return tileDim;
+        }
+    }
 
     private Camera mainCamera = null;
     public Camera MainCamera
@@ -68,11 +86,6 @@ public class CombatManager : MonoBehaviour
         get; private set;
     }
 
-    public Map Map
-    {
-        get; private set;
-    }
-
     public bool DisableMovement
     {
         get; private set;
@@ -84,17 +97,23 @@ public class CombatManager : MonoBehaviour
         deathScreen.gameObject.SetActive(false);
 
         generateMapBounds();
-        generateTileMap();
 
         HumanTankController = Instantiate(humanTankContPrefab, tankRoot, false);
         HumanTankController.Init(
             new Vector3(300, -800, 0),
             PlayerManager.Instance.TankSchematic);
 
+        List<Transform> walls = new List<Transform>();
+        for (int i = 0; i < wallsRoot.childCount; ++i) {
+            walls.Add(wallsRoot.GetChild(i));
+        }
+
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
             new Vector3(300, -600, 0),
-            PlayerManager.Instance.TankSchematic); // TODO: for now. Later change it so it actually uses Enemy tank schematics
+            PlayerManager.Instance.TankSchematic,
+            HumanTankController.SelfTank,
+            walls); // TODO: for now. Later change it so it actually uses Enemy tank schematics
         
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.SelfTank.gameObject);
 
@@ -111,16 +130,6 @@ public class CombatManager : MonoBehaviour
 
     public void ReturnToMainScreen() {
         SceneManager.LoadScene("Main");
-    }
-
-    private void generateTileMap() {
-        // Note that this is temporary. Once map loading is implemented, we can just keep the walls generated in a list during map generation, and go through those.
-        List<Transform> walls = new List<Transform>();
-        for (int i = 0; i < wallsRoot.childCount; ++i) {
-            walls.Add(wallsRoot.GetChild(i));
-        }
-
-        Map = new Map(mapWidth, mapHeight, tileDim, walls);
     }
 
     private void generateMapBounds() {
