@@ -41,28 +41,7 @@ public class DebugManager : MonoBehaviour
 
     [SerializeField]
     private bool mapDisplayDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapTargetToHitPosDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapPosToHitTargetDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapDiffMapDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapTargetToHitPosNoReloadDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapTimeDiffDangerousNodesDebugOn = true;
-
-    [SerializeField]
-    private bool threatMapStrictlyDangerousNodesDebugOn = true;
-
+    
     [SerializeField]
     private bool displayAITankRange = true;
 
@@ -191,7 +170,7 @@ public class DebugManager : MonoBehaviour
 
             if (mapDisplayDebugOn) {
                 // Draw Map
-                Map map = CombatManager.Instance.AITankController.ThreatMap;
+                Map map = CombatManager.Instance.AITankController.Map;
                 for (int x = 0; x < map.Cols; ++x) {
                     for (int y = 0; y < map.Rows; ++y) {
                         bool blocked = !map.GetNodeAtIdx(x, y).NodeTraversable();
@@ -199,63 +178,6 @@ public class DebugManager : MonoBehaviour
 
                         Gizmos.color = !blocked ? Color.green : Color.red;
                         Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
-                    }
-                }
-            }
-
-            if (threatMapDebugOn) {
-                ThreatMap map = CombatManager.Instance.AITankController.ThreatMap;
-
-                foreach (Node _node in map.MapArray) {
-                    ThreatNode node = (ThreatNode)_node;
-
-                    if (threatMapTargetToHitPosDebugOn) {
-                        if (node.TimeForTargetToHitNode <= ThreatMap.MaxTimeInSecs) {
-                            Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNode)/ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNode/ThreatMap.MaxTimeInSecs);
-                            Gizmos.color = color;
-
-                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
-                        }
-                    }
-
-                    if (threatMapPosToHitTargetDebugOn) {
-                        if (node.TimeToHitTargetFromNode <= ThreatMap.MaxTimeInSecs) {
-                            Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeToHitTargetFromNode)/ThreatMap.MaxTimeInSecs, 0, node.TimeToHitTargetFromNode/ThreatMap.MaxTimeInSecs);
-                            Gizmos.color = color;
-
-                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
-                        }
-                    }
-
-                    if (threatMapDiffMapDebugOn) {
-                        float diffVal = node.GetTimeDiffForHittingTarget();
-                        if (diffVal > 0) {
-                            Color color = new Color(Mathf.Clamp01(diffVal / ThreatMap.MaxTimeInSecs), 0, Mathf.Clamp01((ThreatMap.MaxTimeInSecs - diffVal)/ ThreatMap.MaxTimeInSecs));
-                            Gizmos.color = color;
-
-                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
-                        }
-                    }
-
-                    if (threatMapTargetToHitPosNoReloadDebugOn) {
-                        if (node.TimeForTargetToHitNodeNoReload <= ThreatMap.MaxTimeInSecs) {
-                            Color color = new Color((ThreatMap.MaxTimeInSecs - node.TimeForTargetToHitNodeNoReload) / ThreatMap.MaxTimeInSecs, 0, node.TimeForTargetToHitNodeNoReload / ThreatMap.MaxTimeInSecs);
-                            Gizmos.color = color;
-
-                            Gizmos.DrawWireSphere(map.NodeToPosition(node), 10);
-                        }
-                    }
-
-                    if (threatMapTimeDiffDangerousNodesDebugOn && node.Marked && node.TimeDiffDangerLevel >= 0) {
-                        float ratio = (float)node.TimeDiffDangerLevel / 2;
-                        Gizmos.color = new Color((1f - ratio), 0, ratio);
-                        Gizmos.DrawSphere(map.NodeToPosition(node), 10);
-                    }
-
-                    if (threatMapStrictlyDangerousNodesDebugOn && node.Marked && node.TankToNodeDangerLevel >= 0) {
-                        float ratio = (float)node.TankToNodeDangerLevel / 2;
-                        Gizmos.color = new Color((1f - ratio), 0, ratio);
-                        Gizmos.DrawSphere(map.NodeToPosition(node), 10);
                     }
                 }
             }

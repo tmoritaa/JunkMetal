@@ -11,7 +11,7 @@ public class AITankController : TankController
         get; private set;
     }
 
-    public ThreatMap ThreatMap
+    public Map Map
     {
         get; private set;
     }
@@ -33,9 +33,8 @@ public class AITankController : TankController
             SelfTank.PerformActuation(requestDir.normalized);
         } else {
             if (!CombatManager.Instance.DisableMovement) {
-                TargetTank.MarkCurPositionAsBlockedOnMap(ThreatMap);
+                TargetTank.MarkCurPositionAsBlockedOnMap(Map);
 
-                updateThreatMap();
                 updateGoalsAndPerformActions();
             }
 
@@ -55,19 +54,12 @@ public class AITankController : TankController
         base.Init(startPos, tankSchematic);
 
         TargetTank = playerTank;
-        ThreatMap = new ThreatMap(CombatManager.Instance.MapWidth, CombatManager.Instance.MapHeight, CombatManager.Instance.TileDim, walls);
+        Map = new Map(CombatManager.Instance.MapWidth, CombatManager.Instance.MapHeight, CombatManager.Instance.TileDim, walls);
 
         // TODO: for now, just manually fill up goals list.
         goals.Add(new AttackGoal(this));
         goals.Add(new ManeuverGoal(this));
         curGoal = null;
-    }
-
-    private void updateThreatMap() {
-        ThreatMap.ResetNodeValues();
-        ThreatMap.UpdateTimeForTankToHitNode(TargetTank);
-        ThreatMap.UpdateTimeToHitTargetFromNode(SelfTank, TargetTank);
-        ThreatMap.MarkDangerousNodes();
     }
 
     private void updateGoalsAndPerformActions() {

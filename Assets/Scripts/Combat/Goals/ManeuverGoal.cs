@@ -60,7 +60,7 @@ public class ManeuverGoal : Goal
     public override AIAction[] CalcActionsToPerform() {
         List<AIAction> actions = new List<AIAction>();
 
-        ThreatMap map = controller.ThreatMap;
+        Map map = controller.Map;
 
         elapsedTimeSinceLastUpdate += Time.deltaTime;
 
@@ -84,7 +84,7 @@ public class ManeuverGoal : Goal
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
-        ThreatMap map = controller.ThreatMap;
+        Map map = controller.Map;
 
         int timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Turret.GetAllWeapons());
         int timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Turret.GetAllWeapons());
@@ -298,7 +298,7 @@ public class ManeuverGoal : Goal
     
     private List<LookaheadNode> filterByDestNotObstructed(List<LookaheadNode> nodes) {
         List<LookaheadNode> filteredNode = new List<LookaheadNode>();
-        ThreatMap map = controller.ThreatMap;
+        Map map = controller.Map;
 
         foreach (LookaheadNode node in nodes) {
             if (map.PositionToNode(node.TankInfo.Pos).NodeTraversable()) {
