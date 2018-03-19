@@ -29,9 +29,9 @@ public class AttackGoal : Goal
         Tank aiTank = controller.SelfTank;
 
         Tank targetTank = controller.TargetTank;
-        Vector2 targetPos = targetTank.transform.position;
 
         foreach (WeaponPart weapon in aiTank.Turret.GetAllWeapons()) {
+            Vector2 targetPos = AIUtility.CalculateTargetPosWithWeapon(weapon.Schematic.ShootImpulse, weapon.CalculateFirePos(), aiTank.transform.position, targetTank.transform.position, targetTank.Body.velocity);
             Vector2 curFireVec = weapon.CalculateFireVec();
             Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
             float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
