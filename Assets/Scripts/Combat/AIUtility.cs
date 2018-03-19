@@ -144,11 +144,12 @@ public class AIUtility
         return resultInfo;
     }
 
+    // TODO: In general, later make serialized field if these values feel like they need tweaking
     public static int[] CalcPowerChangeBasedOnRequestDir(Vector2 requestDir, TankStateInfo stateInfo) {
         const float MinRatioCutOff = 0.4f;
-        const float MaxRatioCutoff = 0.7f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
+        const float MaxRatioCutoff = 0.7f; 
 
-        const float StartingBackwardArcAngle = 180f; // TODO: later probably make a serialized field for easier tweaking and move to AITankController
+        const float StartingBackwardArcAngle = 180f;
         const float StartingForwardArcAngle = 360f - StartingBackwardArcAngle;
 
         int[] powerChange = new int[2];
@@ -188,7 +189,7 @@ public class AIUtility
         float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
         float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);
 
-        const float sigma = 10f; // TODO: later probably make a serialized field for easier tweaking
+        const float sigma = 10f;
 
         // In this case we want the AI to continue accelerating while going towards the requested direction
         if ((curForwardArcAngle / 2f) >= angleDiffFromFront) {
