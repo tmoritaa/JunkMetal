@@ -101,8 +101,10 @@ public class CustomizationHandler : MonoBehaviour
     }
 
     public void BackToMain() {
-        updatePlayerTankSchematic();
-        SceneManager.LoadScene("Main");
+        if (isValidTankSchematic()) {
+            updatePlayerTankSchematic();
+            SceneManager.LoadScene("Main");
+        }
     }
 
     public void UpdateEquippedParts(PartSchematic newPart) {
@@ -110,7 +112,7 @@ public class CustomizationHandler : MonoBehaviour
         PartSchematic oldPart = curPickedSlot.Part;
         curPickedSlot.UpdatePart(newPart);
 
-        if (newPart.PType == PartSchematic.PartType.Hull) {
+        if (newPart != null && newPart.PType == PartSchematic.PartType.Hull) {
             HullPartSchematic oldTurret = (HullPartSchematic)oldPart;
             HullPartSchematic newTurret = (HullPartSchematic)newPart;
 
@@ -133,6 +135,19 @@ public class CustomizationHandler : MonoBehaviour
     public void UpdatePartInfo(PartSchematic part) {
         PartSchematic equipPart = PickedPartsItem != null ? PickedPartsItem.Slot.Part : null;
         partInfo.UpdatePartText(part, equipPart);
+    }
+
+    private bool isValidTankSchematic() {
+        int weaponCount = 0;
+        foreach (PartSlot slot in EquippedParts) {
+            switch (slot.PartType) {
+                case PartSchematic.PartType.Weapon:
+                    weaponCount += slot.Part != null ? 1 : 0;
+                    break;
+            }
+        }
+
+        return weaponCount > 0;
     }
 
     private void updatePlayerTankSchematic() {

@@ -12,6 +12,10 @@ public class PartInfo : MonoBehaviour
     private Text text;
 
 	public void UpdatePartText(PartSchematic selectedPart, PartSchematic equippedPart) {
-        text.text = selectedPart.GetStatString(equippedPart);
+        if (selectedPart != null) {
+            text.text = selectedPart.GetStatString(equippedPart);
+        } else {
+            text.text = "";
+        }
     }
 }

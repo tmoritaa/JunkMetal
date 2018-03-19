@@ -35,10 +35,15 @@ public class SelectOtherItemsState : CustomizationState
     }
 
     private void generateOtherItems() {
-        PartSchematic[] parts = PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.Slot.PartType);
+        List<PartSchematic> parts = new List<PartSchematic>();
+        if (handler.PickedPartsItem.Slot.PartType == PartSchematic.PartType.Weapon) {
+            parts.Add(null);
+        }
+
+        parts.AddRange(PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.Slot.PartType));
 
         float itemAnchorStep = 1f / 9f;
-        for (int i = 0; i < parts.Length; ++i) {
+        for (int i = 0; i < parts.Count; ++i) {
             PartSchematic schem = parts[i];
 
             OtherPartsItem item = handler.OtherPartsItemPool.GetObject().GetComponent<OtherPartsItem>();
