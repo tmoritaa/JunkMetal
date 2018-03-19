@@ -49,8 +49,8 @@ public class AITankController : TankController
             SelfTank.PerformActuation(requestDir.normalized);
         } else {
             if (!CombatManager.Instance.DisableMovement) {
-                TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
                 TargetTank.MarkCurPositionAsBlockedOnMap(ThreatMap);
+                TargetTank.MarkCurPositionAsBlockedOnMap(CombatManager.Instance.Map);
 
                 updateThreatMap();
                 updateGoalsAndPerformActions();
@@ -73,7 +73,7 @@ public class AITankController : TankController
 
         // TODO: for now, just manually fill up goals list.
         //goals.Add(new SearchGoal(this));
-        //goals.Add(new AttackGoal(this));
+        goals.Add(new AttackGoal(this));
         goals.Add(new ManeuverGoal(this));
         curGoal = null;
     }

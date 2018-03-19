@@ -70,7 +70,7 @@ public class DebugManager : MonoBehaviour
     private bool maneuverGoalDebugOn = true;
 
     [SerializeField]
-    private bool maneuverFutureTargetTankInfo = true;
+    private bool maneuverCurMoveDir = true;
 
     [SerializeField]
     private bool maneuverNodesAtSearchTime = true;
@@ -82,20 +82,17 @@ public class DebugManager : MonoBehaviour
     private bool maneuverDestNotObstructedFilter = true;
 
     [SerializeField]
-    private bool maneuverDoesNotCrossFireFilter = true;
+    private bool maneuverTooCloseFilter = true;
 
     [SerializeField]
-    private bool maneuverInRangeFilter = true;
+    private bool maneuverRunawayNodes = true;
 
     [SerializeField]
-    private bool maneuverAngleFromFireFilter = true;
+    private bool maneuverGoingforItNode = true;
 
     [SerializeField]
-    private bool maneuverAimFilter = true;
-
-    [SerializeField]
-    private bool maneuverOptimalRangeFilter = true;
-
+    private bool maneuverBestNode = true;
+    
     [SerializeField]
     private bool predictFutureDebugOn = true;
 
@@ -290,16 +287,14 @@ public class DebugManager : MonoBehaviour
             }
 
             if (maneuverGoalDebugOn && curGoal != null && curGoal.GetType() == typeof(ManeuverGoal)) {
-                if (maneuverFutureTargetTankInfo) {
-                    object obj = getRegisterdObj("maneuver_future_target_info");
+                if (maneuverCurMoveDir) {
+                    object obj = getRegisterdObj("maneuver_move_dir");
                     if (obj != null) {
-                        TankStateInfo tank = (TankStateInfo)obj;
+                        Vector2 vec = (Vector2)obj;
+                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
 
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawWireSphere(tank.Pos, 30);
-
-                        Gizmos.color = Color.magenta;
-                        Gizmos.DrawLine(tank.Pos, tank.Pos + new Vector2(0, 1).Rotate(tank.Rot) * 50f);
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawLine(aiTank.transform.position, (Vector2)aiTank.transform.position + vec.normalized * 50f);
                     }
                 }
 
@@ -339,20 +334,8 @@ public class DebugManager : MonoBehaviour
                     }
                 }
 
-                if (maneuverDoesNotCrossFireFilter) {
-                    object obj = getRegisterdObj("maneuver_does_not_cross_fire_filter");
-                    if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
-
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
-                        }
-                    }
-                }
-        
-                if (maneuverAngleFromFireFilter) {
-                    object obj = getRegisterdObj("maneuver_angle_from_fire_filter");
+                if (maneuverTooCloseFilter) {
+                    object obj = getRegisterdObj("maneuver_too_close_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 
@@ -363,42 +346,45 @@ public class DebugManager : MonoBehaviour
                     }
                 }
 
-                if (maneuverInRangeFilter) {
-                    object obj = getRegisterdObj("maneuver_in_range_filter");
+                if (maneuverRunawayNodes) {
+                    object obj = getRegisterdObj("maneuver_runaway_cost_infos");
                     if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+                        List<ManeuverGoal.CostInfo> infos = (List<ManeuverGoal.CostInfo>)obj;
 
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        float maxCost = infos.Max(c => c.Cost);
+
+                        foreach (ManeuverGoal.CostInfo info in infos) {
+                            Gizmos.color = new Color(info.Cost / maxCost, 0, 1f - info.Cost / maxCost);
+                            Gizmos.DrawWireSphere(info.Node.TankInfo.Pos, 20);
                         }
                     }
                 }
 
-                if (maneuverAimFilter) {
-                    object obj = getRegisterdObj("maneuver_aim_filter");
+                if (maneuverGoingforItNode) {
+                    object obj = getRegisterdObj("maneuver_going_cost_infos");
                     if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+                        List<ManeuverGoal.CostInfo> infos = (List<ManeuverGoal.CostInfo>)obj;
 
-                        Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        float maxCost = infos.Max(c => c.Cost);
+
+                        foreach (ManeuverGoal.CostInfo info in infos) {
+                            Gizmos.color = new Color(info.Cost / maxCost, 0, 1f - info.Cost / maxCost);
+                            Gizmos.DrawWireSphere(info.Node.TankInfo.Pos, 20);
                         }
                     }
                 }
 
-                if (maneuverOptimalRangeFilter) {
-                    object obj = getRegisterdObj("maneuver_optimal_range_filter");
+                if (maneuverBestNode) {
+                    object obj = getRegisterdObj("maneuver_best_node");
                     if (obj != null) {
-                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+                        LookaheadNode node = (LookaheadNode)obj;
 
                         Gizmos.color = Color.green;
-                        foreach (LookaheadNode node in nodeList) {
-                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
-                        }
+                        Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
                     }
                 }
             }
+
 
             if (predictFutureDebugOn) {
                 object obj = getRegisterdObj("test_future_pos_lis");

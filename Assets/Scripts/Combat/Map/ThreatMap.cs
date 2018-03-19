@@ -106,7 +106,7 @@ public class ThreatMap : Map
 
                 bool inRange = (nodePos - (Vector2)targetTank.transform.position).magnitude < weapon.Schematic.Range;
                 float timeToHitPos = inRange ?
-                    AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, targetTank.transform.position, true, true)
+                    AIUtility.CalcTimeToHitPos(nodePos, weapon.CalculateFireVec(), weapon.OwningTank.StateInfo, weapon.Schematic, targetTank.transform.position, true, true)
                     : 10000;
                 timeToHitPos += weapon.CalcTimeToReloaded();
 
@@ -160,7 +160,7 @@ public class ThreatMap : Map
             while (openNodes.Count > 0) {
                 ThreatNode node = (ThreatNode)openNodes[0];
 
-                float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.OwningTank.transform.position, weapon.CalculateFireVec(), weapon.OwningTank, weapon.Schematic, NodeToPosition(node));
+                float timeToHitPos = AIUtility.CalcTimeToHitPos(weapon.OwningTank.transform.position, weapon.CalculateFireVec(), weapon.OwningTank.StateInfo, weapon.Schematic, NodeToPosition(node));
                 float timeToHitPosWithReloadTime = timeToHitPos + weapon.CalcTimeToReloaded();
 
                 // If time is over 1 second, we consider it too long and stop searching.

@@ -4,7 +4,7 @@ using System.Linq;
 
 using UnityEngine;
 
-public struct TankStateInfo
+public class TankStateInfo
 {
     public Tank OwningTank
     {
@@ -101,5 +101,62 @@ public struct TankStateInfo
 
     public Vector2 CalculateFireVecOfWeapon(WeaponPart part) {
         return OwningTank.Turret.Schematic.OrigWeaponDirs[part.TurretIdx].Rotate(Rot); // TODO: this assumes tank loses turret rotation functionality
+    }
+
+    public float CalcTimeToRotate(Vector2 from, Vector2 to) {
+        float rotationAngle = Vector2.Angle(from, to);
+
+        float r = Size.x / 2f;
+        float f = EnergyPower;
+        float torque = r * f;
+        float angularDrag = AngularDrag;
+
+        float angularAccel = torque / Inertia * Mathf.Rad2Deg;
+
+        float newVel = AngularVel;
+
+        float angle = Vector2.SignedAngle(ForwardVec, to);
+
+        newVel *= Mathf.Sign(angle);
+
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+
+        float angleToCover = rotationAngle;
+        while (angleToCover > 0) {
+            totalDt += dt;
+            newVel = (newVel + angularAccel * dt) * (1f / (1f + angularDrag * dt));
+            angleToCover -= newVel * dt;
+        }
+
+        return totalDt;
+    }
+
+    public float CalcTimeToReachPosWithNoRot(Vector2 targetPos) {
+        Vector2 desiredDir = targetPos - Pos;
+
+        float curVel = LinearVel.magnitude;
+        float angle = Vector2.Angle(LinearVel, desiredDir);
+        if (angle >= 90) {
+            curVel *= -1;
+        }
+
+        float f = EnergyPower;
+        float m = Mass;
+        float drag = LinearDrag;
+        float a = f / m;
+
+        float newVel = curVel;
+        float dt = Time.fixedDeltaTime;
+        float totalDt = 0;
+
+        float distToTarget = desiredDir.magnitude;
+        while (distToTarget > 0) {
+            totalDt += dt;
+            newVel = (newVel + a * dt) * (1f / (1f + drag * dt));
+            distToTarget -= newVel * dt;
+        }
+
+        return totalDt;
     }
 }

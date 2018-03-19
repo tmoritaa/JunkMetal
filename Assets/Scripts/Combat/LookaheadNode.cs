@@ -42,17 +42,11 @@ public class LookaheadNode
         ChildNodes = new List<LookaheadNode>();
     }
 
-    public void PopulateChildren(Map map, float searchStepTime) {
-        List<Vector2> possibleDirs = new List<Vector2>() {
-            TankInfo.ForwardVec,
-            TankInfo.ForwardVec.Rotate(180f),
-            TankInfo.ForwardVec.Rotate(45f),
-            TankInfo.ForwardVec.Rotate(135f),
-            TankInfo.ForwardVec.Rotate(-45f),
-            TankInfo.ForwardVec.Rotate(-135f),
-            TankInfo.ForwardVec.Rotate(90f),
-            TankInfo.ForwardVec.Rotate(-90f)
-        };
+    public void PopulateChildren(Map map, float searchStepTime, List<float> possibleRots) {
+        List<Vector2> possibleDirs = new List<Vector2>();
+        foreach (float rot in possibleRots) {
+            possibleDirs.Add(TankInfo.ForwardVec.Rotate(rot));
+        }
 
         // Remove the largest angle difference which should correspond to the opposite direction of the incoming direction
         if (IncomingDir.magnitude > 0) {
@@ -103,29 +97,6 @@ public class LookaheadNode
         }
 
         return !obstructed;
-    }
-
-    public bool PathFromRootDoesNotCrossDangerNode() {
-        LookaheadNode curSearchNode = this;
-
-        bool crossedDanger = false;
-        while (curSearchNode != null) {
-            foreach (Node node in curSearchNode.passedNodes) {
-                ThreatNode tNode = (ThreatNode)node;
-                if (tNode.TimeDiffDangerLevel == 0) {
-                    crossedDanger = true;
-                    break;
-                }
-            }
-
-            if (crossedDanger) {
-                break;
-            }
-
-            curSearchNode = curSearchNode.ParentNode;
-        }
-
-        return !crossedDanger;
     }
 
     public bool HasOverlappedTargetWithWeapon(Vector2 targetPos, WeaponPart part) {
