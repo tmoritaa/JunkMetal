@@ -201,32 +201,6 @@ public class DebugManager : MonoBehaviour
                         Gizmos.DrawWireCube(pos, new Vector3(map.TileDim, map.TileDim, map.TileDim));
                     }
                 }
-                
-                if (curGoal != null && curGoal.GetType()  == typeof(SearchGoal)) {
-                    Gizmos.color = Color.blue;
-
-                    SearchGoal goal = (SearchGoal)curGoal;
-
-                    List<Node> path = (List<Node>)getRegisterdObj("search_path");
-
-                    foreach (Node node in path) {
-                        Vector2 pos = CombatManager.Instance.Map.NodeToPosition(node);
-                        Gizmos.DrawWireSphere(pos, 15);
-                    }
-
-                    SearchMap searchQuads = (SearchMap)getRegisterdObj("search_quads");
-
-                    foreach (Node _node in searchQuads.MapArray) {
-                        SearchNode node = (SearchNode)_node;
-                        if (!node.searched) {
-                            Gizmos.color = Color.blue;
-                        } else {
-                            Gizmos.color = Color.red;
-                        }
-
-                        Gizmos.DrawWireCube(searchQuads.NodeToPosition(node), new Vector3(searchQuads.TileDim, searchQuads.TileDim, searchQuads.TileDim));
-                    }
-                }
             }
 
             if (threatMapDebugOn) {
