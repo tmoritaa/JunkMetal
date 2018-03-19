@@ -34,13 +34,14 @@ public class TankController : MonoBehaviour
         }
     }
 
-    public virtual void Init(Vector2 startPos, TankSchematic tankSchematic) {
+    public virtual void Init(Vector2 startPos, float startRot, TankSchematic tankSchematic) {
         if (SelfTank != null) {
             Destroy(SelfTank.gameObject);
         }
 
         SelfTank = Instantiate(tankPrefab, this.transform, false);
         SelfTank.transform.position = startPos;
+        SelfTank.Body.rotation = startRot;
 
         SelfTank.Init(tankSchematic);
     }

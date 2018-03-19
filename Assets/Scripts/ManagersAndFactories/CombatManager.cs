@@ -101,6 +101,7 @@ public class CombatManager : MonoBehaviour
         HumanTankController = Instantiate(humanTankContPrefab, tankRoot, false);
         HumanTankController.Init(
             new Vector3(300, -800, 0),
+            0,
             PlayerManager.Instance.TankSchematic);
 
         List<Transform> walls = new List<Transform>();
@@ -111,6 +112,7 @@ public class CombatManager : MonoBehaviour
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
             new Vector3(300, -600, 0),
+            180f,
             PlayerManager.Instance.TankSchematic,
             HumanTankController.SelfTank,
             walls); // TODO: for now. Later change it so it actually uses Enemy tank schematics

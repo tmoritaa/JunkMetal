@@ -6,8 +6,8 @@ using UnityEngine;
 
 public class HumanTankController : TankController
 {
-    public override void Init(Vector2 startPos, TankSchematic tankSchematic) {
-        base.Init(startPos, tankSchematic);
+    public override void Init(Vector2 startPos, float startRot, TankSchematic tankSchematic) {
+        base.Init(startPos, startRot, tankSchematic);
 
         SelfTank.gameObject.layer = 9; // Player layer
     }

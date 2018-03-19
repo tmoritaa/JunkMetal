@@ -50,8 +50,8 @@ public class AITankController : TankController
     //    //futurePredicTest();
     //}
 
-    public void Init(Vector2 startPos, TankSchematic tankSchematic, Tank playerTank, List<Transform> walls) {
-        base.Init(startPos, tankSchematic);
+    public void Init(Vector2 startPos, float startRot, TankSchematic tankSchematic, Tank playerTank, List<Transform> walls) {
+        base.Init(startPos, startRot, tankSchematic);
 
         TargetTank = playerTank;
         Map = new Map(CombatManager.Instance.MapWidth, CombatManager.Instance.MapHeight, CombatManager.Instance.TileDim, walls);
