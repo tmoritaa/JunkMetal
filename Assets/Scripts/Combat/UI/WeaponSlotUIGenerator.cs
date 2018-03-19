@@ -33,7 +33,7 @@ public class WeaponSlotUIGenerator : MonoBehaviour
             rectTrans.anchorMin = anchorMin;
             rectTrans.anchorMax = anchorMax;
 
-            WeaponPart part = playerTank.Turret.GetWeaponAtIdx(i);
+            WeaponPart part = playerTank.Hull.GetWeaponAtIdx(i);
             slotUI.Init(part);
         }
 	}

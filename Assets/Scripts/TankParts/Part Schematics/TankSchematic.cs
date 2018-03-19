@@ -11,19 +11,13 @@ public class TankSchematic
         get; set;
     }
 
-    public TurretPartSchematic TurretSchematic
-    {
-        get; set;
-    }
-
     public WeaponPartSchematic[] WeaponSchematics
     {
         get; set;
     }
 
-    public TankSchematic(HullPartSchematic hull, TurretPartSchematic turret, WeaponPartSchematic[] weapons) {
+    public TankSchematic(HullPartSchematic hull, WeaponPartSchematic[] weapons) {
         HullSchematic = hull;
-        TurretSchematic = turret;
         WeaponSchematics = weapons;
     }
 }

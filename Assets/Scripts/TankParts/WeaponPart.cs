@@ -11,7 +11,7 @@ public class WeaponPart
         get; private set;
     }
 
-    public int TurretIdx
+    public int EquipIdx
     {
         get; set;
     }
@@ -34,7 +34,7 @@ public class WeaponPart
         Schematic = schematic;
         
         lastShotTime = -10000;
-        TurretIdx = -1;
+        EquipIdx = -1;
     }
 
     public void SetOwner(Tank tank) {
@@ -42,7 +42,7 @@ public class WeaponPart
     }
 
     public void HandleInput() {
-        if (InputManager.Instance.IsKeyTypeDown((InputManager.KeyType)(100 + TurretIdx)) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
+        if (InputManager.Instance.IsKeyTypeDown((InputManager.KeyType)(100 + EquipIdx)) && (lastShotTime + Schematic.ReloadTimeInSec) <= Time.time) {
             FireIfAble();
         }
     }
@@ -68,7 +68,7 @@ public class WeaponPart
     }
 
     public Vector2 CalculateFireVec() {
-        return OwningTank.Turret.Schematic.OrigWeaponDirs[TurretIdx].Rotate(OwningTank.Turret.Angle + OwningTank.Body.rotation);
+        return OwningTank.Hull.Schematic.OrigWeaponDirs[EquipIdx].Rotate(OwningTank.Body.rotation);
     }
 
     public Vector2 CalculateFirePos() {
@@ -77,7 +77,7 @@ public class WeaponPart
     }
 
     public Vector2 CalculateFireOffset() {
-        return OwningTank.Turret.Schematic.OrigWeaponFirePosOffset[TurretIdx].Rotate(OwningTank.Turret.Angle + OwningTank.Body.rotation);
+        return OwningTank.Hull.Schematic.OrigWeaponFirePosOffset[EquipIdx].Rotate(OwningTank.Body.rotation);
     }
 
     public float CalcTimeToReloaded() {

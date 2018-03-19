@@ -1,4 +1,0 @@
-{
-	"Basic Turret":{"weight":200, "armor":50, "rot_speed":0, "weapons":[{"x_dir":0, "y_dir":1, "fire_x_offset":0, "fire_y_offset":40,"restrict":100}, {"x_dir":0, "y_dir":-1, "fire_x_offset":0, "fire_y_offset":0, "restrict":100}]},
-	"Unrot Turret":{"weight":200, "armor":50, "rot_speed":0, "weapons":[{"x_dir":0, "y_dir":1, "fire_x_offset":0, "fire_y_offset":40,"restrict":100}]}
-}

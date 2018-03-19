@@ -44,9 +44,8 @@ public class PlayerManager : MonoBehaviour
             }
         }
         
-        string playerInfoJson = String.Format("{{\"Parts\":{{\"Hull\":\"{0}\",\"Turret\":\"{1}\",\"Weapons\":[{2}]}}}}", 
+        string playerInfoJson = String.Format("{{\"Parts\":{{\"Hull\":\"{0}\",\"Weapons\":[{1}]}}}}", 
                                     TankSchematic.HullSchematic.Name,
-                                    TankSchematic.TurretSchematic.Name,
                                     weaponString);
 
         PlayerPrefs.SetString(PlayerInfoKey, playerInfoJson);
@@ -81,9 +80,6 @@ public class PlayerManager : MonoBehaviour
 
         string hullName = parts.Value<string>("Hull");
         HullPartSchematic hull = (HullPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Hull, hullName);
-        
-        string turretName = parts.Value<string>("Turret");
-        TurretPartSchematic turret = (TurretPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Turret, turretName);
 
         JArray weapons = parts.Value<JArray>("Weapons");
         List<WeaponPartSchematic> weaponsList = new List<WeaponPartSchematic>();
@@ -95,6 +91,6 @@ public class PlayerManager : MonoBehaviour
             }
         }
 
-        TankSchematic = new TankSchematic(hull, turret, weaponsList.ToArray());
+        TankSchematic = new TankSchematic(hull, weaponsList.ToArray());
     }
 }

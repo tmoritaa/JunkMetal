@@ -11,7 +11,6 @@ public partial class Tank
     public void HandleInput() {
         if (initialized) {
             Hull.HandleInput();
-            Turret.HandleInput();
         }
     }
 

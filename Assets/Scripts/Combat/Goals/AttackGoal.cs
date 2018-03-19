@@ -30,7 +30,7 @@ public class AttackGoal : Goal
 
         Tank targetTank = controller.TargetTank;
 
-        foreach (WeaponPart weapon in aiTank.Turret.GetAllWeapons()) {
+        foreach (WeaponPart weapon in aiTank.Hull.GetAllWeapons()) {
             Vector2 targetPos = AIUtility.CalculateTargetPosWithWeapon(weapon.Schematic.ShootImpulse, weapon.CalculateFirePos(), aiTank.transform.position, targetTank.transform.position, targetTank.Body.velocity);
             Vector2 curFireVec = weapon.CalculateFireVec();
             Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
@@ -56,7 +56,7 @@ public class AttackGoal : Goal
         List<AIAction> actions = new List<AIAction>();
 
         foreach (WeaponPart weapon in weaponsThatCanHit) {
-            actions.Add(new FireWeaponAction(weapon.TurretIdx, controller));
+            actions.Add(new FireWeaponAction(weapon.EquipIdx, controller));
         }
 
         return actions.ToArray();

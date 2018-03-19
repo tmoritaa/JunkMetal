@@ -27,10 +27,17 @@ public class HullPart
         get; private set;
     }
 
+    private WeaponPart[] weapons;
+
+    private Tank owner;
+
     public HullPart(HullPartSchematic _schematic) {
         Schematic = _schematic;
         LeftCurPower = 0;
         RightCurPower = 0;
+
+        weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
+        Array.Clear(weapons, 0, weapons.Length);
     }
 
     public void HandleInput() {
@@ -52,11 +59,54 @@ public class HullPart
         }
 
         PerformPowerChange(leftChangeDir, rightChangeDir);
+
+        foreach (WeaponPart weapon in GetAllWeapons()) {
+            weapon.HandleInput();
+        }
+    }
+
+    public void SetOwner(Tank tank) {
+        owner = tank;
+        foreach (WeaponPart weapon in GetAllWeapons()) {
+            weapon.SetOwner(tank);
+        }
+    }
+
+    public void PerformFixedUpdate() {
+        foreach (WeaponPart weapon in GetAllWeapons()) {
+            weapon.PerformFixedUpdate();
+        }
     }
 
     public void Reset() {
         LeftCurPower = 0;
         RightCurPower = 0;
+    }
+
+    public List<WeaponPart> GetAllWeapons() {
+        List<WeaponPart> weapons = new List<WeaponPart>();
+        foreach (WeaponPart part in this.weapons) {
+            if (part != null) {
+                weapons.Add(part);
+            }
+        }
+
+        return weapons;
+    }
+
+    public WeaponPart GetWeaponAtIdx(int idx) {
+        if (weapons.Length <= idx) {
+            return null;
+        }
+
+        return weapons[idx];
+    }
+
+    public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
+        if (weapon.Schematic.Weight <= Schematic.WeaponWeightRestrictions[idx]) {
+            weapon.EquipIdx = idx;
+            weapons[idx] = weapon;
+        }
     }
 
     public void PerformPowerChange(int leftChangeDir, int rightChangeDir) {

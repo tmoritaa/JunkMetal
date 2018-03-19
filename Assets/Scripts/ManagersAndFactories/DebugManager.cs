@@ -120,7 +120,7 @@ public class DebugManager : MonoBehaviour
 
             if (basicTankInfoDebugOn) {
                 Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
-                WeaponPart part = aiTank.Turret.GetAllWeapons()[0];
+                WeaponPart part = aiTank.Hull.GetAllWeapons()[0];
 
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(
@@ -298,7 +298,7 @@ public class DebugManager : MonoBehaviour
                 Tank tank = CombatManager.Instance.AITankController.SelfTank;
 
                 WeaponPart maxRangeWeapon = null;
-                foreach (WeaponPart part in tank.Turret.GetAllWeapons()) {
+                foreach (WeaponPart part in tank.Hull.GetAllWeapons()) {
                     if (maxRangeWeapon == null || maxRangeWeapon.Schematic.Range < part.Schematic.Range) {
                         maxRangeWeapon = part;
                     }

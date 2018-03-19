@@ -22,7 +22,7 @@ public partial class Tank
     public float CalcAvgRange() {
         float totalRange = 0;
         int count = 0;
-        foreach (WeaponPart part in Turret.GetAllWeapons()) {
+        foreach (WeaponPart part in Hull.GetAllWeapons()) {
             totalRange += part.Schematic.Range;
             count += 1;
         }

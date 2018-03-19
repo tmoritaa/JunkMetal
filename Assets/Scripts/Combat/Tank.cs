@@ -53,11 +53,6 @@ public partial class Tank : MonoBehaviour
         get; private set;
     }
 
-    public TurretPart Turret
-    {
-        get; private set;
-    }
-
     public int MaxArmour
     {
         get; private set;
@@ -80,24 +75,23 @@ public partial class Tank : MonoBehaviour
     private void FixedUpdate() {
         if (initialized) {
             handleMovement();
-            Turret.PerformFixedUpdate();
+            Hull.PerformFixedUpdate();
         }
     }
 
     public void Init(TankSchematic tankSchematic) {
         Hull = new HullPart(tankSchematic.HullSchematic);
-        Turret = new TurretPart(tankSchematic.TurretSchematic);
-
+        
         int count = 0;
         foreach(WeaponPartSchematic weaponSchematic in tankSchematic.WeaponSchematics) {
             if (weaponSchematic != null) {
                 WeaponPart part = new WeaponPart(weaponSchematic);
-                Turret.AddWeaponAtIdx(part, count);
+                Hull.AddWeaponAtIdx(part, count);
             }
             count += 1;
         }
 
-        Turret.SetOwner(this);
+        Hull.SetOwner(this);
 
         Vector2 hullSize = Hull.Schematic.Size;
         boxCollider.size = hullSize;
@@ -123,7 +117,6 @@ public partial class Tank : MonoBehaviour
 
     public void ResetMovement() {
         Hull.Reset();
-        Turret.Reset();
     }
 
     public void Damage(int damage) {
@@ -152,7 +145,6 @@ public partial class Tank : MonoBehaviour
         int armour = 0;
 
         armour = Hull.Schematic.Armour;
-        armour += Turret.Schematic.Armour;
 
         return armour;
     }
@@ -161,7 +153,6 @@ public partial class Tank : MonoBehaviour
         float weight = 0;
 
         weight += Hull.Schematic.Weight;
-        weight += Turret.Schematic.Weight;
 
         return weight;
     }

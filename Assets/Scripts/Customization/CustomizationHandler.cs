@@ -110,9 +110,9 @@ public class CustomizationHandler : MonoBehaviour
         PartSchematic oldPart = curPickedSlot.Part;
         curPickedSlot.UpdatePart(newPart);
 
-        if (newPart.PType == PartSchematic.PartType.Turret) {
-            TurretPartSchematic oldTurret = (TurretPartSchematic)oldPart;
-            TurretPartSchematic newTurret = (TurretPartSchematic)newPart;
+        if (newPart.PType == PartSchematic.PartType.Hull) {
+            HullPartSchematic oldTurret = (HullPartSchematic)oldPart;
+            HullPartSchematic newTurret = (HullPartSchematic)newPart;
 
             if (oldTurret.OrigWeaponDirs.Length != newTurret.OrigWeaponDirs.Length) {
                 int lengthDiff = newTurret.OrigWeaponDirs.Length - oldTurret.OrigWeaponDirs.Length;
@@ -143,10 +143,7 @@ public class CustomizationHandler : MonoBehaviour
             switch (slot.PartType) {
                 case PartSchematic.PartType.Hull:
                     schem.HullSchematic = (HullPartSchematic)slot.Part;
-                    break;
-                case PartSchematic.PartType.Turret:
-                    schem.TurretSchematic = (TurretPartSchematic)slot.Part;
-                    schem.WeaponSchematics = new WeaponPartSchematic[schem.TurretSchematic.OrigWeaponDirs.Length];
+                    schem.WeaponSchematics = new WeaponPartSchematic[schem.HullSchematic.OrigWeaponDirs.Length];
                     break;
                 case PartSchematic.PartType.Weapon:
                     schem.WeaponSchematics[weaponCount] = (WeaponPartSchematic)slot.Part;
@@ -163,7 +160,6 @@ public class CustomizationHandler : MonoBehaviour
 
         List<PartSchematic> schematics = new List<PartSchematic> {
             playerSchematic.HullSchematic,
-            playerSchematic.TurretSchematic
         };
         schematics.AddRange(playerSchematic.WeaponSchematics);
 

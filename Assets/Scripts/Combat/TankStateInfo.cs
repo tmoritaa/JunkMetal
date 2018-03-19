@@ -100,7 +100,7 @@ public class TankStateInfo
     }
 
     public Vector2 CalculateFireVecOfWeapon(WeaponPart part) {
-        return OwningTank.Turret.Schematic.OrigWeaponDirs[part.TurretIdx].Rotate(Rot); // TODO: this assumes tank loses turret rotation functionality
+        return OwningTank.Hull.Schematic.OrigWeaponDirs[part.EquipIdx].Rotate(Rot);
     }
 
     public float CalcTimeToRotate(Vector2 from, Vector2 to) {

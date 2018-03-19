@@ -8,7 +8,6 @@ public abstract class PartSchematic
     public enum PartType
     {
         Hull,
-        Turret,
         Weapon
     }
 

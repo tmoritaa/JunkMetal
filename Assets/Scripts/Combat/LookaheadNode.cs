@@ -104,11 +104,11 @@ public class LookaheadNode
 
         bool crossedTarget = false;
         while (curSearchNode != null && curSearchNode.ParentNode != null) {
-            Vector2 originFireVec = part.OwningTank.Turret.Schematic.OrigWeaponDirs[part.TurretIdx];
+            Vector2 originFireVec = part.OwningTank.Hull.Schematic.OrigWeaponDirs[part.EquipIdx];
             float range = part.Schematic.Range;
 
-            Vector2 curFireVec = originFireVec.Rotate(curSearchNode.TankInfo.Rot); // TODO: this is assuming turret loses rotation functionality. If we keep it in the end, don't forget to adjust this.
-            Vector2 parentFireVec = originFireVec.Rotate(curSearchNode.ParentNode.TankInfo.Rot); // TODO: this is assuming turret loses rotation functionality. If we keep it in the end, don't forget to adjust this.
+            Vector2 curFireVec = originFireVec.Rotate(curSearchNode.TankInfo.Rot);
+            Vector2 parentFireVec = originFireVec.Rotate(curSearchNode.ParentNode.TankInfo.Rot);
 
             Vector2 curToTargetVec = targetPos - curSearchNode.TankInfo.Pos;
             Vector2 parentToTargetVec = targetPos - curSearchNode.ParentNode.TankInfo.Pos;

@@ -21,7 +21,6 @@ public class PartsManager : MonoBehaviour
     void Awake() {
         instance = this;
         loadHullParts();
-        loadTurretParts();
         loadWeaponParts();
     }
     
@@ -66,29 +65,6 @@ public class PartsManager : MonoBehaviour
             size.y = info.Value<float>("height");
             int power = info.Value<int>("engine_pow");
 
-            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, size, power, weight);
-
-            schematics.Add(part.Name, part);
-        }
-
-        partSchematicDics.Add(PartSchematic.PartType.Hull, schematics);
-    }
-
-    private void loadTurretParts() {
-        Dictionary<string, PartSchematic> schematics = new Dictionary<string, PartSchematic>();
-
-        TextAsset jsonText = Resources.Load("TurretPartList") as TextAsset;
-
-        JObject root = JObject.Parse(jsonText.text);
-
-        foreach (var partInfo in root) {
-            string name = partInfo.Key;
-
-            JObject info = (JObject)partInfo.Value;
-            int weight = info.Value<int>("weight");
-            int armour = info.Value<int>("armor");
-            float rotSpeed = info.Value<int>("rot_speed");
-
             List<Vector2> weaponDirs = new List<Vector2>();
             List<Vector2> weaponFireOffset = new List<Vector2>();
             List<int> weightRestricts = new List<int>();
@@ -107,12 +83,12 @@ public class PartsManager : MonoBehaviour
                 weightRestricts.Add(weightRestric);
             }
 
-            TurretPartSchematic part = TankParSchematictFactory.CreateTurretPartSchematic(name, armour, rotSpeed, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
+            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, size, power, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
 
             schematics.Add(part.Name, part);
         }
 
-        partSchematicDics.Add(PartSchematic.PartType.Turret, schematics);
+        partSchematicDics.Add(PartSchematic.PartType.Hull, schematics);
     }
 
     private void loadWeaponParts() {
