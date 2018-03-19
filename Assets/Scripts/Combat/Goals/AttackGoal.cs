@@ -6,14 +6,6 @@ using UnityEngine;
 
 public class AttackGoal : Goal
 {
-    private class WeaponMoveResults
-    {
-        public float timeEstimate = 99999;
-        public AIAction moveAction = null;
-        public Vector2 targetPos = new Vector2();
-        public WeaponPart weapon;
-    }
-
     public AttackGoal(AITankController controller) : base(controller) {}
 
     public override void ReInit() {
