@@ -282,40 +282,4 @@ public class AIUtility
             path.RemoveRange(0, removeCount);
         }
     }
-
-    // TODO: probably won't be used once AttackGoal and DodgeGoal are rewritten using threat maps. Check later and confirm that it's not used.
-    public static float CalculateRiskValue(WeaponPart weaponPart, Tank targetedTank, Tank targetingTank) {
-        const float ThreatRangeMod = 1.1f;
-
-        float riskValue = 0;
-
-        Vector2 fireVec = weaponPart.CalculateFireVec();
-        Vector2 oppToSelfVec = targetedTank.transform.position - targetingTank.transform.position;
-        float angle = Vector2.Angle(fireVec, oppToSelfVec);
-
-        if (weaponPart.IsFireable && angle < 90 && oppToSelfVec.magnitude < weaponPart.Schematic.Range * ThreatRangeMod) {
-            const float TimeToHitRatioForRisk = 0.2f;
-            const float ShotAngleRatioForRisk = 0.4f;
-            const float DamageRatioForRisk = 1.0f - TimeToHitRatioForRisk - ShotAngleRatioForRisk;
-            const float MaxTimeInSecThresh = 1.0f;
-            const float MaxAngleThresh = 90f;
-
-            // Consider damage to quantify whether we can be hit, or absolutely cannot be hit. We can use the ratio of damage to current health for this
-            // For angle and speed, this should let us calculate how likely it is for the shot to hit us if shot right now. Represent this as a percentage and we're good to go.
-
-            float damageRisk = Mathf.Clamp01((float)weaponPart.Schematic.Damage / targetedTank.CurArmour) * DamageRatioForRisk;
-
-            Vector2 diffVec = targetedTank.transform.position - targetingTank.transform.position;
-            float angleDiff = Vector2.Angle(fireVec, diffVec);
-            float angleRisk = Mathf.Max(0, (MaxAngleThresh - angleDiff)) / MaxAngleThresh * ShotAngleRatioForRisk;
-
-            float shotTerminalVel = weaponPart.Schematic.ShootImpulse;
-            float timeToHit = diffVec.magnitude / shotTerminalVel;
-            float shotSpeedRisk = Mathf.Max(0, MaxTimeInSecThresh - timeToHit) / MaxTimeInSecThresh * TimeToHitRatioForRisk;
-
-            riskValue = damageRisk + angleRisk + shotSpeedRisk;
-        }
-
-        return riskValue;
-    }
 }
