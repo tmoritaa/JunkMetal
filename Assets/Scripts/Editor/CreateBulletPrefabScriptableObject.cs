@@ -6,7 +6,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-
 public class CreateBulletPrefabScriptableObject : MonoBehaviour 
 {
     [MenuItem("Assets/Create/Bullet Prefab Scriptable Object")]
