@@ -22,7 +22,7 @@ public class PlayerHealthBarUI : BarUI
 
         armourText.text = getTankOfType().CurArmour + "/" + getTankOfType().MaxArmour;
 
-        nameText.text = (DisplayType == TankController.PlayerTypes.Human) ? "Player" : "AI";
+        nameText.text = (DisplayType == TankController.PlayerTypes.Human) ? "You" : "Them";
     }
 
     protected override float getFillPercentage() {
