@@ -28,15 +28,6 @@ public partial class Tank : MonoBehaviour
     [SerializeField]
     private BoxCollider2D boxCollider;
 
-    [SerializeField]
-    private GameObject turretGO;
-    public GameObject TurretGO
-    {
-        get {
-            return turretGO;
-        }
-    }
-
     private GameObject hullGO;
 
     public HullPart Hull
@@ -71,9 +62,11 @@ public partial class Tank : MonoBehaviour
     }
 
     public void Init(TankSchematic tankSchematic) {
-        LeftWheelGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaKey("BasicWheel"), this.transform, false);
-        RightWheelGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaKey("BasicWheel"), this.transform, false);
-        hullGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaKey("BasicHull"), this.transform, false);
+        HullPrefabInfo info = PartPrefabManager.Instance.GetPrefabInfoViaHullName(tankSchematic.HullSchematic.Name);
+
+        LeftWheelGO = Instantiate(info.WheelPrefab, this.transform, false);
+        RightWheelGO = Instantiate(info.WheelPrefab, this.transform, false);
+        hullGO = Instantiate(info.HullPrefab, this.transform, false);
 
         Vector2 hullSize = hullGO.GetComponent<RectTransform>().sizeDelta;
         boxCollider.size = hullSize;
