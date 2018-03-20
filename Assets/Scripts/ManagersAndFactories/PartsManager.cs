@@ -60,9 +60,6 @@ public class PartsManager : MonoBehaviour
             JObject info = (JObject)partInfo.Value;
             int weight = info.Value<int>("weight");
             int armour = info.Value<int>("armor");
-            Vector2 size = new Vector2();
-            size.x = info.Value<float>("width");
-            size.y = info.Value<float>("height");
             int power = info.Value<int>("engine_pow");
 
             List<Vector2> weaponDirs = new List<Vector2>();
@@ -83,7 +80,7 @@ public class PartsManager : MonoBehaviour
                 weightRestricts.Add(weightRestric);
             }
 
-            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, size, power, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
+            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, power, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
 
             schematics.Add(part.Name, part);
         }

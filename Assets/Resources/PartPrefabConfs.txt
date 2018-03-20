@@ -1,0 +1,9 @@
+{
+	"Hulls": {
+		"Basic Hull":{"Hull":"BasicHull", "Wheel":"BasicWheel"},
+		"Faster Hull":{"Hull":"BasicHull", "Wheel":"BasicWheel"}
+	},
+	"Weapons": {
+
+	}
+}

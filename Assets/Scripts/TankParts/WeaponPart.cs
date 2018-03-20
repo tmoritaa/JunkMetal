@@ -30,15 +30,12 @@ public class WeaponPart
     private float lastShotTime;
     private bool shouldShoot = false;
 
-    public WeaponPart(WeaponPartSchematic schematic) {
+    public WeaponPart(WeaponPartSchematic schematic, Tank owner) {
         Schematic = schematic;
         
         lastShotTime = -10000;
         EquipIdx = -1;
-    }
-
-    public void SetOwner(Tank tank) {
-        OwningTank = tank;
+        OwningTank = owner;
     }
 
     public void HandleInput() {

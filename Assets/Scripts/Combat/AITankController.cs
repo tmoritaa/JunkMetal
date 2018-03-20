@@ -121,8 +121,8 @@ public class AITankController : TankController
             backVec = tmpVec;
         }
 
-        float xAdd = SelfTank.Hull.Schematic.Size.x / 2f;
-        float yAdd = SelfTank.Hull.Schematic.Size.y / 2f;
+        float xAdd = SelfTank.Hull.Size.x / 2f;
+        float yAdd = SelfTank.Hull.Size.y / 2f;
         Vector2 TopCenter = (Vector2)SelfTank.transform.position + forwardVec * yAdd;
         Vector2 TLCorner = (Vector2)SelfTank.transform.position + forwardVec * yAdd + leftVec * xAdd;
         Vector2 TRCorner = (Vector2)SelfTank.transform.position + forwardVec * yAdd + rightVec * xAdd;

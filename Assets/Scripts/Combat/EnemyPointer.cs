@@ -15,7 +15,7 @@ public class EnemyPointer : MonoBehaviour
 	{
         Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
         Vector2 aiTankPos = aiTank.transform.position;
-        Vector2 size = aiTank.Hull.Schematic.Size;
+        Vector2 size = aiTank.Hull.Size;
 
         Vector2 RTCorner = aiTankPos + size / 2f;
         Vector2 LTCorner = aiTankPos + new Vector2(-size.x/2f, size.y/2f);

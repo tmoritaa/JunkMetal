@@ -15,22 +15,14 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    [SerializeField]
-    private GameObject leftWheelGO;
     public GameObject LeftWheelGO
     {
-        get {
-            return leftWheelGO;
-        }
+        get; private set;
     }
 
-    [SerializeField]
-    private GameObject rightWheelGO;
     public GameObject RightWheelGO
     {
-        get {
-            return rightWheelGO;
-        }
+        get; private set;
     }
 
     [SerializeField]
@@ -45,7 +37,6 @@ public partial class Tank : MonoBehaviour
         }
     }
 
-    [SerializeField]
     private GameObject hullGO;
 
     public HullPart Hull
@@ -80,25 +71,26 @@ public partial class Tank : MonoBehaviour
     }
 
     public void Init(TankSchematic tankSchematic) {
-        Hull = new HullPart(tankSchematic.HullSchematic);
+        LeftWheelGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaKey("BasicWheel"), this.transform, false);
+        RightWheelGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaKey("BasicWheel"), this.transform, false);
+        hullGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaKey("BasicHull"), this.transform, false);
+
+        Vector2 hullSize = hullGO.GetComponent<RectTransform>().sizeDelta;
+        boxCollider.size = hullSize;
+
+        LeftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
+        RightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
+
+        Hull = new HullPart(tankSchematic.HullSchematic, hullSize);
         
         int count = 0;
         foreach(WeaponPartSchematic weaponSchematic in tankSchematic.WeaponSchematics) {
             if (weaponSchematic != null) {
-                WeaponPart part = new WeaponPart(weaponSchematic);
+                WeaponPart part = new WeaponPart(weaponSchematic, this);
                 Hull.AddWeaponAtIdx(part, count);
             }
             count += 1;
         }
-
-        Hull.SetOwner(this);
-
-        Vector2 hullSize = Hull.Schematic.Size;
-        boxCollider.size = hullSize;
-        hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(hullSize.x, hullSize.y);
-
-        leftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
-        rightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
 
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;

@@ -1,7 +1,6 @@
 {
 	"Parts":{
 		"Hull":"Basic Hull",
-		"Turret":"Basic Turret",
 		"Weapons":["Basic Weapon1", "Basic Weapon2"]
 	}
 }
