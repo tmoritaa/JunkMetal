@@ -1,0 +1,10 @@
+{
+	"hulls": {
+		"Basic Hull":{"hull":"BasicHull", "wheel":"BasicWheel", "weapon_positions":[{"x":0, "y":0}, {"x":0, "y":0}]},
+		"Faster Hull":{"hull":"BasicHull", "wheel":"BasicWheel", "weapon_positions":[{"x":0, "y":0}]}
+	},
+	"weapons": {
+		"Basic Weapon1":"BasicCannon",
+		"Basic Weapon2":"BasicCannon"
+	}
+}

@@ -28,7 +28,7 @@ public partial class Tank
 
         for (int x = -1; x <= 1; ++x) {
             for (int y = -1; y <= 1; ++y) {
-                Vector2 pos = (Vector2)this.transform.position + new Vector2(Hull.Schematic.Size.x / 2f * (float)x, Hull.Schematic.Size.y / 2f * (float)y);
+                Vector2 pos = (Vector2)this.transform.position + new Vector2(Hull.Size.x / 2f * (float)x, Hull.Size.y / 2f * (float)y);
                 map.MarkPositionAsTempBlocked(pos, true);
                 prevMarkedPos.Add(pos);
             }

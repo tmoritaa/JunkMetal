@@ -80,7 +80,7 @@ public class TankStateInfo
         Rot = tank.Body.rotation;
         Inertia = tank.Body.inertia;
         EnergyPower = tank.Hull.Schematic.EnergyPower;
-        Size = tank.Hull.Schematic.Size;
+        Size = tank.Hull.Size;
     }
 
     public TankStateInfo(TankStateInfo stateInfo) {

@@ -16,36 +16,18 @@ public partial class Tank : MonoBehaviour
     }
 
     [SerializeField]
-    private GameObject leftWheelGO;
-    public GameObject LeftWheelGO
-    {
-        get {
-            return leftWheelGO;
-        }
-    }
-
-    [SerializeField]
-    private GameObject rightWheelGO;
-    public GameObject RightWheelGO
-    {
-        get {
-            return rightWheelGO;
-        }
-    }
-
-    [SerializeField]
     private BoxCollider2D boxCollider;
 
-    [SerializeField]
-    private GameObject turretGO;
-    public GameObject TurretGO
+    public GameObject LeftWheelGO
     {
-        get {
-            return turretGO;
-        }
+        get; private set;
     }
 
-    [SerializeField]
+    public GameObject RightWheelGO
+    {
+        get; private set;
+    }
+
     private GameObject hullGO;
 
     public HullPart Hull
@@ -80,25 +62,41 @@ public partial class Tank : MonoBehaviour
     }
 
     public void Init(TankSchematic tankSchematic) {
-        Hull = new HullPart(tankSchematic.HullSchematic);
+        HullPrefabInfo info = PartPrefabManager.Instance.GetHullPrefabInfoViaHullName(tankSchematic.HullSchematic.Name);
+
+        LeftWheelGO = Instantiate(info.WheelPrefab, this.transform, false);
+        RightWheelGO = Instantiate(info.WheelPrefab, this.transform, false);
+        hullGO = Instantiate(info.HullPrefab, this.transform, false);
+
+        Vector2 hullSize = hullGO.GetComponent<RectTransform>().sizeDelta;
+        Hull = new HullPart(tankSchematic.HullSchematic, hullSize);
         
         int count = 0;
         foreach(WeaponPartSchematic weaponSchematic in tankSchematic.WeaponSchematics) {
             if (weaponSchematic != null) {
-                WeaponPart part = new WeaponPart(weaponSchematic);
+                // First initialize GO
+                GameObject instance = Instantiate(PartPrefabManager.Instance.GetWeaponPrefabViaWeaponName(weaponSchematic.Name), this.transform, false);
+                RectTransform rect = instance.GetComponent<RectTransform>();
+                Vector2 weaponPos = info.WeaponPos[count];
+                rect.pivot = new Vector2(0.5f, 0);
+                rect.transform.localPosition = weaponPos;
+                Vector2 dir = tankSchematic.HullSchematic.OrigWeaponDirs[count];
+                float angle = Vector2.Angle(new Vector2(0, 1), dir);
+                rect.transform.Rotate(new Vector3(0, 0, angle));
+
+                Vector2 weaponFireOffset = weaponPos + dir.normalized * rect.sizeDelta.y;
+
+                // Then create weapon representation and add to hull
+                WeaponPart part = new WeaponPart(weaponSchematic, weaponFireOffset, this);
                 Hull.AddWeaponAtIdx(part, count);
             }
             count += 1;
         }
 
-        Hull.SetOwner(this);
-
-        Vector2 hullSize = Hull.Schematic.Size;
         boxCollider.size = hullSize;
-        hullGO.GetComponent<RectTransform>().sizeDelta = new Vector2(hullSize.x, hullSize.y);
 
-        leftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
-        rightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
+        LeftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
+        RightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
 
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;

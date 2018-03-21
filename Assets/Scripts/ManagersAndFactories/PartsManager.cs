@@ -60,13 +60,9 @@ public class PartsManager : MonoBehaviour
             JObject info = (JObject)partInfo.Value;
             int weight = info.Value<int>("weight");
             int armour = info.Value<int>("armor");
-            Vector2 size = new Vector2();
-            size.x = info.Value<float>("width");
-            size.y = info.Value<float>("height");
             int power = info.Value<int>("engine_pow");
 
             List<Vector2> weaponDirs = new List<Vector2>();
-            List<Vector2> weaponFireOffset = new List<Vector2>();
             List<int> weightRestricts = new List<int>();
             foreach (JObject jo in info.Value<JArray>("weapons")) {
                 Vector2 dir = new Vector2();
@@ -74,16 +70,11 @@ public class PartsManager : MonoBehaviour
                 dir.y = jo.Value<float>("y_dir");
                 weaponDirs.Add(dir);
 
-                Vector2 posOffset = new Vector2();
-                posOffset.x = jo.Value<float>("fire_x_offset");
-                posOffset.y = jo.Value<float>("fire_y_offset");
-                weaponFireOffset.Add(posOffset);
-
                 int weightRestric = jo.Value<int>("restrict");
                 weightRestricts.Add(weightRestric);
             }
 
-            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, size, power, weight, weaponDirs.ToArray(), weaponFireOffset.ToArray(), weightRestricts.ToArray());
+            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, power, weight, weaponDirs.ToArray(), weightRestricts.ToArray());
 
             schematics.Add(part.Name, part);
         }
