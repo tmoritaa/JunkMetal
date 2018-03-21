@@ -33,6 +33,9 @@ public class Bullet : MonoBehaviour
 
     private int damage = 0;
 
+    private bool applyImpulseNextFrame = false;
+    private Vector2 impulseVector;
+
     void Awake() {
         this.body = GetComponent<Rigidbody2D>();
     }
@@ -42,9 +45,15 @@ public class Bullet : MonoBehaviour
 
         bool travelledRange = travelDistSqr > range * range;
 
-        if (!isBeingDestroyed && travelledRange)
-        {
+        if (!isBeingDestroyed && travelledRange) {
             destroySelf();
+        }
+    }
+
+    void FixedUpdate() {
+        if (applyImpulseNextFrame) {
+            this.body.AddForce(impulseVector, ForceMode2D.Impulse);
+            applyImpulseNextFrame = false;
         }
     }
 
@@ -57,7 +66,9 @@ public class Bullet : MonoBehaviour
         range = _range;
         damage = _damage;
         firePos = Owner.transform.position + (Vector3)firePosOffset;
-        this.body.AddForce(forwardVec.normalized * shootForce, ForceMode2D.Impulse);
+        this.body.position = firePos;
+        this.impulseVector = forwardVec.normalized * shootForce;
+        applyImpulseNextFrame = true;
 
         Vector2 backVec = forwardVec.Rotate(180);
         Owner.Body.AddForce(backVec.normalized * recoilImpulse, ForceMode2D.Impulse);
