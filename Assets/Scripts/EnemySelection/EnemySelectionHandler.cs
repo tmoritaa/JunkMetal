@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class EnemySelectionHandler : MonoBehaviour 
@@ -37,20 +38,28 @@ public class EnemySelectionHandler : MonoBehaviour
     }
 
     public void GotoCombatWithEnemy(EnemyInfo info) {
-        Debug.Log("Going to enemy " + info.Name);
+        DataPasser.Instance.AddData("Opponent", info);
+        SceneManager.LoadScene("Combat");
     }
 
     private void initScreen() {
         List<EnemyInfo> infos = EnemyInfoManager.Instance.GetAllEnemyInfos();
 
+        EnemySelectItem highlightItem = null;
         int count = 0;
         foreach (EnemyInfo info in infos) {
             EnemySelectItem item = Instantiate(enemySelectItemPrefab, enemySelectItemRoot, false);
-            item.transform.localPosition = new Vector3(0, count * 50, 0);
+            item.transform.localPosition = new Vector3(0, -count * 50, 0);
 
             item.Init(info);
 
             count += 1;
+
+            if (highlightItem == null) {
+                highlightItem = item;
+            }
         }
+
+        highlightItem.GetComponent<Button>().Select();
     }
 }

@@ -13,7 +13,7 @@ public class MainScreenHandler : MonoBehaviour
     }
 
     public void GotoCombat() {
-        SceneManager.LoadScene("Combat");
+        SceneManager.LoadScene("EnemySelection");
     }
 
     public void GotoCustomization() {

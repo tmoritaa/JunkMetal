@@ -50,10 +50,10 @@ public class AITankController : TankController
     //    //futurePredicTest();
     //}
 
-    public void Init(Vector2 startPos, float startRot, TankSchematic tankSchematic, Tank playerTank, List<Transform> walls) {
+    public void Init(Vector2 startPos, float startRot, TankSchematic tankSchematic, Tank targetTank, List<Transform> walls) {
         base.Init(startPos, startRot, tankSchematic);
 
-        TargetTank = playerTank;
+        TargetTank = targetTank;
         Map = new Map(CombatHandler.Instance.MapWidth, CombatHandler.Instance.MapHeight, CombatHandler.Instance.TileDim, walls);
 
         // TODO: for now, just manually fill up goals list.

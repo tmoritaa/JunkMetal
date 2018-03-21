@@ -109,13 +109,15 @@ public class CombatHandler : MonoBehaviour
             walls.Add(wallsRoot.GetChild(i));
         }
 
+        Dictionary<string, object> data = DataPasser.Instance.RetrieveData();
+        TankSchematic enemyTankSchem = ((EnemyInfo)data["Opponent"]).TankSchem;
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
             new Vector3(300, -600, 0),
             180f,
-            PlayerManager.Instance.TankSchematic,
+            enemyTankSchem,
             HumanTankController.SelfTank,
-            walls); // TODO: for now. Later change it so it actually uses Enemy tank schematics
+            walls);
         
         MainCamera.GetComponent<ObjectFollower>().SetObjToFollow(HumanTankController.SelfTank.gameObject);
 

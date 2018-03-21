@@ -13,6 +13,7 @@ public class GlobalManager : MonoBehaviour
     void Awake() {
         if (debugOn) {
             PlayerManager.Instance.LoadPlayerInfo();
+            DataPasser.Instance.AddData("Opponent", EnemyInfoManager.Instance.GetAllEnemyInfos()[0]);
         }
     }
 }
