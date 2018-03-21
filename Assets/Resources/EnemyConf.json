@@ -2,6 +2,12 @@
 	"John Doe":{
 		"Tank":{
 			"Hull":"Basic Hull",
+			"Weapons":["Basic Weapon1", ""]
+		}
+	},
+	"John Double":{
+		"Tank":{
+			"Hull":"Basic Hull",
 			"Weapons":["Basic Weapon1", "Basic Weapon2"]
 		}
 	}

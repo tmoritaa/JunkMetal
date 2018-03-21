@@ -23,6 +23,10 @@ public class EnemyInfoManager : MonoBehaviour
         loadEnemyInfo();
     }
 
+    public List<EnemyInfo> GetAllEnemyInfos() {
+        return enemyInfoDict.Values.ToList();
+    }
+
     private void loadEnemyInfo() {
         TextAsset jsonText = Resources.Load("EnemyConf") as TextAsset;
 
