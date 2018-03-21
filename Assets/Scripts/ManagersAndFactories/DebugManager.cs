@@ -156,9 +156,8 @@ public class DebugManager : MonoBehaviour
                 Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[2] * 50f);
                 Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[3] * 50f);
 
-
-                Vector3 leftWheelPos = aiTank.LeftWheelGO.transform.position;
-                Vector3 rightWheelPos = aiTank.RightWheelGO.transform.position;
+                Vector3 leftWheelPos = aiTank.TankGOConstructor.LeftWheelGO.transform.position;
+                Vector3 rightWheelPos = aiTank.TankGOConstructor.RightWheelGO.transform.position;
                 Vector2 forwardVec = aiTank.GetForwardVec();
 
                 Gizmos.color = Color.magenta;

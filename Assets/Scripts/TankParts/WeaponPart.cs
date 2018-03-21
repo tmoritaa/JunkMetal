@@ -27,17 +27,17 @@ public class WeaponPart
         get; private set;
     }
 
-    private Vector2 origWeaponFirePos;
+    private Vector2 origWeaponFireOffset;
 
     private float lastShotTime;
     private bool shouldShoot = false;
 
-    public WeaponPart(WeaponPartSchematic schematic, Vector2 weaponFirePos, Tank owner) {
+    public WeaponPart(WeaponPartSchematic schematic, Vector2 weaponFireOffset, Tank owner) {
         Schematic = schematic;
-        
+
+        origWeaponFireOffset = weaponFireOffset;
         lastShotTime = -10000;
         EquipIdx = -1;
-        origWeaponFirePos = weaponFirePos;
         OwningTank = owner;
     }
 
@@ -77,7 +77,7 @@ public class WeaponPart
     }
 
     public Vector2 CalculateFireOffset() {
-        return origWeaponFirePos.Rotate(OwningTank.Body.rotation);
+        return OwningTank.Hull.Schematic.OrigWeaponPos[EquipIdx].Rotate(OwningTank.Body.rotation) + origWeaponFireOffset.Rotate(OwningTank.Body.rotation);
     }
 
     public float CalcTimeToReloaded() {
