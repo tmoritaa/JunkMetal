@@ -15,7 +15,7 @@ public class HumanTankController : TankController
     protected override void Update() {
         base.Update();
 
-        if (!CombatManager.Instance.DisableMovement) {
+        if (!CombatHandler.Instance.DisableMovement) {
             SelfTank.HandleInput();
         }
     }

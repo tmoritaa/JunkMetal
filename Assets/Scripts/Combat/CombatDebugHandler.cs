@@ -5,10 +5,10 @@ using System.Linq;
 
 using UnityEngine;
 
-public class DebugManager : MonoBehaviour 
+public class CombatDebugHandler : MonoBehaviour 
 {
-    private static DebugManager instance;
-    public static DebugManager Instance
+    private static CombatDebugHandler instance;
+    public static CombatDebugHandler Instance
     {
         get {
             return instance;
@@ -90,12 +90,12 @@ public class DebugManager : MonoBehaviour
     }
 
     void Start() {
-        targetPosForMoveTest = CombatManager.Instance.AITankController.SelfTank.transform.position;    
+        targetPosForMoveTest = CombatHandler.Instance.AITankController.SelfTank.transform.position;    
     }
 
     void Update() {
         if (Input.GetMouseButton(0)) {
-            targetPosForMoveTest = CombatManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+            targetPosForMoveTest = CombatHandler.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
         }    
     }
 
@@ -119,7 +119,7 @@ public class DebugManager : MonoBehaviour
             Color origColor = Gizmos.color;
 
             if (basicTankInfoDebugOn) {
-                Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                Tank aiTank = CombatHandler.Instance.AITankController.SelfTank;
                 WeaponPart part = aiTank.Hull.GetAllWeapons()[0];
 
                 Gizmos.color = Color.red;
@@ -146,7 +146,7 @@ public class DebugManager : MonoBehaviour
 
             if (actuationDebugOn) {
                 List<Vector2> arcVectors = (List<Vector2>)getRegisterdObj("actuation_arc_vectors");
-                Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                Tank aiTank = CombatHandler.Instance.AITankController.SelfTank;
 
                 Gizmos.color = Color.green;
                 Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[0] * 50f);
@@ -169,7 +169,7 @@ public class DebugManager : MonoBehaviour
 
             if (mapDisplayDebugOn) {
                 // Draw Map
-                Map map = CombatManager.Instance.AITankController.Map;
+                Map map = CombatHandler.Instance.AITankController.Map;
                 for (int x = 0; x < map.Cols; ++x) {
                     for (int y = 0; y < map.Rows; ++y) {
                         bool blocked = !map.GetNodeAtIdx(x, y).NodeTraversable();
@@ -186,7 +186,7 @@ public class DebugManager : MonoBehaviour
                     object obj = getRegisterdObj("maneuver_move_dir");
                     if (obj != null) {
                         Vector2 vec = (Vector2)obj;
-                        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+                        Tank aiTank = CombatHandler.Instance.AITankController.SelfTank;
 
                         Gizmos.color = Color.green;
                         Gizmos.DrawLine(aiTank.transform.position, (Vector2)aiTank.transform.position + vec.normalized * 50f);
@@ -294,7 +294,7 @@ public class DebugManager : MonoBehaviour
             }
 
             if (displayAITankRange) {
-                Tank tank = CombatManager.Instance.AITankController.SelfTank;
+                Tank tank = CombatHandler.Instance.AITankController.SelfTank;
 
                 WeaponPart maxRangeWeapon = null;
                 foreach (WeaponPart part in tank.Hull.GetAllWeapons()) {

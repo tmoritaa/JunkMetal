@@ -29,7 +29,7 @@ public class TankController : MonoBehaviour
     }
 
     protected virtual void Update() {
-        if (CombatManager.Instance.DisableMovement) {
+        if (CombatHandler.Instance.DisableMovement) {
             SelfTank.ResetMovement();
         }
     }

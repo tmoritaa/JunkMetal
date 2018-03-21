@@ -15,7 +15,7 @@ public class DeathScreen : MonoBehaviour
     private Button continueButton;
 	
 	public void SetupDeathScreen(Tank wonTank) {
-        if (wonTank == CombatManager.Instance.AITankController.SelfTank) {
+        if (wonTank == CombatHandler.Instance.AITankController.SelfTank) {
             text.text = "You have lost";
         } else {
             text.text = "You have won";

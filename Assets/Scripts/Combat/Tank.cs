@@ -114,7 +114,7 @@ public partial class Tank : MonoBehaviour
 
     public void Dead() {
         Debug.Log("Tank is dead");
-        CombatManager.Instance.DeathOccurred(this);
+        CombatHandler.Instance.DeathOccurred(this);
     }
 
     public Vector2 GetForwardVec() {

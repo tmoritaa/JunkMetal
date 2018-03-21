@@ -75,7 +75,7 @@ public class ManeuverGoal : Goal
         float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
         actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
 
-        DebugManager.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
+        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
 
         return actions.ToArray();
     }
@@ -112,17 +112,17 @@ public class ManeuverGoal : Goal
         tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, possibleRotAngles);
 
         List<LookaheadNode> possibleNodes = tree.FindAllNodesAtSearchTime(LookaheadTime);
-        DebugManager.Instance.RegisterObject("maneuver_nodes_at_searchtime", possibleNodes);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_nodes_at_searchtime", possibleNodes);
 
         // First perform general filter
         possibleNodes = filterByPathNotObstructed(possibleNodes);
-        DebugManager.Instance.RegisterObject("maneuver_path_unobstructed_filter", possibleNodes);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_path_unobstructed_filter", possibleNodes);
 
         possibleNodes = filterByDestNotObstructed(possibleNodes);
-        DebugManager.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
 
         possibleNodes = filterByTooCloseToTarget(possibleNodes);
-        DebugManager.Instance.RegisterObject("maneuver_too_close_filter", possibleNodes);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_too_close_filter", possibleNodes);
 
         Vector2 requestDir = new Vector2();
         if (runaway) {
@@ -185,7 +185,7 @@ public class ManeuverGoal : Goal
             }
         }
         
-        DebugManager.Instance.RegisterObject("maneuver_going_cost_infos", nodeCosts);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_going_cost_infos", nodeCosts);
 
         CostInfo bestInfo = null;
         foreach (CostInfo info in nodeCosts) {
@@ -196,7 +196,7 @@ public class ManeuverGoal : Goal
 
         bestInfo = handleSameCostCostInfos(bestInfo, nodeCosts);
 
-        DebugManager.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
         return bestInfo.Node.IncomingDir;
     }
@@ -216,7 +216,7 @@ public class ManeuverGoal : Goal
             }
         }
 
-        DebugManager.Instance.RegisterObject("maneuver_runaway_cost_infos", nodeCosts);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_runaway_cost_infos", nodeCosts);
 
         CostInfo bestInfo = null;
         if (reachableFirst) {
@@ -235,7 +235,7 @@ public class ManeuverGoal : Goal
 
         bestInfo = handleSameCostCostInfos(bestInfo, nodeCosts);
 
-        DebugManager.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
         return bestInfo.Node.IncomingDir;
     }
@@ -337,8 +337,8 @@ public class ManeuverGoal : Goal
     }
 
     private void clearManeuverBehaviourDebugObjects() {
-        DebugManager.Instance.RegisterObject("maneuver_runaway_cost_infos", null);
-        DebugManager.Instance.RegisterObject("maneuver_going_cost_infos", null);
-        DebugManager.Instance.RegisterObject("maneuver_best_node", null);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_runaway_cost_infos", null);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_going_cost_infos", null);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", null);
     }
 }

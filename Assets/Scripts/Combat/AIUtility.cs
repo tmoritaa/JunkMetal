@@ -184,7 +184,7 @@ public class AIUtility
             backwardVec.Rotate(curBackwardArcAngle / 2f),
             backwardVec.Rotate(-curBackwardArcAngle / 2f)
         };
-        DebugManager.Instance.RegisterObject("actuation_arc_vectors", arcVectors);
+        CombatDebugHandler.Instance.RegisterObject("actuation_arc_vectors", arcVectors);
 
         float angleDiffFromFront = Vector2.Angle(forwardVec, requestDir);
         float angleDiffFromBack = Vector2.Angle(backwardVec, requestDir);

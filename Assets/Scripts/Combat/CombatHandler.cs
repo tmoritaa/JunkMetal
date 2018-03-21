@@ -6,10 +6,10 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class CombatManager : MonoBehaviour 
+public class CombatHandler : MonoBehaviour 
 {
-    private static CombatManager instance;
-    public static CombatManager Instance
+    private static CombatHandler instance;
+    public static CombatHandler Instance
     {
         get {
             return instance;

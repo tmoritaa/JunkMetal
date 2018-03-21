@@ -25,20 +25,20 @@ public class AITankController : TankController
     protected override void Update() {
         base.Update();
 
-        if (DebugManager.Instance.MoveTestDebugOn) {
-            Vector2 targetPos = DebugManager.Instance.TargetPosForMoveTest;
+        if (CombatDebugHandler.Instance.MoveTestDebugOn) {
+            Vector2 targetPos = CombatDebugHandler.Instance.TargetPosForMoveTest;
 
             Vector2 requestDir = targetPos - (Vector2)SelfTank.transform.position;
             requestDir = AvoidWalls(requestDir);
             SelfTank.PerformActuation(requestDir.normalized);
         } else {
-            if (!CombatManager.Instance.DisableMovement) {
+            if (!CombatHandler.Instance.DisableMovement) {
                 TargetTank.MarkCurPositionAsBlockedOnMap(Map);
 
                 updateGoalsAndPerformActions();
             }
 
-            DebugManager.Instance.RegisterObject("goal", curGoal);
+            CombatDebugHandler.Instance.RegisterObject("goal", curGoal);
         }
     }
 
@@ -54,7 +54,7 @@ public class AITankController : TankController
         base.Init(startPos, startRot, tankSchematic);
 
         TargetTank = playerTank;
-        Map = new Map(CombatManager.Instance.MapWidth, CombatManager.Instance.MapHeight, CombatManager.Instance.TileDim, walls);
+        Map = new Map(CombatHandler.Instance.MapWidth, CombatHandler.Instance.MapHeight, CombatHandler.Instance.TileDim, walls);
 
         // TODO: for now, just manually fill up goals list.
         goals.Add(new AttackGoal(this));
@@ -144,7 +144,7 @@ public class AITankController : TankController
         hitResult[3] = Physics2D.Raycast(TLCorner, (forwardVec * (1f - fanRatio) + leftVec * fanRatio).normalized, maxDistance * DiagRatio, LayerMask);
         hitResult[4] = Physics2D.Raycast(TRCorner, (forwardVec * (1f - fanRatio) + rightVec * fanRatio).normalized, maxDistance * DiagRatio, LayerMask);
 
-        if (Application.isEditor && DebugManager.Instance.AvoidWallsDebugOn) {
+        if (Application.isEditor && CombatDebugHandler.Instance.AvoidWallsDebugOn) {
             Debug.DrawLine(TopCenter, TopCenter + forwardVec.normalized * maxDistance, Color.blue);
             Debug.DrawLine(TLCorner, TLCorner + forwardVec.normalized * maxDistance, Color.blue);
             Debug.DrawLine(TRCorner, TRCorner + forwardVec.normalized * maxDistance, Color.blue);

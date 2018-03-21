@@ -13,7 +13,7 @@ public class EnemyPointer : MonoBehaviour
 
 	void Update()
 	{
-        Tank aiTank = CombatManager.Instance.AITankController.SelfTank;
+        Tank aiTank = CombatHandler.Instance.AITankController.SelfTank;
         Vector2 aiTankPos = aiTank.transform.position;
         Vector2 size = aiTank.Hull.Size;
 
@@ -25,7 +25,7 @@ public class EnemyPointer : MonoBehaviour
         Vector2[] corners = new Vector2[] { RTCorner, LTCorner, LBCorner, RBCorner };
         bool allCornersHidden = true;
         foreach (Vector2 corner in corners) {
-            Vector2 screenPos = CombatManager.Instance.MainCamera.WorldToScreenPoint(corner);
+            Vector2 screenPos = CombatHandler.Instance.MainCamera.WorldToScreenPoint(corner);
 
             if (!(screenPos.x < 0 || screenPos.x > Screen.width || screenPos.y < 0 || screenPos.y > Screen.height)) {
                 allCornersHidden = false;
@@ -36,7 +36,7 @@ public class EnemyPointer : MonoBehaviour
         if (allCornersHidden) {
             arrowImage.gameObject.SetActive(true);
 
-            Tank playerTank = CombatManager.Instance.HumanTankController.SelfTank;
+            Tank playerTank = CombatHandler.Instance.HumanTankController.SelfTank;
 
             Vector2 diffVec = aiTank.transform.position - playerTank.transform.position;
 
