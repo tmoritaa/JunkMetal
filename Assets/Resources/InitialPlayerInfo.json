@@ -1,6 +1,6 @@
 {
-	"Parts":{
+	"Tank":{
 		"Hull":"Basic Hull",
-		"Weapons":["Basic Weapon1", "Basic Weapon2"]
+		"Weapons":["Basic Weapon1",""]
 	}
 }

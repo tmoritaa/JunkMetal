@@ -48,7 +48,7 @@ public class PlayerManager : MonoBehaviour
             }
         }
         
-        string playerInfoJson = String.Format("{{\"Parts\":{{\"Hull\":\"{0}\",\"Weapons\":[{1}]}}}}", 
+        string playerInfoJson = String.Format("{{\"Tank\":{{\"Hull\":\"{0}\",\"Weapons\":[{1}]}}}}", 
                                     TankSchematic.HullSchematic.Name,
                                     weaponString);
 
@@ -80,21 +80,6 @@ public class PlayerManager : MonoBehaviour
     }
 
     private void loadPlayerTankSchematic(JObject root) {
-        JObject parts = root.Value<JObject>("Parts");
-
-        string hullName = parts.Value<string>("Hull");
-        HullPartSchematic hull = (HullPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Hull, hullName);
-
-        JArray weapons = parts.Value<JArray>("Weapons");
-        List<WeaponPartSchematic> weaponsList = new List<WeaponPartSchematic>();
-        foreach (string str in weapons) {
-            if (!str.Equals(string.Empty)) {
-                weaponsList.Add((WeaponPartSchematic)PartsManager.Instance.GetPartFromName(PartSchematic.PartType.Weapon, str));
-            } else {
-                weaponsList.Add(null);
-            }
-        }
-
-        TankSchematic = new TankSchematic(hull, weaponsList.ToArray());
+        TankSchematic = JSONUtility.LoadTankSchematic(root.Value<JObject>("Tank"));
     }
 }
