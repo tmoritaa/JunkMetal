@@ -77,7 +77,7 @@ public partial class Tank : MonoBehaviour
                 // First initialize GO
                 GameObject instance = Instantiate(PartPrefabManager.Instance.GetWeaponPrefabViaWeaponName(weaponSchematic.Name), this.transform, false);
                 RectTransform rect = instance.GetComponent<RectTransform>();
-                Vector2 weaponPos = info.WeaponPos[count];
+                Vector2 weaponPos = tankSchematic.HullSchematic.OrigWeaponPos[count];
                 rect.pivot = new Vector2(0.5f, 0);
                 rect.transform.localPosition = weaponPos;
                 Vector2 dir = tankSchematic.HullSchematic.OrigWeaponDirs[count];

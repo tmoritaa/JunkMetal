@@ -18,15 +18,9 @@ public class HullPrefabInfo
         get; private set;
     }
 
-    public List<Vector2> WeaponPos
-    {
-        get; private set;
-    }
-
-    public HullPrefabInfo(GameObject hullPrefab, GameObject wheelPrefab, List<Vector2> weaponPos) {
+    public HullPrefabInfo(GameObject hullPrefab, GameObject wheelPrefab) {
         HullPrefab = hullPrefab;
         WheelPrefab = wheelPrefab;
-        WeaponPos = weaponPos;
     }
 }
 
@@ -79,15 +73,7 @@ public class PartPrefabManager : MonoBehaviour
             GameObject hullPrefab = prefabDict[obj.Value<string>("hull")];
             GameObject wheelPrefab = prefabDict[obj.Value<string>("wheel")];
 
-            List<Vector2> weaponPos = new List<Vector2>();
-            foreach (JObject jo in obj.Value<JArray>("weapon_positions")) {
-                Vector2 pos = new Vector2();
-                pos.x = jo.Value<float>("x");
-                pos.y = jo.Value<float>("y");
-                weaponPos.Add(pos);
-            }
-
-            hullNameToInfoDict.Add(name, new HullPrefabInfo(hullPrefab, wheelPrefab, weaponPos));
+            hullNameToInfoDict.Add(name, new HullPrefabInfo(hullPrefab, wheelPrefab));
         }
 
         foreach (var info in root.Value<JObject>("weapons")) {
