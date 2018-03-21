@@ -27,6 +27,10 @@ public class PlayerManager : MonoBehaviour
         instance = this;
     }
 
+    public void UpdateTankSchematic(TankSchematic schematic) {
+        TankSchematic = schematic;
+    }
+
     public void SavePlayerInfo() {
         string weaponString = string.Empty;
         for (int i = 0; i < TankSchematic.WeaponSchematics.Length; ++i) {

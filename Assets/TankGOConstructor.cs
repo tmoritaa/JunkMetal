@@ -27,6 +27,8 @@ public class TankGOConstructor : MonoBehaviour
         get; private set;
     }
 
+    private bool initialized = false;
+
     public void Init(TankSchematic tankSchematic) {
         HullPrefabInfo info = PartPrefabManager.Instance.GetHullPrefabInfoViaHullName(tankSchematic.HullSchematic.Name);
 
@@ -57,5 +59,21 @@ public class TankGOConstructor : MonoBehaviour
         Vector2 hullSize = HullGO.GetComponent<RectTransform>().sizeDelta;
         LeftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
         RightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
+
+        initialized = true;
+    }
+
+    public void Clear() {
+        if (initialized) {
+            GameObject.Destroy(LeftWheelGO);
+            GameObject.Destroy(RightWheelGO);
+            GameObject.Destroy(HullGO);
+            foreach (GameObject go in weaponGOs) {
+                GameObject.Destroy(go);
+            }
+            weaponGOs.Clear();
+
+            initialized = false;
+        }
     }
 }

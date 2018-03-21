@@ -62,6 +62,9 @@ public class CustomizationHandler : MonoBehaviour
     [SerializeField]
     PartInfo partInfo;
 
+    [SerializeField]
+    TankPartHighlighter tankHighlighter;
+
     [HideInInspector]
     public EquippedPartsItem PickedPartsItem;
 
@@ -82,7 +85,9 @@ public class CustomizationHandler : MonoBehaviour
         curStateType = StateType.EquippedItemSelect;
         curState = states[curStateType];
 
-        initEquippedParts();
+        initEquippedPartsViaPlayerSchematic();
+
+        updateTankDisplayToCurrent();
 
         curState.Start();
     }
@@ -130,11 +135,19 @@ public class CustomizationHandler : MonoBehaviour
                 }
             }
         }
+
+        updateTankDisplayToCurrent();
     }
 
     public void UpdatePartInfo(PartSchematic part) {
         PartSchematic equipPart = PickedPartsItem != null ? PickedPartsItem.Slot.Part : null;
         partInfo.UpdatePartText(part, equipPart);
+    }
+
+    private void updateTankDisplayToCurrent() {
+        TankSchematic tankSchem = partSlotsToTankSchematic();
+
+        tankHighlighter.UpdateTankDisplay(tankSchem);
     }
 
     private bool isValidTankSchematic() {
@@ -150,25 +163,31 @@ public class CustomizationHandler : MonoBehaviour
         return weaponCount > 0;
     }
 
-    private void updatePlayerTankSchematic() {
-        TankSchematic schem = PlayerManager.Instance.TankSchematic;
+    private TankSchematic partSlotsToTankSchematic() {
+        HullPartSchematic hullSchem = null;
+        List<WeaponPartSchematic> weaponSchems = new List<WeaponPartSchematic>();
 
-        int weaponCount = 0;
-        foreach(PartSlot slot in EquippedParts) {
+        foreach (PartSlot slot in EquippedParts) {
             switch (slot.PartType) {
                 case PartSchematic.PartType.Hull:
-                    schem.HullSchematic = (HullPartSchematic)slot.Part;
-                    schem.WeaponSchematics = new WeaponPartSchematic[schem.HullSchematic.OrigWeaponDirs.Length];
+                    hullSchem = (HullPartSchematic)slot.Part;
                     break;
                 case PartSchematic.PartType.Weapon:
-                    schem.WeaponSchematics[weaponCount] = (WeaponPartSchematic)slot.Part;
-                    weaponCount += 1;
+                    weaponSchems.Add((WeaponPartSchematic)slot.Part);
                     break;
             }
         }
+
+        Debug.Assert(hullSchem != null && weaponSchems.Count > 0, "PartSlots to Tank Schematic resulted in invalid tank schematic. Should never happen.");
+
+        return new TankSchematic(hullSchem, weaponSchems.ToArray());
     }
 
-    private void initEquippedParts() {
+    private void updatePlayerTankSchematic() {
+        PlayerManager.Instance.UpdateTankSchematic(partSlotsToTankSchematic());
+    }
+
+    private void initEquippedPartsViaPlayerSchematic() {
         EquippedParts = new List<PartSlot>();
 
         TankSchematic playerSchematic = PlayerManager.Instance.TankSchematic;

@@ -41,7 +41,7 @@ public class SelectEquippedItemsState : CustomizationState
     }
 
     private void generateEquippedPartItems() {
-        const float itemAnchorStep = 1f / 9f;
+        const float itemAnchorStep = 1f / 5f;
         for (int i = 0; i < handler.EquippedParts.Count; ++i) {
             PartSlot slot = handler.EquippedParts[i];
 
