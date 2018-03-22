@@ -7,16 +7,6 @@ using UnityEngine;
 
 public class TankGOConstructor : MonoBehaviour 
 {
-    public GameObject LeftWheelGO
-    {
-        get; private set;
-    }
-
-    public GameObject RightWheelGO
-    {
-        get; private set;
-    }
-
     public GameObject HullGO
     {
         get; private set;
@@ -30,18 +20,14 @@ public class TankGOConstructor : MonoBehaviour
     private bool initialized = false;
 
     public void Init(TankSchematic tankSchematic) {
-        HullPrefabInfo info = PartPrefabManager.Instance.GetHullPrefabInfoViaHullName(tankSchematic.HullSchematic.Name);
-
-        LeftWheelGO = Instantiate(info.WheelPrefab, this.transform, false);
-        RightWheelGO = Instantiate(info.WheelPrefab, this.transform, false);
-        HullGO = Instantiate(info.HullPrefab, this.transform, false);
+        HullGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaName(tankSchematic.HullSchematic.Name), this.transform, false);
 
         weaponGOs = new List<GameObject>();
         int count = 0;
         foreach (WeaponPartSchematic weaponSchematic in tankSchematic.WeaponSchematics) {
             if (weaponSchematic != null) {
                 // First initialize GO
-                GameObject instance = Instantiate(PartPrefabManager.Instance.GetWeaponPrefabViaWeaponName(weaponSchematic.Name), this.transform, false);
+                GameObject instance = Instantiate(PartPrefabManager.Instance.GetPrefabViaName(weaponSchematic.Name), this.transform, false);
 
                 RectTransform rect = instance.GetComponent<RectTransform>();
                 rect.pivot = new Vector2(0.5f, 0);
@@ -56,17 +42,11 @@ public class TankGOConstructor : MonoBehaviour
             count += 1;
         }
 
-        Vector2 hullSize = HullGO.GetComponent<RectTransform>().sizeDelta;
-        LeftWheelGO.transform.localPosition = new Vector3(-hullSize.x / 2f, 0, 0);
-        RightWheelGO.transform.localPosition = new Vector3(hullSize.x / 2f, 0, 0);
-
         initialized = true;
     }
 
     public void Clear() {
         if (initialized) {
-            GameObject.Destroy(LeftWheelGO);
-            GameObject.Destroy(RightWheelGO);
             GameObject.Destroy(HullGO);
             foreach (GameObject go in weaponGOs) {
                 GameObject.Destroy(go);

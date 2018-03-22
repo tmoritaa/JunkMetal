@@ -156,13 +156,14 @@ public class CombatDebugHandler : MonoBehaviour
                 Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[2] * 50f);
                 Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[3] * 50f);
 
-                Vector3 leftWheelPos = aiTank.TankGOConstructor.LeftWheelGO.transform.position;
-                Vector3 rightWheelPos = aiTank.TankGOConstructor.RightWheelGO.transform.position;
-                Vector2 forwardVec = aiTank.GetForwardVec();
+                // TODO: later readd code. For now, just comment out. 
+                //Vector3 leftWheelPos = aiTank.TankGOConstructor.LeftWheelGO.transform.position;
+                //Vector3 rightWheelPos = aiTank.TankGOConstructor.RightWheelGO.transform.position;
+                //Vector2 forwardVec = aiTank.GetForwardVec();
 
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.LeftCurPower));
-                Gizmos.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.RightCurPower));
+                //Gizmos.color = Color.magenta;
+                //Gizmos.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.LeftCurPower));
+                //Gizmos.DrawLine(rightWheelPos, rightWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.RightCurPower));
             }
 
             Goal curGoal = (Goal)getRegisterdObj("goal");
