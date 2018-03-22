@@ -27,20 +27,14 @@ public class HullPart
         get; private set;
     }
 
-    public Vector2 Size
-    {
-        get; private set;
-    }
-
     private WeaponPart[] weapons;
 
     private Tank owner;
 
-    public HullPart(HullPartSchematic _schematic, Vector2 size) {
+    public HullPart(HullPartSchematic _schematic) {
         Schematic = _schematic;
         LeftCurPower = 0;
         RightCurPower = 0;
-        Size = size;
 
         weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
         Array.Clear(weapons, 0, weapons.Length);

@@ -145,20 +145,28 @@ public class CombatDebugHandler : MonoBehaviour
             }
 
             if (actuationDebugOn) {
-                List<Vector2> arcVectors = (List<Vector2>)getRegisterdObj("actuation_arc_vectors");
                 Tank aiTank = CombatHandler.Instance.AITankController.SelfTank;
 
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[0] * 50f);
-                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[1] * 50f);
+                object obj = getRegisterdObj("actuation_arc_vectors");
+                if (obj != null) {
+                    List<Vector2> arcVectors = (List<Vector2>)obj;
 
-                Gizmos.color = Color.blue;
-                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[2] * 50f);
-                Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[3] * 50f);
+                    Gizmos.color = Color.green;
+                    Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[0] * 50f);
+                    Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[1] * 50f);
 
-                Vector3 leftWheelPos = aiTank.TankGOConstructor.LeftWheelGO.transform.position;
-                Vector3 rightWheelPos = aiTank.TankGOConstructor.RightWheelGO.transform.position;
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[2] * 50f);
+                    Gizmos.DrawLine(aiTank.transform.position, aiTank.transform.position + (Vector3)arcVectors[3] * 50f);
+                }
+
+                Vector2 size = aiTank.Hull.Schematic.Size;
                 Vector2 forwardVec = aiTank.GetForwardVec();
+                Vector2 leftVec = forwardVec.Rotate(90);
+                Vector2 rightVec = forwardVec.Rotate(-90);
+
+                Vector3 leftWheelPos = (Vector2)aiTank.transform.position + leftVec * size.x / 2f;
+                Vector3 rightWheelPos = (Vector2)aiTank.transform.position + rightVec * size.x / 2f;
 
                 Gizmos.color = Color.magenta;
                 Gizmos.DrawLine(leftWheelPos, leftWheelPos + ((Vector3)forwardVec * 100 * aiTank.Hull.LeftCurPower));

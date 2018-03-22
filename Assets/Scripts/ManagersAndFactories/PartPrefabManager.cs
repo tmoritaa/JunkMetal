@@ -6,24 +6,6 @@ using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
 
-public class HullPrefabInfo
-{
-    public GameObject HullPrefab
-    {
-        get; private set;
-    }
-
-    public GameObject WheelPrefab
-    {
-        get; private set;
-    }
-
-    public HullPrefabInfo(GameObject hullPrefab, GameObject wheelPrefab) {
-        HullPrefab = hullPrefab;
-        WheelPrefab = wheelPrefab;
-    }
-}
-
 public class PartPrefabManager : MonoBehaviour 
 {
     private static PartPrefabManager instance;
@@ -44,21 +26,16 @@ public class PartPrefabManager : MonoBehaviour
         }
     }
 
-    private Dictionary<string, HullPrefabInfo> hullNameToInfoDict = new Dictionary<string, HullPrefabInfo>();
-    private Dictionary<string, GameObject> weaponNameToPrefabDict = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> nameToPrefabDict = new Dictionary<string, GameObject>();
 
     void Awake() {
         instance = this;
 
         loadHullPrefabInfosAndWeaponDict();
     }
-    
-    public HullPrefabInfo GetHullPrefabInfoViaHullName(string hullName) {
-        return hullNameToInfoDict[hullName];
-    }
 
-    public GameObject GetWeaponPrefabViaWeaponName(string weaponName) {
-        return weaponNameToPrefabDict[weaponName];
+    public GameObject GetPrefabViaName(string name) {
+        return nameToPrefabDict[name];
     }
 
     private void loadHullPrefabInfosAndWeaponDict() {
@@ -68,19 +45,16 @@ public class PartPrefabManager : MonoBehaviour
 
         foreach (var info in root.Value<JObject>("hulls")) {
             string name = info.Key;
-            JObject obj = (JObject)info.Value;
-
-            GameObject hullPrefab = prefabDict[obj.Value<string>("hull")];
-            GameObject wheelPrefab = prefabDict[obj.Value<string>("wheel")];
-
-            hullNameToInfoDict.Add(name, new HullPrefabInfo(hullPrefab, wheelPrefab));
+            GameObject prefab = prefabDict[(string)info.Value];
+           
+            nameToPrefabDict.Add(name, prefab);
         }
 
         foreach (var info in root.Value<JObject>("weapons")) {
             string name = info.Key;
             GameObject prefab = prefabDict[(string)info.Value];
 
-            weaponNameToPrefabDict.Add(name, prefab);
+            nameToPrefabDict.Add(name, prefab);
         }
     }
 }

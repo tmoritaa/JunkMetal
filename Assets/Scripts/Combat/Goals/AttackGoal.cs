@@ -27,7 +27,7 @@ public class AttackGoal : Goal
             Vector2 curFireVec = weapon.CalculateFireVec();
             Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
             float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
-            bool canHitIfFired = shortestDist < targetTank.Hull.Size.x / 2f;
+            bool canHitIfFired = shortestDist < targetTank.Hull.Schematic.Size.x / 2f;
 
             Vector2 targetVec = targetPos - weapon.CalculateFirePos();
 
