@@ -388,7 +388,7 @@ public class Map
             List<Node> markedNodes = new List<Node>();
             for (float x = -size.x / 2f + 1; x < size.x / 2f; x += TileDim / 2f) {
                 for (float y = -size.y / 2f + 1; y < size.y / 2f; y += TileDim / 2f) {
-                    Vector2 pos = (Vector2)trans.localPosition + new Vector2(x, y);
+                    Vector2 pos = (Vector2)trans.localPosition + new Vector2(x, y).Rotate(rect.transform.localRotation.eulerAngles.z);
 
                     int[] indices = PositionToIdx(pos);
 
