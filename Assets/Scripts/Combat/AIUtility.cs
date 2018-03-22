@@ -268,8 +268,8 @@ public class AIUtility
             Vector2 pos = map.NodeToPosition(node);
             Vector2 diffVec = pos - (Vector2)tank.transform.position;
 
-            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)tank.transform.position + (leftVec * (tank.Hull.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
-            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)tank.transform.position + (rightVec * (tank.Hull.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D leftHit = Physics2D.Raycast((Vector2)tank.transform.position + (leftVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
+            RaycastHit2D rightHit = Physics2D.Raycast((Vector2)tank.transform.position + (rightVec * (tank.Hull.Schematic.Size.x / 2f)), diffVec.normalized, diffVec.magnitude, LayerMask);
 
             // If collision, stop
             if (leftHit.collider != null || rightHit.collider != null) {

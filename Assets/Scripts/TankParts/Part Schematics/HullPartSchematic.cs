@@ -21,6 +21,11 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
+    public Vector2 Size
+    {
+        get; private set;
+    }
+
     public Vector2[] OrigWeaponDirs
     {
         get; private set;
@@ -36,11 +41,12 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public HullPartSchematic(string name, int armour, int energyPower, int weight, Vector2[] _weaponDirs, Vector2[] _weaponPos, int[] _weaponWeightRestrict) : base(name, PartType.Hull) {
+    public HullPartSchematic(string name, int armour, int energyPower, Vector2 size, int weight, Vector2[] _weaponDirs, Vector2[] _weaponPos, int[] _weaponWeightRestrict) : base(name, PartType.Hull) {
         Name = name;
         Armour = armour;
         EnergyPower = energyPower;
         Weight = weight;
+        Size = size;
         OrigWeaponDirs = _weaponDirs;
         OrigWeaponPos = _weaponPos;
         WeaponWeightRestrictions = _weaponWeightRestrict;

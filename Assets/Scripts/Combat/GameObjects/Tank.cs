@@ -61,8 +61,7 @@ public partial class Tank : MonoBehaviour
     public void Init(TankSchematic tankSchematic) {
         tankGOConstructor.Init(tankSchematic);
 
-        Vector2 hullSize = tankGOConstructor.HullGO.GetComponent<RectTransform>().sizeDelta;
-        Hull = new HullPart(tankSchematic.HullSchematic, hullSize);
+        Hull = new HullPart(tankSchematic.HullSchematic);
         
         int count = 0;
         int validCount = 0;
@@ -82,7 +81,7 @@ public partial class Tank : MonoBehaviour
             count += 1;
         }
 
-        boxCollider.size = hullSize;
+        boxCollider.size = tankSchematic.HullSchematic.Size;
 
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;
