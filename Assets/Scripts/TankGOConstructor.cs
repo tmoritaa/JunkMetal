@@ -22,12 +22,14 @@ public class TankGOConstructor : MonoBehaviour
     public void Init(TankSchematic tankSchematic) {
         HullGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaName(tankSchematic.HullSchematic.Name), this.transform, false);
 
+        Transform weaponRoot = HullGO.transform.Find("Turret");
+
         weaponGOs = new List<GameObject>();
         int count = 0;
         foreach (WeaponPartSchematic weaponSchematic in tankSchematic.WeaponSchematics) {
             if (weaponSchematic != null) {
                 // First initialize GO
-                GameObject instance = Instantiate(PartPrefabManager.Instance.GetPrefabViaName(weaponSchematic.Name), this.transform, false);
+                GameObject instance = Instantiate(PartPrefabManager.Instance.GetPrefabViaName(weaponSchematic.Name), weaponRoot, false);
 
                 RectTransform rect = instance.GetComponent<RectTransform>();
                 rect.pivot = new Vector2(0.5f, 0);
