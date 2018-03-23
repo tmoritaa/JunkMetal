@@ -60,7 +60,7 @@ public class WeaponPart
             Vector2 fireVec = CalculateFireVec();
             Vector2 fireOffset = CalculateFireOffset();
 
-            bullet.Fire(fireVec, fireOffset, Schematic.ShootImpulse, Schematic.RecoilImpulse, Schematic.Range, Schematic.Damage);
+            bullet.Fire(fireVec, fireOffset, Schematic.ShootImpulse, Schematic.RecoilImpulse, Schematic.HitImpulse, Schematic.Range, Schematic.Damage);
 
             lastShotTime = Time.time;
             shouldShoot = false;

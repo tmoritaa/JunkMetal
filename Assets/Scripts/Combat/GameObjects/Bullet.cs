@@ -33,6 +33,8 @@ public class Bullet : MonoBehaviour
 
     private int damage = 0;
 
+    private float hitImpulse = 0;
+
     private bool applyImpulseNextFrame = false;
     private Vector2 impulseVector;
 
@@ -62,9 +64,10 @@ public class Bullet : MonoBehaviour
         this.gameObject.transform.position = Owner.transform.position;
     }
 
-    public void Fire(Vector2 forwardVec, Vector2 firePosOffset, float shootForce, float recoilImpulse, float _range, int _damage) {
+    public void Fire(Vector2 forwardVec, Vector2 firePosOffset, float shootForce, float recoilImpulse, float _hitImpulse, float _range, int _damage) {
         range = _range;
         damage = _damage;
+        hitImpulse = _hitImpulse;
         firePos = Owner.transform.position + (Vector3)firePosOffset;
         this.body.position = firePos;
         this.impulseVector = forwardVec.normalized * shootForce;
@@ -74,10 +77,20 @@ public class Bullet : MonoBehaviour
         Owner.Body.AddForce(backVec.normalized * recoilImpulse, ForceMode2D.Impulse);
     }
 
-    private void OnTriggerEnter2D(Collider2D collision) {
+    private void OnCollisionEnter2D(Collision2D collision) {
         if (!isBeingDestroyed && collision.gameObject != Owner.gameObject) {
-            if (collision.GetComponent<Tank>() != null) {
-                Tank tank = collision.GetComponent<Tank>();
+            if (collision.collider.GetComponent<Tank>() != null) {
+                Tank tank = collision.collider.GetComponent<Tank>();
+
+                Vector2 avgContactPt = new Vector2();
+                foreach (ContactPoint2D contactPt in collision.contacts) {
+                    avgContactPt += contactPt.point;
+                }
+                avgContactPt /= collision.contacts.Length;
+
+                Vector2 impulseDir = (avgContactPt - firePos).normalized;
+                tank.Body.AddForceAtPosition(impulseDir * hitImpulse, avgContactPt, ForceMode2D.Impulse);
+
                 tank.Damage(damage);
             }
             destroySelf();

@@ -22,6 +22,11 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
+    public float HitImpulse
+    {
+        get; private set;
+    }
+
     public float ReloadTimeInSec
     {
         get; private set;
@@ -42,10 +47,11 @@ public class WeaponPartSchematic : PartSchematic
         get; private set;
     }
 
-    public WeaponPartSchematic(string name, float _shootImpulse, float _recoilImpulse, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name, PartType.Weapon) {
+    public WeaponPartSchematic(string name, float _shootImpulse, float _recoilImpulse, float _hitImpulse, float _reloadTime, float _range, int _weight, Bullet.BulletTypes _bulletType, int _damage) : base(name, PartType.Weapon) {
         Name = name;
         ShootImpulse = _shootImpulse;
         RecoilImpulse = _recoilImpulse;
+        HitImpulse = _hitImpulse;
         ReloadTimeInSec = _reloadTime;
         Weight = _weight;
         Range = _range;
