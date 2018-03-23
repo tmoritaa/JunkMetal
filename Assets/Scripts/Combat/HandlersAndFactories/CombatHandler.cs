@@ -35,7 +35,7 @@ public class CombatHandler : MonoBehaviour
     }
 
     [SerializeField]
-    private float tileDim = 25;
+    private float tileDim = 75;
     public float TileDim
     {
         get {
@@ -108,7 +108,7 @@ public class CombatHandler : MonoBehaviour
         TankSchematic enemyTankSchem = ((EnemyInfo)data["Opponent"]).TankSchem;
         AITankController = Instantiate(aiTankContPrefab, tankRoot, false);
         AITankController.Init(
-            new Vector3(300, -600, 0),
+            new Vector3(300, 800, 0),
             180f,
             enemyTankSchem,
             HumanTankController.SelfTank,
@@ -137,36 +137,9 @@ public class CombatHandler : MonoBehaviour
         float segmentWidth = mapWidth / 3f;
         float segmentHeight = mapHeight / 3f;
 
-        for (int x = -1; x <= 1; x += 2) {
-            float xPos = x * mapWidth / 2f - x * tileDim / 2f;
-
-            GameObject wall = Instantiate(wallPrefab, wallsRoot, false);
-            wall.transform.localPosition = new Vector3(xPos, 0, 0);
-
-            Vector2 size = new Vector2(tileDim, segmentHeight + tileDim * 2f);
-
-            wall.GetComponent<BoxCollider2D>().size = size;
-            wall.GetComponent<RectTransform>().sizeDelta = size;
-
-            walls.Add(wall.transform);
-        }
-
-        for (int y = -1; y <= 1; y += 2) {
-            float yPos = y * mapHeight / 2f - y * tileDim / 2f;
-
-            GameObject wall = Instantiate(wallPrefab, wallsRoot, false);
-            wall.transform.localPosition = new Vector3(0, yPos, 0);
-
-            Vector2 size = new Vector2(segmentWidth + tileDim * 2f, tileDim);
-
-            wall.GetComponent<BoxCollider2D>().size = size;
-            wall.GetComponent<RectTransform>().sizeDelta = size;
-
-            walls.Add(wall.transform);
-        }
-
-        float diagHeight = tileDim;
+        float diagHeight = 295f;
         float diagWidth = Mathf.Sqrt(segmentWidth * segmentWidth + segmentHeight * segmentHeight) - tileDim;
+        diagWidth = Mathf.Ceil(diagWidth / tileDim) * tileDim - tileDim * 2f;
         for (int y = -1; y <= 1; y += 2) {
             for (int x = -1; x <= 1; x += 2) {
                 Vector2 corner = new Vector2(x * segmentWidth / 2f, y * mapHeight / 2f);
@@ -177,19 +150,54 @@ public class CombatHandler : MonoBehaviour
                 GameObject wall = Instantiate(wallPrefab, wallsRoot, false);
                 wall.transform.localPosition = centerPt;
 
-                Vector2 size = new Vector2(diagWidth, diagHeight);
-
-                wall.GetComponent<BoxCollider2D>().size = size;
-                wall.GetComponent<RectTransform>().sizeDelta = size;
+                wall.GetComponent<BoxCollider2D>().size = new Vector2(diagWidth, wall.GetComponent<BoxCollider2D>().size.y);
+                wall.GetComponent<RectTransform>().sizeDelta = new Vector2(diagWidth, wall.GetComponent<RectTransform>().sizeDelta.y);
 
                 if (x == y) {
-                    wall.transform.Rotate(new Vector3(0, 0, -45f));
+                    if (x > 0) {
+                        wall.transform.Rotate(new Vector3(0, 0, -45f));
+                    } else {
+                        wall.transform.Rotate(new Vector3(0, 0, 135f));
+                    }
                 } else {
-                    wall.transform.Rotate(new Vector3(0, 0, 45f));
+                    if (x > 0) {
+                        wall.transform.Rotate(new Vector3(0, 0, -135f));
+                    } else {
+                        wall.transform.Rotate(new Vector3(0, 0, 45f));
+                    }
                 }
 
                 walls.Add(wall.transform);
             }
+        }
+
+        for (int x = -1; x <= 1; x += 2) {
+            float xPos = x * mapWidth / 2f - x * tileDim / 2f;
+
+            GameObject wall = Instantiate(wallPrefab, wallsRoot, false);
+            wall.transform.localPosition = new Vector3(xPos, 0, 0);
+
+            wall.GetComponent<BoxCollider2D>().size = new Vector2(segmentHeight, wall.GetComponent<BoxCollider2D>().size.y);
+            wall.GetComponent<RectTransform>().sizeDelta = new Vector2(segmentHeight, wall.GetComponent<RectTransform>().sizeDelta.y);
+
+            wall.transform.Rotate(new Vector3(0, 0, Mathf.Sign(x) * -90));
+
+            walls.Add(wall.transform);
+        }
+
+        for (int y = -1; y <= 1; y += 2) {
+            float yPos = y * mapHeight / 2f - y * tileDim / 2f;
+
+            GameObject wall = Instantiate(wallPrefab, wallsRoot, false);
+            wall.transform.localPosition = new Vector3(0, yPos, 0);
+
+            wall.GetComponent<BoxCollider2D>().size = new Vector2(segmentWidth, wall.GetComponent<BoxCollider2D>().size.y);
+            wall.GetComponent<RectTransform>().sizeDelta = new Vector2(segmentWidth, wall.GetComponent<RectTransform>().sizeDelta.y);
+            if (y < 0) {
+                wall.transform.Rotate(new Vector3(0, 0, 180));
+            }
+
+            walls.Add(wall.transform);
         }
 
         return walls;
