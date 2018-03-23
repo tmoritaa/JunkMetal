@@ -384,11 +384,13 @@ public class Map
 
             Vector2 size = rect.size;
 
+            float rotAngle = trans.localRotation.eulerAngles.z;
+
             // Note: tiledim is subtracted from x and y s.t. the map will set adjacent tiles as also blocked
             List<Node> markedNodes = new List<Node>();
             for (float x = -size.x / 2f; x < size.x / 2f; x += TileDim / 3f) {
                 for (float y = -size.y / 2f; y < size.y / 2f; y += TileDim / 3f) {
-                    Vector2 pos = ((Vector2)trans.localPosition + rect.offset) + new Vector2(x, y).Rotate(rect.transform.localRotation.eulerAngles.z);
+                    Vector2 pos = ((Vector2)trans.localPosition + rect.offset.Rotate(rotAngle)) + new Vector2(x, y).Rotate(rotAngle);
 
                     int[] indices = PositionToIdx(pos);
 

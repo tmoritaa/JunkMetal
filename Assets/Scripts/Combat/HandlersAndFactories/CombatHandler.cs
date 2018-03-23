@@ -139,7 +139,7 @@ public class CombatHandler : MonoBehaviour
 
         float diagHeight = 295f;
         float diagWidth = Mathf.Sqrt(segmentWidth * segmentWidth + segmentHeight * segmentHeight) - tileDim;
-        diagWidth = Mathf.Ceil(diagWidth / tileDim) * tileDim - tileDim * 2f;
+        diagWidth = Mathf.Ceil(diagWidth / 150f) * 150f - 150f * 2f;
         for (int y = -1; y <= 1; y += 2) {
             for (int x = -1; x <= 1; x += 2) {
                 Vector2 corner = new Vector2(x * segmentWidth / 2f, y * mapHeight / 2f);
