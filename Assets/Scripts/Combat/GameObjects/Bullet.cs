@@ -73,6 +73,9 @@ public class Bullet : MonoBehaviour
         this.impulseVector = forwardVec.normalized * shootForce;
         applyImpulseNextFrame = true;
 
+        float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), forwardVec);
+        this.body.rotation = angle;
+
         Vector2 backVec = forwardVec.Rotate(180);
         Owner.Body.AddForce(backVec.normalized * recoilImpulse, ForceMode2D.Impulse);
     }
