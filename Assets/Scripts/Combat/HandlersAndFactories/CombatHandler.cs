@@ -134,42 +134,8 @@ public class CombatHandler : MonoBehaviour
     private List<Transform> generateMapBounds() {
         List<Transform> walls = new List<Transform>();
 
-        float segmentWidth = mapWidth / 3f;
-        float segmentHeight = mapHeight / 3f;
-
-        float diagHeight = 295f;
-        float diagWidth = Mathf.Sqrt(segmentWidth * segmentWidth + segmentHeight * segmentHeight) - tileDim;
-        diagWidth = Mathf.Ceil(diagWidth / 150f) * 150f - 150f * 2f;
-        for (int y = -1; y <= 1; y += 2) {
-            for (int x = -1; x <= 1; x += 2) {
-                Vector2 corner = new Vector2(x * segmentWidth / 2f, y * mapHeight / 2f);
-                Vector2 otherCorner = new Vector2(x * mapWidth / 2f, y * segmentHeight / 2f);
-
-                Vector2 centerPt = (corner + otherCorner) / 2f;
-
-                GameObject wall = Instantiate(wallPrefab, wallsRoot, false);
-                wall.transform.localPosition = centerPt;
-
-                wall.GetComponent<BoxCollider2D>().size = new Vector2(diagWidth, wall.GetComponent<BoxCollider2D>().size.y);
-                wall.GetComponent<RectTransform>().sizeDelta = new Vector2(diagWidth, wall.GetComponent<RectTransform>().sizeDelta.y);
-
-                if (x == y) {
-                    if (x > 0) {
-                        wall.transform.Rotate(new Vector3(0, 0, -45f));
-                    } else {
-                        wall.transform.Rotate(new Vector3(0, 0, 135f));
-                    }
-                } else {
-                    if (x > 0) {
-                        wall.transform.Rotate(new Vector3(0, 0, -135f));
-                    } else {
-                        wall.transform.Rotate(new Vector3(0, 0, 45f));
-                    }
-                }
-
-                walls.Add(wall.transform);
-            }
-        }
+        float segmentWidth = mapWidth - 150f * 2;
+        float segmentHeight = mapHeight - 150f * 2;
 
         for (int x = -1; x <= 1; x += 2) {
             float xPos = x * mapWidth / 2f - x * tileDim / 2f;
