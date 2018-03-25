@@ -25,6 +25,12 @@ public class Bullet : MonoBehaviour
     }
 
     private Rigidbody2D body;
+    public Rigidbody2D Body
+    {
+        get {
+            return body;
+        }
+    }
     
     private bool isBeingDestroyed = false;
 

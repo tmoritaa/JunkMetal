@@ -62,6 +62,8 @@ public class WeaponPart
 
             bullet.Fire(fireVec, fireOffset, Schematic.ShootImpulse, Schematic.RecoilImpulse, Schematic.HitImpulse, Schematic.Range, Schematic.Damage);
 
+            CombatAnimationHandler.Instance.InstantiatePrefab("fire_smoke", (Vector2)OwningTank.transform.position + fireOffset, bullet.Body.rotation);
+
             lastShotTime = Time.time;
             shouldShoot = false;
         }
