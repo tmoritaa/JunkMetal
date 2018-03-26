@@ -64,6 +64,8 @@ public class WeaponPart
 
             CombatAnimationHandler.Instance.InstantiatePrefab("fire_smoke", (Vector2)OwningTank.transform.position + fireOffset, bullet.Body.rotation);
 
+            OwningTank.DisableMovementForSeconds(OwningTank.StopMoveInSecondsWhenFired);
+
             lastShotTime = Time.time;
             shouldShoot = false;
         }

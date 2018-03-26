@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +7,15 @@ using UnityEngine;
 
 public partial class Tank : MonoBehaviour
 {
+    [SerializeField]
+    private float stopMoveInSecondsWhenFired = 0.1f;
+    public float StopMoveInSecondsWhenFired
+    {
+        get {
+            return stopMoveInSecondsWhenFired;
+        }
+    }
+
     [SerializeField]
     private Rigidbody2D body;
     public Rigidbody2D Body
@@ -51,6 +61,11 @@ public partial class Tank : MonoBehaviour
 
     private bool initialized = false;
 
+    public bool DisableMovement
+    {
+        get; private set;
+    }
+
     private void FixedUpdate() {
         if (initialized) {
             handleMovement();
@@ -90,6 +105,8 @@ public partial class Tank : MonoBehaviour
 
         ResetState();
 
+        DisableMovement = false;
+
         initialized = true;
     }
 
@@ -124,6 +141,10 @@ public partial class Tank : MonoBehaviour
         return new Vector2(0, -1).Rotate(body.rotation);
     }
 
+    public void DisableMovementForSeconds(float time) {
+        StartCoroutine(disableMovementCoroutine(time));
+    }
+
     private int calculateTotalArmour() {
         int armour = 0;
 
@@ -143,11 +164,15 @@ public partial class Tank : MonoBehaviour
     private void handleMovement() {
         TankStateInfo stateInfo = StateInfo;
 
-        Vector2 linearForce = TankUtility.CalcAppliedLinearForce(stateInfo);
-        body.AddForce(linearForce);
+        if (!DisableMovement) {
+            Vector2 linearForce = TankUtility.CalcAppliedLinearForce(stateInfo);
+            body.AddForce(linearForce);
 
-        float torque = TankUtility.CalcAppliedTorque(stateInfo);
-        body.AddTorque(torque, ForceMode2D.Force);
+            float torque = TankUtility.CalcAppliedTorque(stateInfo);
+            body.AddTorque(torque, ForceMode2D.Force);
+        } else {
+            Hull.PerformPowerChange(0, 0);
+        }
 
         performAnimations(stateInfo);
     }
@@ -170,5 +195,11 @@ public partial class Tank : MonoBehaviour
         if (!rightAnimator.GetCurrentAnimatorStateInfo(0).IsName(rightWheelStateName)) {
             rightAnimator.Play(leftWheelStateName);
         }
+    }
+
+    private IEnumerator disableMovementCoroutine(float time) {
+        DisableMovement = true;
+        yield return new WaitForSeconds(time);
+        DisableMovement = false;
     }
 }

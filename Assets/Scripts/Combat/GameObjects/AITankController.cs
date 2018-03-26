@@ -32,7 +32,7 @@ public class AITankController : TankController
             requestDir = AvoidWalls(requestDir);
             SelfTank.PerformActuation(requestDir.normalized);
         } else {
-            if (!CombatHandler.Instance.DisableMovement) {
+            if (!CombatHandler.Instance.DisableMovement && !SelfTank.DisableMovement) {
                 TargetTank.MarkCurPositionAsBlockedOnMap(Map);
 
                 updateGoalsAndPerformActions();
