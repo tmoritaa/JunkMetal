@@ -12,6 +12,16 @@ public class TankGOConstructor : MonoBehaviour
         get; private set;
     }
 
+    public GameObject LeftWheelGO
+    {
+        get; private set;
+    }
+
+    public GameObject RightWheelGO
+    {
+        get; private set;
+    }
+
     public List<GameObject> weaponGOs
     {
         get; private set;
@@ -20,7 +30,15 @@ public class TankGOConstructor : MonoBehaviour
     private bool initialized = false;
 
     public void Init(TankSchematic tankSchematic) {
-        HullGO = Instantiate(PartPrefabManager.Instance.GetPrefabViaName(tankSchematic.HullSchematic.Name), this.transform, false);
+        HullPrefabInfo hullPrefabInfo = PartPrefabManager.Instance.GetHullPrefabInfoViaName(tankSchematic.HullSchematic.Name);
+
+        LeftWheelGO = Instantiate(hullPrefabInfo.WheelPrefab, this.transform, false);
+        RightWheelGO = Instantiate(hullPrefabInfo.WheelPrefab, this.transform, false);
+
+        LeftWheelGO.transform.position = this.transform.position + new Vector3(-hullPrefabInfo.WheelXOffset, 0);
+        RightWheelGO.transform.position = this.transform.position + new Vector3(hullPrefabInfo.WheelXOffset, 0);
+
+        HullGO = Instantiate(hullPrefabInfo.HullPrefab, this.transform, false);
 
         Transform weaponRoot = HullGO.transform.Find("Turret");
 

@@ -6,6 +6,30 @@ using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
 
+public class HullPrefabInfo
+{
+    public GameObject HullPrefab
+    {
+        get; private set;
+    }
+
+    public GameObject WheelPrefab
+    {
+        get; private set;
+    }
+
+    public float WheelXOffset
+    {
+        get; private set;
+    }
+
+    public HullPrefabInfo(GameObject hullPrefab, GameObject wheelPrefab, float xOffset) {
+        HullPrefab = hullPrefab;
+        WheelPrefab = wheelPrefab;
+        WheelXOffset = xOffset;
+    }
+}
+
 public class PartPrefabManager : MonoBehaviour 
 {
     private static PartPrefabManager instance;
@@ -28,6 +52,8 @@ public class PartPrefabManager : MonoBehaviour
 
     private Dictionary<string, GameObject> nameToPrefabDict = new Dictionary<string, GameObject>();
 
+    private Dictionary<string, HullPrefabInfo> nameToHullPrefabInfo = new Dictionary<string, HullPrefabInfo>();
+
     void Awake() {
         instance = this;
 
@@ -38,6 +64,10 @@ public class PartPrefabManager : MonoBehaviour
         return nameToPrefabDict[name];
     }
 
+    public HullPrefabInfo GetHullPrefabInfoViaName(string name) {
+        return nameToHullPrefabInfo[name];
+    }
+
     private void loadHullPrefabInfosAndWeaponDict() {
         TextAsset jsonText = Resources.Load("PartPrefabConfs") as TextAsset;
 
@@ -45,9 +75,14 @@ public class PartPrefabManager : MonoBehaviour
 
         foreach (var info in root.Value<JObject>("hulls")) {
             string name = info.Key;
-            GameObject prefab = prefabDict[(string)info.Value];
-           
-            nameToPrefabDict.Add(name, prefab);
+
+            JObject jObj = (JObject)info.Value;
+
+            GameObject hullPrefab = prefabDict[jObj.Value<string>("hull")];
+            GameObject wheelPrefab = prefabDict[jObj.Value<string>("wheels")];
+            float offset = jObj.Value<float>("wheel_offset");
+            
+            nameToHullPrefabInfo.Add(name, new HullPrefabInfo(hullPrefab, wheelPrefab, offset));
         }
 
         foreach (var info in root.Value<JObject>("weapons")) {
