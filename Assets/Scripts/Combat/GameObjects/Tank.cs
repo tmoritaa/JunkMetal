@@ -141,10 +141,34 @@ public partial class Tank : MonoBehaviour
     }
 
     private void handleMovement() {
-        Vector2 linearForce = TankUtility.CalcAppliedLinearForce(StateInfo);
+        TankStateInfo stateInfo = StateInfo;
+
+        Vector2 linearForce = TankUtility.CalcAppliedLinearForce(stateInfo);
         body.AddForce(linearForce);
 
-        float torque = TankUtility.CalcAppliedTorque(StateInfo);
+        float torque = TankUtility.CalcAppliedTorque(stateInfo);
         body.AddTorque(torque, ForceMode2D.Force);
+
+        performAnimations(stateInfo);
+    }
+
+    private void performAnimations(TankStateInfo tankStateInfo) {
+        string leftWheelStateName = Mathf.Sign(tankStateInfo.LeftCurPower) > 0 ? "WheelForward" : "WheelBackward";
+        if (tankStateInfo.LeftCurPower == 0) {
+            leftWheelStateName = "WheelIdle";
+        }
+        Animator leftAnimator = tankGOConstructor.LeftWheelGO.GetComponent<Animator>();
+        if (!leftAnimator.GetCurrentAnimatorStateInfo(0).IsName(leftWheelStateName)) {
+            leftAnimator.Play(leftWheelStateName);
+        }
+
+        string rightWheelStateName = Mathf.Sign(tankStateInfo.RightCurPower) > 0 ? "WheelForward" : "WheelBackward";
+        if (tankStateInfo.RightCurPower == 0) {
+            rightWheelStateName = "WheelIdle";
+        }
+        Animator rightAnimator = tankGOConstructor.RightWheelGO.GetComponent<Animator>();
+        if (!rightAnimator.GetCurrentAnimatorStateInfo(0).IsName(rightWheelStateName)) {
+            rightAnimator.Play(leftWheelStateName);
+        }
     }
 }
