@@ -65,14 +65,20 @@ public class WeaponPartSchematic : PartSchematic
         string retStr = string.Empty;
 
         if (showDiff) {
-            WeaponPartSchematic diffHull = (WeaponPartSchematic)diffSchem;
+            WeaponPartSchematic diffWeapon = (WeaponPartSchematic)diffSchem;
 
-            retStr = string.Format("{0}\nShoot Strength: {1} => {2}\nShoot Recoil: {3} => {4}\nRange: {5} => {6}\nBullet Type: {7} => {8}\nDamage: {9} => {10}\nReload Time:{11} => {12}\nWeight: {13} => {14}",
-                Name, diffHull.ShootImpulse, ShootImpulse, diffHull.RecoilImpulse, RecoilImpulse, diffHull.Range, Range, 
-                diffHull.BulletType, BulletType, diffHull.Damage, Damage, diffHull.ReloadTimeInSec, ReloadTimeInSec, diffHull.Weight, Weight);
+            string damageStr = string.Format("Damage: {0} => {2}{1}</color>", diffWeapon.Damage, Damage, getColorBasedChangeInVal(diffWeapon.Damage, Damage));
+            string rangeStr = string.Format("Range: {0} => {2}{1}</color>", diffWeapon.Range, Range, getColorBasedChangeInVal(diffWeapon.Range, Range));
+            string reloadTimeStr = string.Format("Reload Time: {0} => {2}{1}</color>", diffWeapon.ReloadTimeInSec, ReloadTimeInSec, getColorBasedChangeInVal(diffWeapon.ReloadTimeInSec, ReloadTimeInSec));
+            string fireStrengthStr = string.Format("Fire Strength: {0} => {2}{1}</color>", diffWeapon.ShootImpulse, ShootImpulse, getColorBasedChangeInVal(diffWeapon.ShootImpulse, ShootImpulse));
+            string recoilStr = string.Format("Recoil: {0} => {2}{1}</color>", diffWeapon.RecoilImpulse, RecoilImpulse, getColorBasedChangeInVal(diffWeapon.RecoilImpulse, RecoilImpulse));
+            string weightStr = string.Format("Weight: {0} => {2}{1}</color>", diffWeapon.Weight, Weight, getColorBasedChangeInVal(diffWeapon.Weight, Weight));
+
+            retStr = string.Format("{0}\nBullet Type: {1} => {2}\n{3}\n{4}\n{5}\n{6}\n{7}\n{8}",
+                Name, diffWeapon.BulletType, BulletType, damageStr, rangeStr, reloadTimeStr, fireStrengthStr, recoilStr, weightStr);
         } else {
-            retStr = string.Format("{0}\nShoot Strength: {1}\nShoot Recoil: {2}\nRange: {3}\nBullet Type: {4}\nDamage: {5}\nReload Time:{6}\nWeight: {7}",
-                Name, ShootImpulse, RecoilImpulse, Range, BulletType, Damage, ReloadTimeInSec, Weight);
+            retStr = string.Format("{0}\nBullet Type: {1}\nDamage: {2}\nRange: {3}\nReload Time:{4}\nFire Strength: {5}\nRecoil: {6}\nWeight: {7}",
+                Name, BulletType, Damage, Range, ReloadTimeInSec, ShootImpulse, RecoilImpulse, Weight);
         }
 
         return retStr;

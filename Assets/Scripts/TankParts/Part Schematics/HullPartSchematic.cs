@@ -69,8 +69,13 @@ public class HullPartSchematic : PartSchematic
             string diffWeightRestrictStr = "(" + String.Join(", ", new List<int>(diffHull.WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
             string weightRestrictStr = "(" + String.Join(", ", new List<int>(WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
 
-            retStr = string.Format("{0}\nArmour: {1} => {2}\nEnergy Power: {3} => {4}\n Weight: {5} => {6}\nAngular Drag: {7} => {8}\nWeapon Weight Restrictions: {9} => {10}",
-                Name, diffHull.Armour, Armour, diffHull.EnergyPower, EnergyPower, diffHull.Weight, Weight, diffHull.AngularDrag, AngularDrag, diffWeightRestrictStr, weightRestrictStr);
+            string armorStr = string.Format("Armour: {0} => {2}{1}</color>", diffHull.Armour, Armour, getColorBasedChangeInVal(diffHull.Armour, Armour));
+            string energyPowerStr = string.Format("Move Force: {0} => {2}{1}</color>", diffHull.EnergyPower, EnergyPower, getColorBasedChangeInVal(diffHull.EnergyPower, EnergyPower));
+            string weightStr = string.Format("Weight: {0} => {2}{1}</color>", diffHull.Weight, Weight, getColorBasedChangeInVal(diffHull.Weight, Weight));
+            string angularDragStr = string.Format("Angular Drag: {0} => {2}{1}</color>", diffHull.AngularDrag, AngularDrag, getColorBasedChangeInVal(diffHull.AngularDrag, AngularDrag));
+
+            retStr = string.Format("{0}\n{1}\n{2}\n{3}\n{4}\nWeapon Weight Restrictions: {5} => {6}",
+                Name, armorStr, energyPowerStr, weightStr, angularDragStr, diffWeightRestrictStr, weightRestrictStr);
         } else {
             string weightRestrictStr = "[" + String.Join(", ", new List<int>(WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
             retStr = string.Format("{0}\nArmour: {1}\nEnergy Power: {2}\n Weight: {3}\nAngular Drag: {4}\nWeapon Weight Restrictions: {5}",
