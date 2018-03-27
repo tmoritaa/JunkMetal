@@ -1,4 +1,4 @@
 {
-	"Basic Hull":{"weight":550, "armor":150, "engine_pow":75000, "size_x":60, "size_y":60, "weapons":[{"x_dir":0, "y_dir":1, "x_pos":0, "y_pos":0, "restrict":100}, {"x_dir":0, "y_dir":-1, "x_pos":0, "y_pos":0, "restrict":100}]},
-	"Faster Hull":{"weight":550, "armor":150, "engine_pow":75000, "size_x":60, "size_y":60, "weapons":[{"x_dir":0, "y_dir":1, "x_pos":0, "y_pos":0,"restrict":100}]}
+	"Basic Hull":{"weight":550, "armor":150, "engine_pow":75000, "size_x":60, "size_y":60, "angular_drag":55, "weapons":[{"x_dir":0, "y_dir":1, "x_pos":0, "y_pos":0, "restrict":100}, {"x_dir":0, "y_dir":-1, "x_pos":0, "y_pos":0, "restrict":100}]},
+	"Faster Hull":{"weight":550, "armor":150, "engine_pow":75000, "size_x":60, "size_y":60, "angular_drag":40, "weapons":[{"x_dir":0, "y_dir":1, "x_pos":0, "y_pos":0,"restrict":100}]}
 }

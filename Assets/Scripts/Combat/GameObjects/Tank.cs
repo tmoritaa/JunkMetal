@@ -101,6 +101,8 @@ public partial class Tank : MonoBehaviour
         float totalWeight = calculateTotalWeight() / 10f;
         this.body.mass = totalWeight;
 
+        this.body.angularDrag = Hull.Schematic.AngularDrag;
+
         MaxArmour = calculateTotalArmour();
 
         ResetState();
