@@ -68,6 +68,8 @@ public class TankGOConstructor : MonoBehaviour
     public void Clear() {
         if (initialized) {
             GameObject.Destroy(HullGO);
+            GameObject.Destroy(LeftWheelGO);
+            GameObject.Destroy(RightWheelGO);
             foreach (GameObject go in weaponGOs) {
                 GameObject.Destroy(go);
             }

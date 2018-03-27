@@ -60,8 +60,8 @@ public class HullPartSchematic : PartSchematic
         if (showDiff) {
             HullPartSchematic diffHull = (HullPartSchematic)diffSchem;
 
-            string diffWeightRestrictStr = "[" + String.Join(", ", new List<int>(diffHull.WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
-            string weightRestrictStr = "[" + String.Join(", ", new List<int>(WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
+            string diffWeightRestrictStr = "(" + String.Join(", ", new List<int>(diffHull.WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
+            string weightRestrictStr = "(" + String.Join(", ", new List<int>(WeaponWeightRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
 
             retStr = string.Format("{0}\nArmour: {1} => {2}\nEnergy Power: {3} => {4}\n Weight: {5} => {6}\nWeapon Weight Restrictions: {7} => {8}",
                 Name, diffHull.Armour, Armour, diffHull.EnergyPower, EnergyPower, diffHull.Weight, Weight, diffWeightRestrictStr, weightRestrictStr);
