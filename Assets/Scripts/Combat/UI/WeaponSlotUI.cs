@@ -14,9 +14,6 @@ public class WeaponSlotUI : MonoBehaviour
     [SerializeField]
     private Text nameText;
 
-    [SerializeField]
-    private Text keyText;
-
     private WeaponPart part;
     private bool initialized = false;
 
@@ -38,12 +35,10 @@ public class WeaponSlotUI : MonoBehaviour
     public void Init(WeaponPart _part) {
         if (_part == null) {
             nameText.gameObject.SetActive(false);
-            keyText.gameObject.SetActive(false);
             reloadFill.gameObject.SetActive(false);
         } else {
             part = _part;
             nameText.text = part.Schematic.Name;
-            keyText.text = "X"; // TODO: fix later
             initialized = true;
         }
     }
