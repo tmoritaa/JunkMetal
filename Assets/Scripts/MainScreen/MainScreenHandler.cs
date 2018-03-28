@@ -19,4 +19,8 @@ public class MainScreenHandler : MonoBehaviour
     public void GotoCustomization() {
         SceneManager.LoadScene("Customization");
     }
+
+    public void ExitGame() {
+        Application.Quit();
+    }
 }
