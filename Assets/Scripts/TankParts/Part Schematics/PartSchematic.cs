@@ -11,6 +11,13 @@ public abstract class PartSchematic
         Weapon
     }
 
+    public enum WeaponTier
+    {
+        Light,
+        Medium,
+        Heavy,
+    }
+
     public string Name
     {
         get; protected set;

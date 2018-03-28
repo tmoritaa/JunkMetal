@@ -1,4 +1,4 @@
 {
-	"Basic Weapon1":{"weight":50, "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":250, "reload_time":1, "damage":10, "bullet_type":"Normal"},
-	"Basic Weapon2":{"weight":50, "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":250, "reload_time":5, "damage":10, "bullet_type":"Normal"}
+	"Basic Weapon1":{"tier":"M", "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":250, "reload_time":1, "damage":10, "bullet_type":"Normal"},
+	"Basic Weapon2":{"tier":"M", "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":250, "reload_time":5, "damage":10, "bullet_type":"Normal"}
 }

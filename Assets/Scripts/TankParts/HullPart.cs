@@ -96,7 +96,7 @@ public class HullPart
     }
 
     public void AddWeaponAtIdx(WeaponPart weapon, int idx) {
-        if (weapon.Schematic.Weight <= Schematic.WeaponWeightRestrictions[idx]) {
+        if (weapon.Schematic.Tier <= Schematic.WeaponTierRestrictions[idx]) {
             weapon.EquipIdx = idx;
             weapons[idx] = weapon;
         }

@@ -118,11 +118,11 @@ public class CustomizationHandler : MonoBehaviour
         curPickedSlot.UpdatePart(newPart);
 
         if (newPart != null && newPart.PType == PartSchematic.PartType.Hull) {
-            HullPartSchematic oldTurret = (HullPartSchematic)oldPart;
-            HullPartSchematic newTurret = (HullPartSchematic)newPart;
+            HullPartSchematic oldHull = (HullPartSchematic)oldPart;
+            HullPartSchematic newHull = (HullPartSchematic)newPart;
 
-            if (oldTurret.OrigWeaponDirs.Length != newTurret.OrigWeaponDirs.Length) {
-                int lengthDiff = newTurret.OrigWeaponDirs.Length - oldTurret.OrigWeaponDirs.Length;
+            if (oldHull.OrigWeaponDirs.Length != newHull.OrigWeaponDirs.Length) {
+                int lengthDiff = newHull.OrigWeaponDirs.Length - oldHull.OrigWeaponDirs.Length;
 
                 if (lengthDiff > 0) {
                     for (int i = 0; i < lengthDiff; ++i) {

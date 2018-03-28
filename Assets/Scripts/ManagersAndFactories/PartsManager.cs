@@ -70,7 +70,7 @@ public class PartsManager : MonoBehaviour
 
             List<Vector2> weaponDirs = new List<Vector2>();
             List<Vector2> weaponPos = new List<Vector2>();
-            List<int> weightRestricts = new List<int>();
+            List<PartSchematic.WeaponTier> tierRestrictions = new List<PartSchematic.WeaponTier>();
             foreach (JObject jo in info.Value<JArray>("weapons")) {
                 Vector2 dir = new Vector2();
                 dir.x = jo.Value<float>("x_dir");
@@ -82,11 +82,20 @@ public class PartsManager : MonoBehaviour
                 pos.y = jo.Value<float>("y_pos");
                 weaponPos.Add(pos);
 
-                int weightRestric = jo.Value<int>("restrict");
-                weightRestricts.Add(weightRestric);
+                string weaponTier = jo.Value<string>("tier");
+
+                PartSchematic.WeaponTier tier = PartSchematic.WeaponTier.Light;
+                if (weaponTier.Equals("L")) {
+                    tier = PartSchematic.WeaponTier.Light;
+                } else if (weaponTier.Equals("M")) {
+                    tier = PartSchematic.WeaponTier.Medium;
+                } else if (weaponTier.Equals("H")) {
+                    tier = PartSchematic.WeaponTier.Heavy;
+                }
+                tierRestrictions.Add(tier);
             }
 
-            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, power, size, weight, angularDrag, weaponDirs.ToArray(), weaponPos.ToArray(), weightRestricts.ToArray());
+            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, power, size, weight, angularDrag, weaponDirs.ToArray(), weaponPos.ToArray(), tierRestrictions.ToArray());
 
             schematics.Add(part.Name, part);
         }
@@ -105,7 +114,6 @@ public class PartsManager : MonoBehaviour
             string name = partInfo.Key;
 
             JObject info = (JObject)partInfo.Value;
-            int weight = info.Value<int>("weight");
             float shootImpulse = info.Value<float>("shoot_impulse");
             float recoilImpulse = info.Value<float>("shoot_recoil_impulse");
             float hitImpulse = info.Value<float>("hit_impulse");
@@ -114,7 +122,17 @@ public class PartsManager : MonoBehaviour
             int damage = info.Value<int>("damage");
             Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
 
-            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, shootImpulse, recoilImpulse, hitImpulse, reloadTime, range, weight, bType, damage);
+            string tierStr = info.Value<string>("tier");
+            PartSchematic.WeaponTier tier = PartSchematic.WeaponTier.Light;
+            if (tierStr.Equals("L")) {
+                tier = PartSchematic.WeaponTier.Light;
+            } else if (tierStr.Equals("M")) {
+                tier = PartSchematic.WeaponTier.Medium;
+            } else if (tierStr.Equals("H")) {
+                tier = PartSchematic.WeaponTier.Heavy;
+            }
+
+            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, shootImpulse, recoilImpulse, hitImpulse, reloadTime, range, tier, bType, damage);
 
             schematics.Add(part.Name, part);
         }

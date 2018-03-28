@@ -35,12 +35,18 @@ public class SelectOtherItemsState : CustomizationState
     }
 
     private void generateOtherItems() {
+        List<PartSchematic> allParts = new List<PartSchematic>(PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.Slot.PartType));
+
         List<PartSchematic> parts = new List<PartSchematic>();
         if (handler.PickedPartsItem.Slot.PartType == PartSchematic.PartType.Weapon) {
             parts.Add(null);
-        }
 
-        parts.AddRange(PartsManager.Instance.GetPartsOfType(handler.PickedPartsItem.Slot.PartType));
+            HullPartSchematic curHull = (HullPartSchematic)handler.EquippedParts[0].Part;
+            PartSchematic.WeaponTier tier = curHull.WeaponTierRestrictions[handler.PickedPartsItem.Slot.Idx - 1];
+            allParts = allParts.FindAll(w => ((WeaponPartSchematic)w).Tier <= tier);
+        }
+        
+        parts.AddRange(allParts);
 
         float itemAnchorStep = 1f / 9f;
         for (int i = 0; i < parts.Count; ++i) {
