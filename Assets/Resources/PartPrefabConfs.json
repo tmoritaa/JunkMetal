@@ -1,10 +1,13 @@
 {
 	"hulls": {
 		"Basic Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26},
-		"Faster Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26}
+		"Faster Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26},
+		"Double Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26}
 	},
 	"weapons": {
-		"Basic Weapon1":"BasicCannon",
-		"Basic Weapon2":"BasicCannon"
+		"Basic Weapon":"BasicCannon",
+		"Strong Weapon":"BasicCannon",
+		"Short Range Weapon":"BasicCannon",
+		"Machine Gun Weapon":"BasicCannon"
 	}
 }

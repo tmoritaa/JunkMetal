@@ -69,17 +69,17 @@ public class HullPartSchematic : PartSchematic
             string diffWeightRestrictStr = "(" + String.Join(", ", new List<WeaponTier>(diffHull.WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
             string weightRestrictStr = "(" + String.Join(", ", new List<WeaponTier>(WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
 
-            string armorStr = string.Format("Armour: {0} => {2}{1}</color>", diffHull.Armour, Armour, getColorBasedChangeInVal(diffHull.Armour, Armour));
-            string energyPowerStr = string.Format("Move Force: {0} => {2}{1}</color>", diffHull.EnergyPower, EnergyPower, getColorBasedChangeInVal(diffHull.EnergyPower, EnergyPower));
-            string weightStr = string.Format("Weight: {0} => {2}{1}</color>", diffHull.Weight, Weight, getColorBasedChangeInVal(diffHull.Weight, Weight, false));
-            string angularDragStr = string.Format("Angular Drag: {0} => {2}{1}</color>", diffHull.AngularDrag, AngularDrag, getColorBasedChangeInVal(diffHull.AngularDrag, AngularDrag, false));
+            string armorStr = string.Format("Armour:\n{0} => {2}{1}</color>", diffHull.Armour, Armour, getColorBasedChangeInVal(diffHull.Armour, Armour));
+            string energyPowerStr = string.Format("Move Force:\n{0} => {2}{1}</color>", diffHull.EnergyPower, EnergyPower, getColorBasedChangeInVal(diffHull.EnergyPower, EnergyPower));
+            string weightStr = string.Format("Weight:\n{0} => {2}{1}</color>", diffHull.Weight, Weight, getColorBasedChangeInVal(diffHull.Weight, Weight, false));
+            string angularDragStr = string.Format("Angular Drag:\n{0} => {2}{1}</color>", diffHull.AngularDrag, AngularDrag, getColorBasedChangeInVal(diffHull.AngularDrag, AngularDrag, false));
 
-            retStr = string.Format("{0}\n{1}\n{2}\n{3}\n{4}\nWeapon Weight Restrictions: {5} => {6}",
-                Name, armorStr, energyPowerStr, weightStr, angularDragStr, diffWeightRestrictStr, weightRestrictStr);
+            retStr = string.Format("{0}\n{1}\n{2}\n{3}\nWeapon Weight Restrictions:\n{4} => {5}",
+                armorStr, energyPowerStr, weightStr, angularDragStr, diffWeightRestrictStr, weightRestrictStr);
         } else {
             string weightRestrictStr = "[" + String.Join(", ", new List<WeaponTier>(WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
-            retStr = string.Format("{0}\nArmour: {1}\nEnergy Power: {2}\n Weight: {3}\nAngular Drag: {4}\nWeapon Weight Restrictions: {5}",
-                Name, Armour, EnergyPower, Weight, AngularDrag, weightRestrictStr);
+            retStr = string.Format("Armour:\n{0}\nEnergy Power:\n{1}\n Weight:\n{2}\nAngular Drag:\n{3}\nWeapon Weight Restrictions:\n{4}",
+                Armour, EnergyPower, Weight, AngularDrag, weightRestrictStr);
         }
 
         return retStr;

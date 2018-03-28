@@ -66,18 +66,18 @@ public class WeaponPartSchematic : PartSchematic
         if (showDiff) {
             WeaponPartSchematic diffWeapon = (WeaponPartSchematic)diffSchem;
 
-            string damageStr = string.Format("Damage: {0} => {2}{1}</color>", diffWeapon.Damage, Damage, getColorBasedChangeInVal(diffWeapon.Damage, Damage));
-            string rangeStr = string.Format("Range: {0} => {2}{1}</color>", diffWeapon.Range, Range, getColorBasedChangeInVal(diffWeapon.Range, Range));
-            string reloadTimeStr = string.Format("Reload Time: {0} => {2}{1}</color>", diffWeapon.ReloadTimeInSec, ReloadTimeInSec, getColorBasedChangeInVal(diffWeapon.ReloadTimeInSec, ReloadTimeInSec, false));
-            string fireStrengthStr = string.Format("Fire Strength: {0} => {2}{1}</color>", diffWeapon.ShootImpulse, ShootImpulse, getColorBasedChangeInVal(diffWeapon.ShootImpulse, ShootImpulse));
-            string recoilStr = string.Format("Recoil: {0} => {2}{1}</color>", diffWeapon.RecoilImpulse, RecoilImpulse, getColorBasedChangeInVal(diffWeapon.RecoilImpulse, RecoilImpulse, false));
-            string tierStr = string.Format("Tier: {0} => {1}", diffWeapon.Tier, Tier);
+            string damageStr = string.Format("Damage:\n{0} => {2}{1}</color>", diffWeapon.Damage, Damage, getColorBasedChangeInVal(diffWeapon.Damage, Damage));
+            string rangeStr = string.Format("Range:\n{0} => {2}{1}</color>", diffWeapon.Range, Range, getColorBasedChangeInVal(diffWeapon.Range, Range));
+            string reloadTimeStr = string.Format("Reload Time:\n{0} => {2}{1}</color>", diffWeapon.ReloadTimeInSec, ReloadTimeInSec, getColorBasedChangeInVal(diffWeapon.ReloadTimeInSec, ReloadTimeInSec, false));
+            string fireStrengthStr = string.Format("Fire Strength:\n{0} => {2}{1}</color>", diffWeapon.ShootImpulse, ShootImpulse, getColorBasedChangeInVal(diffWeapon.ShootImpulse, ShootImpulse));
+            string recoilStr = string.Format("Recoil:\n{0} => {2}{1}</color>", diffWeapon.RecoilImpulse, RecoilImpulse, getColorBasedChangeInVal(diffWeapon.RecoilImpulse, RecoilImpulse, false));
+            string tierStr = string.Format("Tier:\n{0} => {1}", diffWeapon.Tier, Tier);
 
-            retStr = string.Format("{0}\nBullet Type: {1} => {2}\n{3}\n{4}\n{5}\n{6}\n{7}\n{8}",
-                Name, diffWeapon.BulletType, BulletType, damageStr, rangeStr, reloadTimeStr, fireStrengthStr, recoilStr, tierStr);
+            retStr = string.Format("Bullet Type:\n{0} => {1}\n{2}\n{3}\n{4}\n{5}\n{6}\n{7}",
+                diffWeapon.BulletType, BulletType, damageStr, rangeStr, reloadTimeStr, fireStrengthStr, recoilStr, tierStr);
         } else {
-            retStr = string.Format("{0}\nBullet Type: {1}\nDamage: {2}\nRange: {3}\nReload Time:{4}\nFire Strength: {5}\nRecoil: {6}\nTier: {7}",
-                Name, BulletType, Damage, Range, ReloadTimeInSec, ShootImpulse, RecoilImpulse, Tier);
+            retStr = string.Format("Bullet Type:\n{0}\nDamage:\n{1}\nRange:\n{2}\nReload Time:\n{3}\nFire Strength:\n{4}\nRecoil:\n{5}\nTier:\n{6}",
+                BulletType, Damage, Range, ReloadTimeInSec, ShootImpulse, RecoilImpulse, Tier);
         }
 
         return retStr;

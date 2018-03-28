@@ -2,13 +2,37 @@
 	"John Doe":{
 		"Tank":{
 			"Hull":"Basic Hull",
-			"Weapons":["Basic Weapon1", ""]
+			"Weapons":["Basic Weapon"]
+		}
+	},
+	"John Fast":{
+		"Tank":{
+			"Hull":"Faster Hull",
+			"Weapons":["Basic Weapon"]
 		}
 	},
 	"John Double":{
 		"Tank":{
-			"Hull":"Basic Hull",
-			"Weapons":["Basic Weapon1", "Basic Weapon2"]
+			"Hull":"Double Hull",
+			"Weapons":["Basic Weapon", "Basic Weapon"]
 		}
+	},
+	"Strong Man":{
+		"Tank":{
+			"Hull":"Basic Hull",
+			"Weapons":["Strong Weapon"]
+		}	
+	},
+	"Machine Gun Jimmy":{
+		"Tank":{
+			"Hull":"Faster Hull",
+			"Weapons":["Machine Gun Weapon"]
+		}	
+	},
+	"Short Range Boy":{
+		"Tank":{
+			"Hull":"Faster Hull",
+			"Weapons":["Short Range Weapon"]
+		}	
 	}
 }

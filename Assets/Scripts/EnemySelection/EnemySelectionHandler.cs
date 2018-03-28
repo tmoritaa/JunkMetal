@@ -45,11 +45,14 @@ public class EnemySelectionHandler : MonoBehaviour
     private void initScreen() {
         List<EnemyInfo> infos = EnemyInfoManager.Instance.GetAllEnemyInfos();
 
+        const float itemHeight = 50f;
+        float startY = itemHeight * infos.Count / 2;
+
         EnemySelectItem highlightItem = null;
         int count = 0;
         foreach (EnemyInfo info in infos) {
             EnemySelectItem item = Instantiate(enemySelectItemPrefab, enemySelectItemRoot, false);
-            item.transform.localPosition = new Vector3(0, -count * 50, 0);
+            item.transform.localPosition = new Vector3(0, startY - count * itemHeight, 0);
 
             item.Init(info);
 
