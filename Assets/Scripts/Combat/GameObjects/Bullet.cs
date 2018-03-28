@@ -9,7 +9,7 @@ public class Bullet : MonoBehaviour
 {
     public enum BulletTypes
     {
-        Normal,
+        Ballistic,
     }
 
     [SerializeField]

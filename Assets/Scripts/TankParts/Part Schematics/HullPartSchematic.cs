@@ -77,7 +77,7 @@ public class HullPartSchematic : PartSchematic
             retStr = string.Format("{0}\n{1}\n{2}\n{3}\nWeapon Weight Restrictions:\n{4} => {5}",
                 armorStr, energyPowerStr, weightStr, angularDragStr, diffWeightRestrictStr, weightRestrictStr);
         } else {
-            string weightRestrictStr = "[" + String.Join(", ", new List<WeaponTier>(WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + "]";
+            string weightRestrictStr = "(" + String.Join(", ", new List<WeaponTier>(WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
             retStr = string.Format("Armour:\n{0}\nEnergy Power:\n{1}\n Weight:\n{2}\nAngular Drag:\n{3}\nWeapon Weight Restrictions:\n{4}",
                 Armour, EnergyPower, Weight, AngularDrag, weightRestrictStr);
         }
