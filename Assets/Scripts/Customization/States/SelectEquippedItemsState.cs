@@ -35,7 +35,7 @@ public class SelectEquippedItemsState : CustomizationState
     }
 
     public override void PerformUpdate() {
-        if (Input.GetKeyUp(KeyCode.Joystick1Button1) || Input.GetKeyUp(KeyCode.Mouse1) || Input.GetKeyUp(KeyCode.Escape)) {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.Cancel, true)) {
             handler.BackToMain();
         }
     }
