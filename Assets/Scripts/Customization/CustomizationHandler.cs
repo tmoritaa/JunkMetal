@@ -134,6 +134,18 @@ public class CustomizationHandler : MonoBehaviour
                     }
                 }
             }
+            
+            int count = 0;
+            foreach (PartSlot slot in EquippedParts) {
+                if (slot.PartType == PartSchematic.PartType.Weapon) {
+                    PartSchematic.WeaponTier tier = newHull.WeaponTierRestrictions[count];
+                    if (slot.Part != null && ((WeaponPartSchematic)slot.Part).Tier > tier) {
+                        slot.UpdatePart(null);
+                    }
+
+                    count += 1;
+                }
+            }
         }
 
         updateTankDisplayToCurrent();
