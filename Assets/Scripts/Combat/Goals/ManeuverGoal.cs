@@ -86,12 +86,24 @@ public class ManeuverGoal : Goal
 
         Map map = controller.Map;
 
-        int timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Hull.GetAllWeapons());
-        int timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons());
+        WeaponPart targetWeapon;
+        WeaponPart selfWeapon;
+        int timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Hull.GetAllWeapons(), out targetWeapon);
+        int timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons(), out selfWeapon);
+
+        int weaponDmgDiff = selfWeapon.Schematic.Damage - targetWeapon.Schematic.Damage;
+        float stepRatio = weaponDmgDiff / 10f;
+
+        int thresh = 50 + Mathf.RoundToInt(stepRatio * 50);
+        if (weaponDmgDiff > 0) {
+            thresh = Math.Min(thresh, 150);
+        } else {
+            thresh = Math.Max(thresh, -150);
+        }
 
         int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
 
-        bool runaway = diff > 50;
+        bool runaway = diff > thresh;
 
         List<float> possibleRotAngles = new List<float>() {
                 0,
@@ -168,8 +180,9 @@ public class ManeuverGoal : Goal
         for (int i = 0; i < possibleNodes.Count; ++i) {
             LookaheadNode node = possibleNodes[i];
 
-            int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons());
-            int selfTime = calcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons());
+            WeaponPart notUsed;
+            int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
+            int selfTime = calcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons(), out notUsed);
 
             int cost = targetTime - selfTime;
 
@@ -204,7 +217,8 @@ public class ManeuverGoal : Goal
 
         List<CostInfo> nodeCosts = new List<CostInfo>();
         foreach (LookaheadNode node in possibleNodes) {
-            int time = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons());
+            WeaponPart notUsed;
+            int time = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
 
             nodeCosts.Add(new CostInfo(node, time));
         }
@@ -251,14 +265,16 @@ public class ManeuverGoal : Goal
         return pickedInfo;
     }
 
-    private int calcMinTimeForAimerToHitAimee(TankStateInfo aimingTankInfo, TankStateInfo aimeeTankInfo, List<WeaponPart> aimerWeapons) {
-        int minTime = 9999;
+    private int calcMinTimeForAimerToHitAimee(TankStateInfo aimingTankInfo, TankStateInfo aimeeTankInfo, List<WeaponPart> aimerWeapons, out WeaponPart outWeapon) {
+        int minTime = 99999;
+        outWeapon = null;
         foreach (WeaponPart weapon in aimerWeapons) {
             Vector2 fireVec = weapon.OwningTank.Hull.Schematic.OrigWeaponDirs[weapon.EquipIdx].Rotate(aimingTankInfo.Rot);
             int time = convertFloatSecondToIntCentiSecond(AIUtility.CalcTimeToHitPos(aimingTankInfo.Pos, fireVec, aimingTankInfo, weapon.Schematic, aimeeTankInfo.Pos) + weapon.CalcTimeToReloaded());
 
             if (time < minTime) {
                 minTime = time;
+                outWeapon = weapon;
             }
         }
 
