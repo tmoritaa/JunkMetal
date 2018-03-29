@@ -89,9 +89,9 @@ public class ManeuverGoal : Goal
         int timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Hull.GetAllWeapons());
         int timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons());
 
-        int safeTime = prevBehaviour == Behaviour.GoingforIt ? 50 : 100;
         int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
-        bool runaway = timeForTargetToHitSelf < timeForSelfToHitTarget && timeForTargetToHitSelf < safeTime && diff > 25;
+
+        bool runaway = timeForTargetToHitSelf < timeForSelfToHitTarget && diff > 50;
 
         List<float> possibleRotAngles = new List<float>() {
                 0,
@@ -205,31 +205,18 @@ public class ManeuverGoal : Goal
         Tank targetTank = controller.TargetTank;
 
         List<CostInfo> nodeCosts = new List<CostInfo>();
-        bool reachableFirst = false;
         foreach (LookaheadNode node in possibleNodes) {
             int time = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons());
 
             nodeCosts.Add(new CostInfo(node, time));
-
-            if (time > LookaheadTime) {
-                reachableFirst = true;
-            }
         }
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_runaway_cost_infos", nodeCosts);
 
         CostInfo bestInfo = null;
-        if (reachableFirst) {
-            foreach (CostInfo info in nodeCosts) {
-                if (info.Cost > LookaheadTime && (bestInfo == null || bestInfo.Cost < info.Cost)) {
-                    bestInfo = info;
-                }
-            }
-        } else {
-            foreach (CostInfo info in nodeCosts) {
-                if (bestInfo == null || bestInfo.Cost < info.Cost) {
-                    bestInfo = info;
-                }
+        foreach (CostInfo info in nodeCosts) {
+            if (bestInfo == null || bestInfo.Cost < info.Cost) {
+                bestInfo = info;
             }
         }
 
