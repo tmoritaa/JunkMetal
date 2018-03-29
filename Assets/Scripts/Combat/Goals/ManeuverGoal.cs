@@ -91,7 +91,7 @@ public class ManeuverGoal : Goal
 
         int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
 
-        bool runaway = timeForTargetToHitSelf < timeForSelfToHitTarget && diff > 50;
+        bool runaway = diff > 50;
 
         List<float> possibleRotAngles = new List<float>() {
                 0,
@@ -99,12 +99,10 @@ public class ManeuverGoal : Goal
                 45f,
                 135f,
                 -45f,
-                -135f
+                -135f,
+                90f,
+                -90f
             };
-        if (!runaway) {
-            possibleRotAngles.Add(90f);
-            possibleRotAngles.Add(-90f);
-        }
 
         clearManeuverBehaviourDebugObjects();
 
