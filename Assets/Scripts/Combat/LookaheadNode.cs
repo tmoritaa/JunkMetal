@@ -128,4 +128,14 @@ public class LookaheadNode
 
         return crossedTarget;
     }
+
+    public LookaheadNode GetNodeOneStepAfterRoot() {
+        LookaheadNode curNode = this;
+
+        while (curNode.ParentNode.ParentNode != null) {
+            curNode = curNode.ParentNode;
+        }
+
+        return curNode;
+    }
 }

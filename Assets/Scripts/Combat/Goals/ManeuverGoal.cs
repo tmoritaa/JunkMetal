@@ -209,7 +209,7 @@ public class ManeuverGoal : Goal
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
-        return bestInfo.Node.IncomingDir;
+        return bestInfo.Node.GetNodeOneStepAfterRoot().IncomingDir;
     }
 
     private Vector2 runawayBehaviour(List<LookaheadNode> possibleNodes) {
@@ -236,7 +236,7 @@ public class ManeuverGoal : Goal
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
-        return bestInfo.Node.IncomingDir;
+        return bestInfo.Node.GetNodeOneStepAfterRoot().IncomingDir;
     }
 
     private CostInfo handleSameCostCostInfos(CostInfo bestInfo, List<CostInfo> allCostInfos) {
