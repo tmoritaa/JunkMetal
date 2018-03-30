@@ -24,7 +24,7 @@ public class ManeuverGoal : Goal
         }
     }
 
-    private enum Behaviour
+    public enum Behaviour
     {
         Runaway,
         GoingforIt,
@@ -40,8 +40,6 @@ public class ManeuverGoal : Goal
     private Vector2 forwardVecWhenUpdate = new Vector2();
 
     private float elapsedTimeSinceLastUpdate = 100f;
-
-    private Behaviour prevBehaviour = Behaviour.Notset;
 
     public ManeuverGoal(AITankController _tankController) : base(_tankController) {
     }
@@ -73,9 +71,9 @@ public class ManeuverGoal : Goal
         }
 
         float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
-        actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
+        actions.Add(new GoInDirAction(prevMoveDir/*.Rotate(angleDiffSinceUpdate)*/, controller));
 
-        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
+        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir/*.Rotate(angleDiffSinceUpdate)*/);
 
         return actions.ToArray();
     }
@@ -94,16 +92,19 @@ public class ManeuverGoal : Goal
         int weaponDmgDiff = selfWeapon.Schematic.Damage - targetWeapon.Schematic.Damage;
         float stepRatio = weaponDmgDiff / 10f;
 
-        int thresh = 50 + Mathf.RoundToInt(stepRatio * 50);
+        int thresh = 50 + Mathf.RoundToInt(stepRatio * 25);
         if (weaponDmgDiff > 0) {
-            thresh = Math.Min(thresh, 150);
+            thresh = Math.Min(thresh, 100);
         } else {
-            thresh = Math.Max(thresh, -150);
+            thresh = Math.Max(thresh, -100);
         }
 
         int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
+        
+        bool runaway = diff > thresh && timeForTargetToHitSelf < 150;
 
-        bool runaway = diff > thresh;
+        string debugOutput = "diff=" + diff + " thresh=" + thresh + " runningAway?=" + runaway.ToString();
+        Debug.Log(debugOutput);
 
         List<float> possibleRotAngles = new List<float>() {
                 0,
@@ -131,20 +132,16 @@ public class ManeuverGoal : Goal
         possibleNodes = filterByDestNotObstructed(possibleNodes);
         CombatDebugHandler.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
 
-        possibleNodes = filterByTooCloseToTarget(possibleNodes);
-        CombatDebugHandler.Instance.RegisterObject("maneuver_too_close_filter", possibleNodes);
+        //possibleNodes = filterByTooCloseToTarget(possibleNodes);
+        //CombatDebugHandler.Instance.RegisterObject("maneuver_too_close_filter", possibleNodes);
 
         Vector2 requestDir = new Vector2();
         if (runaway) {
-            Debug.Log("We runnin");
-
             requestDir = runawayBehaviour(possibleNodes);
-            prevBehaviour = Behaviour.Runaway;
+            controller.PrevManeuverBehaviour = Behaviour.Runaway;
         } else {
-            Debug.Log("We goin for it");
-
             requestDir = goingForItBehaviour(possibleNodes);
-            prevBehaviour = Behaviour.GoingforIt;
+            controller.PrevManeuverBehaviour = Behaviour.GoingforIt;
         }
 
         return requestDir;
@@ -214,13 +211,37 @@ public class ManeuverGoal : Goal
 
     private Vector2 runawayBehaviour(List<LookaheadNode> possibleNodes) {
         Tank targetTank = controller.TargetTank;
+        Tank selfTank = controller.SelfTank;
+
+        float dist = (targetTank.transform.position - selfTank.transform.position).magnitude;
+
+        float maxRange = selfTank.Hull.GetMaxRange();
+        bool onlyForward = maxRange < dist;
+        bool allWeaponsReloading = selfTank.Hull.IsAllWeaponsReloading();
 
         List<CostInfo> nodeCosts = new List<CostInfo>();
         foreach (LookaheadNode node in possibleNodes) {
             WeaponPart notUsed;
-            int time = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
+            int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
 
-            nodeCosts.Add(new CostInfo(node, time));
+            int cost = targetTime;
+            
+            float futureDist = ((Vector2)targetTank.transform.position - node.TankInfo.Pos).magnitude;
+            if ((onlyForward && dist > futureDist) || (!onlyForward && futureDist < maxRange) || allWeaponsReloading) {
+                nodeCosts.Add(new CostInfo(node, cost));
+            }
+        }
+
+        // If no nodes fit condition, go over again and just calculate cost for each node.
+        if (nodeCosts.Count == 0) {
+            foreach (LookaheadNode node in possibleNodes) {
+                WeaponPart notUsed;
+                int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
+
+                int cost = targetTime;
+
+                nodeCosts.Add(new CostInfo(node, cost));
+            }
         }
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_runaway_cost_infos", nodeCosts);

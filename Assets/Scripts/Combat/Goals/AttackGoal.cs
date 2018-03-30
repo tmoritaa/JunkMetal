@@ -18,29 +18,35 @@ public class AttackGoal : Goal
         Insistence = 0;
         weaponsThatCanHit.Clear();
 
-        Tank aiTank = controller.SelfTank;
+        if (controller.PrevManeuverBehaviour == ManeuverGoal.Behaviour.GoingforIt) {
+            Tank aiTank = controller.SelfTank;
 
-        Tank targetTank = controller.TargetTank;
+            Tank targetTank = controller.TargetTank;
 
-        foreach (WeaponPart weapon in aiTank.Hull.GetAllWeapons()) {
-            Vector2 targetPos = AIUtility.CalculateTargetPosWithWeapon(weapon.Schematic.ShootImpulse, weapon.CalculateFirePos(), aiTank.transform.position, targetTank.transform.position, targetTank.Body.velocity);
-            Vector2 curFireVec = weapon.CalculateFireVec();
-            Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
-            float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
-            bool canHitIfFired = shortestDist < targetTank.Hull.Schematic.Size.x / 2f;
+            foreach (WeaponPart weapon in aiTank.Hull.GetAllWeapons()) {
+                if (weapon.CalcTimeToReloaded() > 0) {
+                    continue;
+                }
 
-            Vector2 targetVec = targetPos - weapon.CalculateFirePos();
+                Vector2 targetPos = AIUtility.CalculateTargetPosWithWeapon(weapon.Schematic.ShootImpulse, weapon.CalculateFirePos(), aiTank.transform.position, targetTank.transform.position, targetTank.Body.velocity);
+                Vector2 curFireVec = weapon.CalculateFireVec();
+                Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
+                float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
+                bool canHitIfFired = shortestDist < targetTank.Hull.Schematic.Size.x / 2f;
 
-            bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
-            bool inRange = targetVec.magnitude < weapon.Schematic.Range;
-            if (inRange && canHitIfFired && fireVecFacingTarget) {
-                weaponsThatCanHit.Add(weapon);
-                break;
+                Vector2 targetVec = targetPos - weapon.CalculateFirePos();
+
+                bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
+                bool inRange = targetVec.magnitude < weapon.Schematic.Range;
+                if (inRange && canHitIfFired && fireVecFacingTarget) {
+                    weaponsThatCanHit.Add(weapon);
+                    break;
+                }
             }
-        }
 
-        if (weaponsThatCanHit.Count > 0) {
-            Insistence = 100;
+            if (weaponsThatCanHit.Count > 0) {
+                Insistence = 100;
+            }
         }
     }
 

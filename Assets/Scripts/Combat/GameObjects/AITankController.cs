@@ -16,6 +16,8 @@ public class AITankController : TankController
         get; private set;
     }
 
+    public ManeuverGoal.Behaviour PrevManeuverBehaviour;
+
     private List<Goal> goals = new List<Goal>();
 
     private Goal curGoal = null;
