@@ -35,8 +35,8 @@ public class TankGOConstructor : MonoBehaviour
         LeftWheelGO = Instantiate(hullPrefabInfo.WheelPrefab, this.transform, false);
         RightWheelGO = Instantiate(hullPrefabInfo.WheelPrefab, this.transform, false);
 
-        LeftWheelGO.transform.position = this.transform.position + new Vector3(-hullPrefabInfo.WheelXOffset, 0);
-        RightWheelGO.transform.position = this.transform.position + new Vector3(hullPrefabInfo.WheelXOffset, 0);
+        LeftWheelGO.transform.localPosition = new Vector3(-hullPrefabInfo.WheelXOffset, 0);
+        RightWheelGO.transform.localPosition = new Vector3(hullPrefabInfo.WheelXOffset, 0);
 
         HullGO = Instantiate(hullPrefabInfo.HullPrefab, this.transform, false);
 
