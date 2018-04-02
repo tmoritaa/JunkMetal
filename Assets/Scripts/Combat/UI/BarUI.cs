@@ -10,13 +10,21 @@ public abstract class BarUI : MonoBehaviour
 {
     [SerializeField]
     Image fillImage;
-	
-	protected virtual void Update()
+
+    [SerializeField]
+    RectTransform frameRect;
+
+    protected virtual void Update()
 	{
+        float frameMaxXAnchor = frameRect.anchorMax.x;
+
         RectTransform rectTrans = fillImage.GetComponent<RectTransform>();
         Vector2 anchorMax = rectTrans.anchorMax;
 
-        anchorMax.x = Mathf.Clamp01(getFillPercentage());
+        float fillPercentage = Mathf.Clamp01(getFillPercentage());
+        float xAnchorVal = frameMaxXAnchor + (1.0f - frameMaxXAnchor) * fillPercentage;
+
+        anchorMax.x = xAnchorVal;
 
         rectTrans.anchorMax = anchorMax;
 	}
