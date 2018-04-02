@@ -9,9 +9,12 @@ using UnityEngine.UI;
 public class EnemyPointer : MonoBehaviour 
 {
     [SerializeField]
-    Image arrowImage;
+    private Image arrowImage;
 
-	void Update()
+    [SerializeField]
+    private Text text;
+
+    void Update()
 	{
         Tank aiTank = CombatHandler.Instance.AITankController.SelfTank;
         Vector2 aiTankPos = aiTank.transform.position;
@@ -45,6 +48,8 @@ public class EnemyPointer : MonoBehaviour
 
             float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(arrowImage.transform.rotation.eulerAngles.z), diffVec);
             arrowImage.transform.Rotate(new Vector3(0, 0, angle));
+
+            text.text = diffVec.magnitude.ToString("0.00");
         } else {
             arrowImage.gameObject.SetActive(false);
         }
