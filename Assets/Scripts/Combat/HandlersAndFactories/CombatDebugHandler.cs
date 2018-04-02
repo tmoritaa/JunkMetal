@@ -61,7 +61,7 @@ public class CombatDebugHandler : MonoBehaviour
     private bool maneuverDestNotObstructedFilter = true;
 
     [SerializeField]
-    private bool maneuverTooCloseFilter = true;
+    private bool maneuverAwayFromWallFilter = true;
 
     [SerializeField]
     private bool maneuverRunawayNodes = true;
@@ -237,8 +237,8 @@ public class CombatDebugHandler : MonoBehaviour
                     }
                 }
 
-                if (maneuverTooCloseFilter) {
-                    object obj = getRegisterdObj("maneuver_too_close_filter");
+                if (maneuverAwayFromWallFilter) {
+                    object obj = getRegisterdObj("maneuver_away_from_wall_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 

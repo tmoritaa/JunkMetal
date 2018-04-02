@@ -132,8 +132,13 @@ public class ManeuverGoal : Goal
         possibleNodes = filterByDestNotObstructed(possibleNodes);
         CombatDebugHandler.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
 
-        //possibleNodes = filterByTooCloseToTarget(possibleNodes);
-        //CombatDebugHandler.Instance.RegisterObject("maneuver_too_close_filter", possibleNodes);
+        List<Vector2> hitWallDirs = new List<Vector2>();
+        bool isCloseToWall = checkIfCloseToWall(out hitWallDirs);
+
+        if (isCloseToWall) {
+            possibleNodes = filterByAwayFromWall(possibleNodes, hitWallDirs);
+        }
+        CombatDebugHandler.Instance.RegisterObject("maneuver_away_from_wall_filter", possibleNodes);
 
         Vector2 requestDir = new Vector2();
         if (runaway) {
@@ -302,6 +307,34 @@ public class ManeuverGoal : Goal
         return minTime;
     }
 
+    private List<LookaheadNode> filterByAwayFromWall(List<LookaheadNode> nodes, List<Vector2> hitWallDirs) {
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+
+        foreach (LookaheadNode node in nodes) {
+            Vector2 dir = node.GetNodeOneStepAfterRoot().IncomingDir;
+
+            bool isHitWallDir = false;
+            foreach (Vector2 hitWallDir in hitWallDirs) {
+                float angle = Vector2.Angle(dir, hitWallDir);
+
+                if (angle < 90f) {
+                    isHitWallDir = true;
+                    break;
+                }
+            }
+
+            if (!isHitWallDir) {
+                filteredNodes.Add(node);
+            }
+        }
+
+        if (filteredNodes.Count == 0) {
+            filteredNodes = nodes;
+        }
+
+        return filteredNodes;
+    }
+
     private List<LookaheadNode> filterByPathNotObstructed(List<LookaheadNode> nodes) {
         List<LookaheadNode> filteredNode = new List<LookaheadNode>();
 
@@ -352,6 +385,25 @@ public class ManeuverGoal : Goal
         }
 
         return filteredNode;
+    }
+
+    private bool checkIfCloseToWall(out List<Vector2> wallDirections) {
+        wallDirections = new List<Vector2>();
+
+        TankStateInfo stateInfo = controller.SelfTank.StateInfo;
+        Vector2 centerPt = stateInfo.Pos;
+
+        Vector2[] checkDirs = new Vector2[] { new Vector2(0, 1), new Vector2(0, -1), new Vector2(1, 0), new Vector2(-1, 0) };
+
+        foreach (Vector2 dir in checkDirs) {
+            RaycastHit2D hitResult = Physics2D.Raycast(centerPt, dir, stateInfo.TerminalVel / 2f);
+
+            if (hitResult.collider != null) {
+                wallDirections.Add(dir);
+            }
+        }
+
+        return wallDirections.Count > 0;
     }
 
     private int convertFloatSecondToIntCentiSecond(float time) {
