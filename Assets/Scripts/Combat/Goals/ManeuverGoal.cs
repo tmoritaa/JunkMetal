@@ -226,42 +226,11 @@ public class ManeuverGoal : Goal
         float maxRange = selfTank.Hull.GetMaxRange() * 1.5f;
         bool onlyCloser = maxRange < dist;
         bool allWeaponsReloading = selfTank.Hull.IsAllWeaponsReloading();
-        
+
         List<CostInfo> nodeCosts = new List<CostInfo>();
-        foreach (LookaheadNode node in possibleNodes) {
-            WeaponPart notUsed;
-            int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
+        bool withFilter = true;
 
-            Vector2 incomingDir = node.GetNodeOneStepAfterRoot().IncomingDir;
-
-            int cost = targetTime;
-            if (isOpposingDir(incomingDir, prevMoveDir)) {
-                Debug.Log("opposing penalty applied");
-                cost -= 20;
-
-                if (isInOpponentFireVec()) {
-                    Debug.Log("In opponent fire vec penalty applied");
-                    cost -= 30;
-                }
-            }
-
-            float angle = Vector2.Angle(incomingDir, selfTank.GetForwardVec());
-            Debug.Log("diag penalty angle=" + angle);
-            float ratio = angle / 45f;
-            double decimalPoint = ratio - Math.Truncate(ratio);
-            if (decimalPoint < 0.25f && Math.Truncate(ratio) == 1 || Math.Truncate(ratio) == 3) {
-                Debug.Log("diag penalty applied");
-                cost -= 10;
-            }
-
-            float futureDist = ((Vector2)targetTank.transform.position - node.TankInfo.Pos).magnitude;
-            if ((onlyCloser && dist > futureDist) || (!onlyCloser && futureDist < maxRange) || allWeaponsReloading) {
-                nodeCosts.Add(new CostInfo(node, cost));
-            }
-        }
-
-        // If no nodes fit condition, go over again and just calculate cost for each node.
-        if (nodeCosts.Count == 0) {
+        while (nodeCosts.Count == 0) {
             foreach (LookaheadNode node in possibleNodes) {
                 WeaponPart notUsed;
                 int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
@@ -288,8 +257,13 @@ public class ManeuverGoal : Goal
                     cost -= 10;
                 }
 
-                nodeCosts.Add(new CostInfo(node, cost));
+                float futureDist = ((Vector2)targetTank.transform.position - node.TankInfo.Pos).magnitude;
+                if (!withFilter || ((onlyCloser && dist > futureDist) || (!onlyCloser && futureDist < maxRange) || allWeaponsReloading)) {
+                    nodeCosts.Add(new CostInfo(node, cost));
+                }
             }
+
+            withFilter = false;
         }
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_runaway_cost_infos", nodeCosts);
