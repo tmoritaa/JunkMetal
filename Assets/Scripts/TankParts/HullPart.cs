@@ -102,6 +102,23 @@ public class HullPart
         }
     }
 
+    public float GetMaxRange() {
+        return GetAllWeapons().Max(w => w.Schematic.Range);
+    }
+
+    public bool IsAllWeaponsReloading() {
+        bool noReload = true;
+        foreach (WeaponPart part in GetAllWeapons()) {
+            noReload = part.CalcTimeToReloaded() == 0;
+
+            if (!noReload) {
+                break;
+            }
+        }
+
+        return !noReload;
+    }
+
     public void PerformPowerChange(int leftChangeDir, int rightChangeDir) {
         performPowerChangeForSide(Side.left, leftChangeDir);
         performPowerChangeForSide(Side.right, rightChangeDir);

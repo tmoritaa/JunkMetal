@@ -16,6 +16,8 @@ public class AITankController : TankController
         get; private set;
     }
 
+    public ManeuverGoal.Behaviour PrevManeuverBehaviour;
+
     private List<Goal> goals = new List<Goal>();
 
     private Goal curGoal = null;
@@ -33,7 +35,7 @@ public class AITankController : TankController
             SelfTank.PerformActuation(requestDir.normalized);
         } else {
             if (!CombatHandler.Instance.DisableMovement && !SelfTank.DisableMovement) {
-                TargetTank.MarkCurPositionAsBlockedOnMap(Map);
+                //TargetTank.MarkCurPositionAsBlockedOnMap(Map);
 
                 updateGoalsAndPerformActions();
             }
