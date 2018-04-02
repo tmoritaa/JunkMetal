@@ -112,10 +112,13 @@ public class ManeuverGoal : Goal
                 45f,
                 135f,
                 -45f,
-                -135f,
-                90f,
-                -90f
+                -135f
             };
+
+        if (!runaway) {
+            possibleRotAngles.Add(90f);
+            possibleRotAngles.Add(-90f);
+        }
 
         clearManeuverBehaviourDebugObjects();
 
@@ -220,19 +223,39 @@ public class ManeuverGoal : Goal
 
         float dist = (targetTank.transform.position - selfTank.transform.position).magnitude;
 
-        float maxRange = selfTank.Hull.GetMaxRange();
-        bool onlyForward = maxRange < dist;
+        float maxRange = selfTank.Hull.GetMaxRange() * 1.5f;
+        bool onlyCloser = maxRange < dist;
         bool allWeaponsReloading = selfTank.Hull.IsAllWeaponsReloading();
-
+        
         List<CostInfo> nodeCosts = new List<CostInfo>();
         foreach (LookaheadNode node in possibleNodes) {
             WeaponPart notUsed;
             int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
 
+            Vector2 incomingDir = node.GetNodeOneStepAfterRoot().IncomingDir;
+
             int cost = targetTime;
-            
+            if (isOpposingDir(incomingDir, prevMoveDir)) {
+                Debug.Log("opposing penalty applied");
+                cost -= 20;
+
+                if (isInOpponentFireVec()) {
+                    Debug.Log("In opponent fire vec penalty applied");
+                    cost -= 30;
+                }
+            }
+
+            float angle = Vector2.Angle(incomingDir, selfTank.GetForwardVec());
+            Debug.Log("diag penalty angle=" + angle);
+            float ratio = angle / 45f;
+            double decimalPoint = ratio - Math.Truncate(ratio);
+            if (decimalPoint < 0.25f && Math.Truncate(ratio) == 1 || Math.Truncate(ratio) == 3) {
+                Debug.Log("diag penalty applied");
+                cost -= 10;
+            }
+
             float futureDist = ((Vector2)targetTank.transform.position - node.TankInfo.Pos).magnitude;
-            if ((onlyForward && dist > futureDist) || (!onlyForward && futureDist < maxRange) || allWeaponsReloading) {
+            if ((onlyCloser && dist > futureDist) || (!onlyCloser && futureDist < maxRange) || allWeaponsReloading) {
                 nodeCosts.Add(new CostInfo(node, cost));
             }
         }
@@ -243,7 +266,27 @@ public class ManeuverGoal : Goal
                 WeaponPart notUsed;
                 int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
 
+                Vector2 incomingDir = node.GetNodeOneStepAfterRoot().IncomingDir;
+
                 int cost = targetTime;
+                if (isOpposingDir(incomingDir, prevMoveDir)) {
+                    Debug.Log("opposing penalty applied");
+                    cost -= 20;
+
+                    if (isInOpponentFireVec()) {
+                        Debug.Log("In opponent fire vec penalty applied");
+                        cost -= 30;
+                    }
+                }
+
+                float angle = Vector2.Angle(incomingDir, selfTank.GetForwardVec());
+                Debug.Log("diag penalty angle=" + angle);
+                float ratio = angle / 45f;
+                double decimalPoint = ratio - Math.Truncate(ratio);
+                if (decimalPoint < 0.25f && Math.Truncate(ratio) == 1 || Math.Truncate(ratio) == 3) {
+                    Debug.Log("diag penalty applied");
+                    cost -= 10;
+                }
 
                 nodeCosts.Add(new CostInfo(node, cost));
             }
@@ -404,6 +447,45 @@ public class ManeuverGoal : Goal
         }
 
         return wallDirections.Count > 0;
+    }
+
+    private bool isOpposingDir(Vector2 dir, Vector2 prevDir) {
+        double angle = Vector2.Angle(prevDir, dir);
+
+        Debug.Log("opposingDir angle=" + angle);
+
+        double decimalPoint = angle / 45f - Math.Truncate(angle / 45);
+        return decimalPoint < 0.25f && angle >= 90f;
+    }
+
+    private bool isInOpponentFireVec() {
+        TankStateInfo selfTank = controller.SelfTank.StateInfo;
+        TankStateInfo targetTank = controller.TargetTank.StateInfo;
+
+        bool canBeHit = false;
+
+        foreach (WeaponPart weapon in controller.TargetTank.Hull.GetAllWeapons()) {
+            if (weapon.CalcTimeToReloaded() > 0.25f) {
+                continue;
+            }
+
+            Vector2 targetPos = selfTank.Pos;
+            Vector2 curFireVec = weapon.CalculateFireVec();
+            Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
+            float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
+            bool canHitIfFired = shortestDist < targetTank.Size.x;
+
+            Vector2 targetVec = targetPos - weapon.CalculateFirePos();
+
+            bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
+            bool inRange = targetVec.magnitude < weapon.Schematic.Range;
+            if (inRange && canHitIfFired && fireVecFacingTarget) {
+                canBeHit = true;
+                break;
+            }
+        }
+
+        return canBeHit;
     }
 
     private int convertFloatSecondToIntCentiSecond(float time) {
