@@ -7,7 +7,6 @@
 	"weapons": {
 		"Basic Weapon":"BasicCannon",
 		"Strong Weapon":"SniperCannon",
-		"Short Range Weapon":"BasicCannon",
-		"Machine Gun Weapon":"BasicCannon"
+		"Machine Gun Weapon":"Machinegun"
 	}
 }

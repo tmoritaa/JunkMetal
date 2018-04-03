@@ -1,6 +1,5 @@
 {
 	"Basic Weapon":{"tier":"M", "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":350, "reload_time":1.5, "damage":10, "bullet_type":"Ballistic"},
 	"Strong Weapon":{"tier":"H", "shoot_impulse":3000, "shoot_recoil_impulse":20000, "hit_impulse":20000, "range":500, "reload_time":15, "damage":50, "bullet_type":"Ballistic"},
-	"Short Range Weapon":{"tier":"M", "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":200, "reload_time":2, "damage":25, "bullet_type":"Ballistic"},
 	"Machine Gun Weapon":{"tier":"L", "shoot_impulse":2500, "shoot_recoil_impulse":10000, "hit_impulse":5000, "range":250, "reload_time":0.5, "damage":5, "bullet_type":"Ballistic"}
 }
