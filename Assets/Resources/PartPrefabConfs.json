@@ -1,7 +1,7 @@
 {
 	"hulls": {
 		"Basic Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26},
-		"Faster Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26},
+		"Faster Hull":{"hull":"FasterHull", "wheels":"Wheels", "wheel_offset":26},
 		"Double Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":26}
 	},
 	"weapons": {
