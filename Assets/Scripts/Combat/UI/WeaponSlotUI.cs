@@ -12,7 +12,16 @@ public class WeaponSlotUI : MonoBehaviour
     private Image reloadFill;
 
     [SerializeField]
+    private RectTransform frameRect;
+
+    [SerializeField]
     private Text nameText;
+
+    [SerializeField]
+    private Color reloadingColor;
+
+    [SerializeField]
+    private Color reloadedColor;
 
     private WeaponPart part;
     private bool initialized = false;
@@ -20,13 +29,16 @@ public class WeaponSlotUI : MonoBehaviour
     void Update() {
 		if (initialized) {
             if (part.IsFireable) {
-                reloadFill.gameObject.SetActive(false);
+                reloadFill.color = reloadedColor;
             } else {
-                reloadFill.gameObject.SetActive(true);
+                reloadFill.color = reloadingColor;
                 RectTransform rectTrans = reloadFill.GetComponent<RectTransform>();
 
+                float frameXAnchor = frameRect.anchorMax.x;
+
                 Vector2 anchorMax = rectTrans.anchorMax;
-                anchorMax.x = part.CalcRatioToReloaded();
+
+                anchorMax.x = frameXAnchor + (1.0f - frameXAnchor) * part.CalcRatioToReloaded();
                 rectTrans.anchorMax = anchorMax;
             }
         }

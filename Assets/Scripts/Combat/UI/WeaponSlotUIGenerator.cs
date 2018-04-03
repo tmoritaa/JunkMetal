@@ -13,6 +13,9 @@ public class WeaponSlotUIGenerator : MonoBehaviour
     [SerializeField]
     private int totalNumWeapons = 4;
 
+    [SerializeField]
+    private float slotOffset = -25f;
+
 	void Start() {
         Tank playerTank = CombatHandler.Instance.HumanTankController.SelfTank;
 
@@ -32,6 +35,8 @@ public class WeaponSlotUIGenerator : MonoBehaviour
 
             rectTrans.anchorMin = anchorMin;
             rectTrans.anchorMax = anchorMax;
+
+            rectTrans.localPosition += new Vector3((float)i * slotOffset, 0, 0);
 
             WeaponPart part = playerTank.Hull.GetWeaponAtIdx(i);
             slotUI.Init(part);
