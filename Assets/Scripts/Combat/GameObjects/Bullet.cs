@@ -100,6 +100,8 @@ public class Bullet : MonoBehaviour
                 Vector2 impulseDir = (avgContactPt - firePos).normalized;
                 tank.Body.AddForceAtPosition(impulseDir * hitImpulse, avgContactPt, ForceMode2D.Impulse);
 
+                CombatAnimationHandler.Instance.InstantiatePrefab("spark", avgContactPt, 0);
+
                 tank.Damage(damage);
             }
             destroySelf();
