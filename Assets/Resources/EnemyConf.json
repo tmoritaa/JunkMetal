@@ -28,11 +28,5 @@
 			"Hull":"Faster Hull",
 			"Weapons":["Machine Gun Weapon"]
 		}	
-	},
-	"Short Range Boy":{
-		"Tank":{
-			"Hull":"Faster Hull",
-			"Weapons":["Short Range Weapon"]
-		}	
 	}
 }
