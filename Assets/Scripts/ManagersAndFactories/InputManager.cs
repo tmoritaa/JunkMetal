@@ -12,12 +12,11 @@ public class InputManager
         LeftWheelBack,
         RightWheelFwd,
         RightWheelBack,
-        TurretCW,
-        TurretCCW,
+        Cancel,
         FireWeapon0 = 100,
         FireWeapon1,
         FireWeapon2,
-        Cancel,
+        FireWeapon3,
     }
 
     private static InputManager instance = null;
@@ -67,6 +66,15 @@ public class InputManager
             } else {
                 return axisVal > 0;
             }
+        } else if (kType == KeyType.FireWeapon0 || kType == KeyType.FireWeapon1) {
+            string keyName = (string)controllerBindings[kType];
+            float axisVal = Input.GetAxis(keyName);
+            
+            if (kType == KeyType.FireWeapon0) {
+                return axisVal < 0;
+            } else {
+                return axisVal > 0;
+            }
         } else {
             KeyCode keyCode = (KeyCode)controllerBindings[kType];
             return onlyUp ? Input.GetKeyUp(keyCode) : Input.GetKey(keyCode);            
@@ -78,8 +86,6 @@ public class InputManager
         keyboardBindings[KeyType.LeftWheelBack] = new List<KeyCode>() { KeyCode.S };
         keyboardBindings[KeyType.RightWheelFwd] = new List<KeyCode>() { KeyCode.U };
         keyboardBindings[KeyType.RightWheelBack] = new List<KeyCode>() { KeyCode.J };
-        keyboardBindings[KeyType.TurretCW] = new List<KeyCode>() { KeyCode.T };
-        keyboardBindings[KeyType.TurretCCW] = new List<KeyCode>() { KeyCode.R };
         keyboardBindings[KeyType.FireWeapon0] = new List<KeyCode>() { KeyCode.P };
         keyboardBindings[KeyType.FireWeapon1] = new List<KeyCode>() { KeyCode.O };
         keyboardBindings[KeyType.FireWeapon2] = new List<KeyCode>() { KeyCode.I };
@@ -91,11 +97,10 @@ public class InputManager
         controllerBindings[KeyType.LeftWheelBack] = "Left Stick Y Axis";
         controllerBindings[KeyType.RightWheelFwd] = "Right Stick Y Axis";
         controllerBindings[KeyType.RightWheelBack] = "Right Stick Y Axis";
-        controllerBindings[KeyType.TurretCW] = KeyCode.JoystickButton5;
-        controllerBindings[KeyType.TurretCCW] = KeyCode.JoystickButton4;
-        controllerBindings[KeyType.FireWeapon0] = KeyCode.JoystickButton2;
-        controllerBindings[KeyType.FireWeapon1] = KeyCode.JoystickButton3;
-        controllerBindings[KeyType.FireWeapon2] = KeyCode.JoystickButton1;
+        controllerBindings[KeyType.FireWeapon0] = "Triggers";
+        controllerBindings[KeyType.FireWeapon1] = "Triggers";
+        controllerBindings[KeyType.FireWeapon2] = KeyCode.JoystickButton5;
+        controllerBindings[KeyType.FireWeapon3] = KeyCode.JoystickButton4;
         controllerBindings[KeyType.Cancel] = KeyCode.Joystick1Button1;
     }
 }
