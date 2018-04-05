@@ -24,6 +24,8 @@ public class EnergyBullet : Bullet
 
     private float timeHit = 9999;
 
+    private float origAngle = 0;
+
     private bool hitboxEnabled = true;
 
     protected override void Awake() {
@@ -40,7 +42,7 @@ public class EnergyBullet : Bullet
         if (durationDiff > 0) {
             Color color = image.color;
 
-            alpha = Mathf.Clamp01(0.75f - durationDiff / 0.75f);
+            alpha = Mathf.Clamp01(0.5f - durationDiff / 0.5f);
             color.a = alpha;
 
             image.color = color;
@@ -52,26 +54,20 @@ public class EnergyBullet : Bullet
     }
 
     void FixedUpdate() {
-        if (hitboxEnabled) {
-            float extendLength = shootForce * Time.fixedDeltaTime;
+        this.body.rotation = origAngle;
 
-            RaycastHit2D hit = Physics2D.Raycast(this.transform.position, shotForwardVec, extendLength);
+        float extendLength = shootForce * Time.fixedDeltaTime;
 
-            if (hit.collider != null && hit.collider.gameObject == Owner.gameObject) {
-                extendLength = hit.distance;
-            }
+        float curHeight = rectTrans.sizeDelta.y;
 
-            float curHeight = rectTrans.sizeDelta.y;
+        float newHeight = curHeight + extendLength;
 
-            float newHeight = curHeight + extendLength;
+        Vector2 newSize = new Vector2(rectTrans.sizeDelta.x, newHeight);
 
-            Vector2 newSize = new Vector2(rectTrans.sizeDelta.x, newHeight);
+        rectTrans.sizeDelta = newSize;
 
-            rectTrans.sizeDelta = newSize;
-
-            boxCollider.size = newSize;
-            boxCollider.offset = new Vector2(0, newSize.y / 2f);
-        }
+        boxCollider.size = newSize;
+        boxCollider.offset = new Vector2(0, newSize.y / 2f);
     }
 
     public override BulletTypes GetBulletType() {
@@ -86,8 +82,8 @@ public class EnergyBullet : Bullet
         this.shotForwardVec = forwardVec;
         this.body.position = firePos;
 
-        float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), this.shotForwardVec);
-        this.body.rotation = angle;
+        origAngle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), this.shotForwardVec);
+        this.body.rotation = origAngle;
 
         Vector2 backVec = this.shotForwardVec.Rotate(180);
         Owner.Body.AddForce(backVec.normalized * partSchematic.RecoilImpulse, ForceMode2D.Impulse);
