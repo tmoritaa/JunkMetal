@@ -26,7 +26,7 @@ public class BulletFactory : MonoBehaviour
         instance = this;
 
         foreach (Bullet bullet in bulletPrefabs.bulletPrefabs) {
-            typeToBulletDict.Add(bullet.BulletType, bullet);
+            typeToBulletDict.Add(bullet.GetBulletType(), bullet);
         }
     }
 

@@ -103,8 +103,7 @@ public class ManeuverGoal : Goal
         
         bool runaway = diff > thresh && timeForTargetToHitSelf < 150;
 
-        string debugOutput = "diff=" + diff + " thresh=" + thresh + " runningAway?=" + runaway.ToString();
-        Debug.Log(debugOutput);
+        Debug.Log(runaway ? "running away" : "Going for it");
 
         List<float> possibleRotAngles = new List<float>() {
                 0,
@@ -238,24 +237,20 @@ public class ManeuverGoal : Goal
                 Vector2 incomingDir = node.GetNodeOneStepAfterRoot().IncomingDir;
 
                 int cost = targetTime;
-                if (isOpposingDir(incomingDir, prevMoveDir)) {
-                    Debug.Log("opposing penalty applied");
-                    cost -= 20;
+                //if (isOpposingDir(incomingDir, prevMoveDir)) {
+                //    cost -= 20;
 
-                    if (isInOpponentFireVec()) {
-                        Debug.Log("In opponent fire vec penalty applied");
-                        cost -= 30;
-                    }
-                }
+                //    if (isInOpponentFireVec()) {
+                //        cost -= 30;
+                //    }
+                //}
 
-                float angle = Vector2.Angle(incomingDir, selfTank.GetForwardVec());
-                Debug.Log("diag penalty angle=" + angle);
-                float ratio = angle / 45f;
-                double decimalPoint = ratio - Math.Truncate(ratio);
-                if (decimalPoint < 0.25f && Math.Truncate(ratio) == 1 || Math.Truncate(ratio) == 3) {
-                    Debug.Log("diag penalty applied");
-                    cost -= 10;
-                }
+                //float angle = Vector2.Angle(incomingDir, selfTank.GetForwardVec());
+                //float ratio = angle / 45f;
+                //double decimalPoint = ratio - Math.Truncate(ratio);
+                //if (decimalPoint < 0.25f && Math.Truncate(ratio) == 1 || Math.Truncate(ratio) == 3) {
+                //    cost -= 10;
+                //}
 
                 float futureDist = ((Vector2)targetTank.transform.position - node.TankInfo.Pos).magnitude;
                 if (!withFilter || ((onlyCloser && dist > futureDist) || (!onlyCloser && futureDist < maxRange) || allWeaponsReloading)) {
@@ -425,8 +420,6 @@ public class ManeuverGoal : Goal
 
     private bool isOpposingDir(Vector2 dir, Vector2 prevDir) {
         double angle = Vector2.Angle(prevDir, dir);
-
-        Debug.Log("opposingDir angle=" + angle);
 
         double decimalPoint = angle / 45f - Math.Truncate(angle / 45);
         return decimalPoint < 0.25f && angle >= 90f;

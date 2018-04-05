@@ -27,6 +27,12 @@
 		"Tank":{
 			"Hull":"Faster Hull",
 			"Weapons":["Machine Gun Weapon"]
-		}	
+		}
+	},
+	"Energy Fella":{
+		"Tank":{
+			"Hull":"Faster Hull",
+			"Weapons":["Energy Weapon"]
+		}
 	}
 }

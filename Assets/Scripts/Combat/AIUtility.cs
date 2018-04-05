@@ -33,7 +33,7 @@ public class AIUtility
         return targetPos;
     }
     
-    public static float CalcTimeToHitPos(Vector2 curPos, Vector2 curFireVec, TankStateInfo aimingTankInfo, WeaponPartSchematic schematic, Vector2 targetPos, bool ignoreTimeToAlign=false, bool ignoreTimeToMove=false) {
+    public static float CalcTimeToHitPos(Vector2 curPos, Vector2 curFireVec, TankStateInfo aimingTankInfo, WeaponPartSchematic schematic, Vector2 targetPos) {
         float timeToHit = 0;
 
         Vector2 diffVec = targetPos - curPos;
@@ -41,17 +41,13 @@ public class AIUtility
         // We have to calculate three things: rotation time, travel time to in range, and bullet travel time.
 
         // First calculate rotation time.
-        if (!ignoreTimeToAlign) {
-            timeToHit += aimingTankInfo.CalcTimeToRotate(curFireVec, diffVec);
-        }
+        timeToHit += aimingTankInfo.CalcTimeToRotate(curFireVec, diffVec);
 
-        if (!ignoreTimeToMove) {
-            // Next, calculate travel time.
-            float moveAmount = Mathf.Max(diffVec.magnitude - schematic.Range, 0);
-            if (moveAmount > 0) {
-                Vector2 newPos = diffVec.normalized * moveAmount + curPos;
-                timeToHit += aimingTankInfo.CalcTimeToReachPosWithNoRot(newPos);
-            }
+        // Next, calculate travel time.
+        float moveAmount = Mathf.Max(diffVec.magnitude - schematic.Range, 0);
+        if (moveAmount > 0) {
+            Vector2 newPos = diffVec.normalized * moveAmount + curPos;
+            timeToHit += aimingTankInfo.CalcTimeToReachPosWithNoRot(newPos);
         }
 
         // Finally, calculate bullet travel time.
