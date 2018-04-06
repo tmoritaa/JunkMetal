@@ -76,7 +76,7 @@ public class EnergyBullet : Bullet
 
     public override void Fire(Vector2 forwardVec, Vector2 firePosOffset, WeaponPartSchematic partSchematic) {
         damage = partSchematic.Damage;
-        hitImpulse = partSchematic.HitImpulse;
+        hitImpulse = (float)partSchematic.BulletInfos["hit_impulse"];
         shootForce = partSchematic.ShootImpulse;
         firePos = Owner.transform.position + (Vector3)firePosOffset;
         this.shotForwardVec = forwardVec;
@@ -85,8 +85,9 @@ public class EnergyBullet : Bullet
         origAngle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), this.shotForwardVec);
         this.body.rotation = origAngle;
 
+        float recoilImpulse = (float)partSchematic.BulletInfos["recoil_impulse"];
         Vector2 backVec = this.shotForwardVec.Rotate(180);
-        Owner.Body.AddForce(backVec.normalized * partSchematic.RecoilImpulse, ForceMode2D.Impulse);
+        Owner.Body.AddForce(backVec.normalized * recoilImpulse, ForceMode2D.Impulse);
     }
 
     private void disableHitbox() {

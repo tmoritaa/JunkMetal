@@ -44,7 +44,7 @@ public class BallisticBullet : Bullet
     public override void Fire(Vector2 forwardVec, Vector2 firePosOffset, WeaponPartSchematic partSchematic) {
         range = partSchematic.Range;
         damage = partSchematic.Damage;
-        hitImpulse = partSchematic.HitImpulse;
+        hitImpulse = (float)partSchematic.BulletInfos["hit_impulse"];
         firePos = Owner.transform.position + (Vector3)firePosOffset;
         this.body.position = firePos;
         this.impulseVector = forwardVec.normalized * partSchematic.ShootImpulse;
@@ -53,8 +53,9 @@ public class BallisticBullet : Bullet
         float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), forwardVec);
         this.body.rotation = angle;
 
+        float recoilImpulse = (float)partSchematic.BulletInfos["recoil_impulse"];
         Vector2 backVec = forwardVec.Rotate(180);
-        Owner.Body.AddForce(backVec.normalized * partSchematic.RecoilImpulse, ForceMode2D.Impulse);
+        Owner.Body.AddForce(backVec.normalized * recoilImpulse, ForceMode2D.Impulse);
     }
 
     private void OnCollisionEnter2D(Collision2D collision) {

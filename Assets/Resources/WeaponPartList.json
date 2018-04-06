@@ -1,6 +1,6 @@
 {
-	"Basic Weapon":{"tier":"M", "shoot_impulse":2500, "shoot_recoil_impulse":15000, "hit_impulse":10000, "range":350, "reload_time":1, "damage":10, "bullet_type":"Ballistic"},
-	"Strong Weapon":{"tier":"H", "shoot_impulse":3000, "shoot_recoil_impulse":20000, "hit_impulse":20000, "range":500, "reload_time":15, "damage":50, "bullet_type":"Ballistic"},
-	"Machine Gun Weapon":{"tier":"L", "shoot_impulse":2500, "shoot_recoil_impulse":5000, "hit_impulse":5000, "range":250, "reload_time":0.25, "damage":5, "bullet_type":"Ballistic"},
-	"Energy Weapon":{"tier":"M", "shoot_impulse":10000, "shoot_recoil_impulse":5000, "hit_impulse":15000, "range":9999, "reload_time":2, "damage":20, "bullet_type":"Energy"}
+	"Basic Weapon":{"tier":"M", "reload_time":1, "bullet_type":"Ballistic", "bullet_info":{"shoot_impulse":2500, "recoil_impulse":15000, "hit_impulse":10000, "range":350, "damage":10}},
+	"Strong Weapon":{"tier":"H", "reload_time":15, "bullet_type":"Ballistic", "bullet_info":{"shoot_impulse":3000, "recoil_impulse":20000, "hit_impulse":20000, "range":500, "damage":50}},
+	"Machine Gun Weapon":{"tier":"L", "reload_time":0.25, "bullet_type":"Ballistic", "bullet_info":{"shoot_impulse":2500, "recoil_impulse":5000, "hit_impulse":5000, "range":250, "damage":5}},
+	"Energy Weapon":{"tier":"M", "reload_time":2, "bullet_type":"Energy", "bullet_info":{"shoot_impulse":10000, "recoil_impulse":5000, "hit_impulse":15000, "range":9999, "damage":20}}
 }

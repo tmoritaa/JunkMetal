@@ -112,16 +112,10 @@ public class PartsManager : MonoBehaviour
 
         foreach (var partInfo in root) {
             string name = partInfo.Key;
-
+            
             JObject info = (JObject)partInfo.Value;
-            float shootImpulse = info.Value<float>("shoot_impulse");
-            float recoilImpulse = info.Value<float>("shoot_recoil_impulse");
-            float hitImpulse = info.Value<float>("hit_impulse");
-            float range = info.Value<float>("range");
+            
             float reloadTime = info.Value<float>("reload_time");
-            int damage = info.Value<int>("damage");
-            Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
-
             string tierStr = info.Value<string>("tier");
             PartSchematic.WeaponTier tier = PartSchematic.WeaponTier.Light;
             if (tierStr.Equals("L")) {
@@ -132,11 +126,29 @@ public class PartsManager : MonoBehaviour
                 tier = PartSchematic.WeaponTier.Heavy;
             }
 
-            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, shootImpulse, recoilImpulse, hitImpulse, reloadTime, range, tier, bType, damage);
+            Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
+
+            
+
+            Dictionary<string, object> bulletInfoDict = parseBulletInfoJson(bType, info.Value<JObject>("bullet_info"));
+
+            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, reloadTime, tier, bType, bulletInfoDict);
 
             schematics.Add(part.Name, part);
         }
 
         partSchematicDics.Add(PartSchematic.PartType.Weapon, schematics);
+    }
+
+    private Dictionary<string, object> parseBulletInfoJson(Bullet.BulletTypes bType, JObject info) {
+        Dictionary<string, object> bulletInfos = new Dictionary<string, object>();
+
+        bulletInfos.Add("shoot_impulse", info.Value<float>("shoot_impulse"));
+        bulletInfos.Add("recoil_impulse", info.Value<float>("shoot_recoil_impulse"));
+        bulletInfos.Add("hit_impulse", info.Value<float>("hit_impulse"));
+        bulletInfos.Add("damage", info.Value<int>("damage"));
+        bulletInfos.Add("range", info.Value<float>("range"));
+
+        return bulletInfos;
     }
 }
