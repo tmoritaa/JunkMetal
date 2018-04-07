@@ -34,5 +34,11 @@
 			"Hull":"Faster Hull",
 			"Weapons":["Energy Weapon"]
 		}
+	},
+	"Missile Doe":{
+		"Tank":{
+			"Hull":"Basic Hull",
+			"Weapons":["Missile Weapon"]
+		}	
 	}
 }
