@@ -11,8 +11,8 @@ public abstract class Bullet : MonoBehaviour
     {
         Ballistic,
         Energy,
+        MissileCluster,
         Missile,
-        Submissile,
     }
 
     public Tank Owner

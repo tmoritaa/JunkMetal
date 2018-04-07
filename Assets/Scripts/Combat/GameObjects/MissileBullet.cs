@@ -6,78 +6,82 @@ using UnityEngine;
 
 public class MissileBullet : Bullet
 {
-    private Vector2 firePos = new Vector2();
+    private Vector2 initPos;
+    private Vector2 initImpulse;
+    private int damage = 0;
+    private float hitImpulse = 0;
+    private float fireImpulseMag = 0;
     private float range = 0;
 
-    private int damage = 0;
+    private bool doInitImpulse = false;
 
-    private float hitImpulse = 0;
+    private bool doFireImpulse = false;
 
-    private float timeToShootSubmissles = 0;
+    private float timeToStart = 0;
 
-    private Vector2 forwardVec;
+    private float elapsedTime = 0;
 
-    private int numSubmissiles = 0;
+    private float origRotation = 0;
 
-    private float submissileRange = 0;
+    void Update() {
+        float travelDistSqr = ((Vector2)this.transform.position - initPos).sqrMagnitude;
 
-    private bool applyImpulseNextFrame = false;
-    private Vector2 impulseVector;
+        bool travelledRange = travelDistSqr > range * range;
 
-    private float elapsedTimeSinceShot = 0;
-
-    void FixedUpdate() {
-        if (applyImpulseNextFrame) {
-            this.body.AddForce(impulseVector, ForceMode2D.Impulse);
-            applyImpulseNextFrame = false;
-        } else {
-            elapsedTimeSinceShot += Time.fixedDeltaTime;
-        }
-
-        if (!isBeingDestroyed && elapsedTimeSinceShot >= 0.25f) {
-            // TODO: spawn submissiles
-            float angleStep = 45f / Mathf.Round((float)numSubmissiles / 2);
-            for (int i = 0; i < numSubmissiles; ++i) {
-                SubmissileBullet bullet = (SubmissileBullet)BulletFactory.Instance.CreateBullet(BulletTypes.Submissile);
-
-                int idx = (numSubmissiles % 2 == 0) ? i + 1 : i;
-
-                float sign = idx % 2 == 0 ? -1 : 1;
-
-                float rotAngle = angleStep * (int)((float)idx / 2f + 0.5f) * sign;
-
-                Vector2 initImpulse = forwardVec.Rotate(rotAngle).normalized * 300f;
-
-                bullet.Init(Owner, this.transform.position, initImpulse, 3000, damage, hitImpulse, submissileRange, 0.5f);
-            }
-
+        if (!isBeingDestroyed && travelledRange) {
             destroySelf();
         }
+    }
+
+    void FixedUpdate() {
+        if (!isBeingDestroyed) {
+            if (doInitImpulse) {
+                this.body.AddForce(initImpulse, ForceMode2D.Impulse);
+                origRotation = this.body.rotation;
+                doInitImpulse = false;
+                doFireImpulse = true;
+            } else {
+                elapsedTime += Time.fixedDeltaTime;
+            }
+
+            if (doFireImpulse) {
+                Tank opposingTank = CombatHandler.Instance.GetOpposingTank(Owner);
+                Vector2 toOpp = (opposingTank.transform.position - this.transform.position).normalized;
+                float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), toOpp);
+                this.body.rotation += angle;
+
+                if (elapsedTime > timeToStart) {
+                    Vector2 impulse = (opposingTank.transform.position - this.transform.position).normalized * fireImpulseMag;
+                    this.body.AddForce(impulse, ForceMode2D.Impulse);
+
+                    doFireImpulse = false;
+                }
+            }
+        }
+    }
+
+    public override void Fire(Vector2 forwardVec, Vector2 firePosOffset, WeaponPartSchematic partSchematic) {
+        // Not used.
+        Debug.Assert(false, "Fire should never be called for MissileBullet");
     }
 
     public override BulletTypes GetBulletType() {
         return BulletTypes.Missile;
     }
 
-    public override void Fire(Vector2 _forwardVec, Vector2 _firePosOffset, WeaponPartSchematic partSchematic) {
-        forwardVec = _forwardVec;
-        range = partSchematic.Range;
-        damage = partSchematic.Damage;
-        hitImpulse = (float)partSchematic.BulletInfos["hit_impulse"];
-        firePos = Owner.transform.position + (Vector3)_firePosOffset;
-        this.body.position = firePos;
-        this.impulseVector = forwardVec.normalized * partSchematic.ShootImpulse;
-        applyImpulseNextFrame = true;
+    public void Init(Tank owner, Vector2 _initPos, Vector2 _initImpulse, float _fireImpulseMag, int _damage, float _hitImpulse, float _range, float _timeToStart) {
+        Owner = owner;
+        damage = _damage;
+        hitImpulse = _hitImpulse;
+        range = _range;
+        initImpulse = _initImpulse;
+        initPos = _initPos;
+        fireImpulseMag = _fireImpulseMag;
+        timeToStart = _timeToStart;
 
-        float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), forwardVec);
-        this.body.rotation = angle;
+        this.body.transform.position = initPos;
 
-        float recoilImpulse = (float)partSchematic.BulletInfos["recoil_impulse"];
-        Vector2 backVec = forwardVec.Rotate(180);
-        Owner.Body.AddForce(backVec.normalized * recoilImpulse, ForceMode2D.Impulse);
-
-        numSubmissiles = (int)partSchematic.BulletInfos["num_submissiles"];
-        submissileRange = (float)partSchematic.BulletInfos["submissile_range"];
+        doInitImpulse = true;
     }
 
     private void OnCollisionEnter2D(Collision2D collision) {
