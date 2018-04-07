@@ -26,7 +26,10 @@ public class LookaheadNode
         get; private set;
     }
 
-    private List<Node> passedNodes = new List<Node>();
+    public List<Node> PassedNodes
+    {
+        get; private set;
+    }
     
     public TankStateInfo TankInfo
     {
@@ -38,7 +41,7 @@ public class LookaheadNode
         IncomingDir = _incomingDir;
         TankInfo = _stateInfo;
         ElapsedTimeFromParent = _elapsedTimeFromParent;
-        passedNodes = _passedNodes;
+        PassedNodes = _passedNodes;
         ChildNodes = new List<LookaheadNode>();
     }
 
@@ -89,7 +92,7 @@ public class LookaheadNode
 
     public bool PathNotObstructed() {
         bool obstructed = false;
-        foreach (Node node in passedNodes) {
+        foreach (Node node in PassedNodes) {
             if (!node.NodeTraversable()) {
                 obstructed = true;
                 break;

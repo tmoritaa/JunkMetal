@@ -20,18 +20,21 @@ public abstract class Bullet : MonoBehaviour
         get; protected set;
     }
 
-    protected Rigidbody2D body;
     public Rigidbody2D Body
     {
-        get {
-            return body;
-        }
+        get; private set;
+    }
+
+    public BoxCollider2D Collider
+    {
+        get; private set;
     }
 
     protected bool isBeingDestroyed = false;
 
     protected virtual void Awake() {
-        this.body = GetComponent<Rigidbody2D>();
+        this.Body = GetComponent<Rigidbody2D>();
+        this.Collider = GetComponent<BoxCollider2D>();
     }
 
     public abstract void Fire(Vector2 forwardVec, Vector2 firePosOffset, WeaponPartSchematic partSchematic);
@@ -44,7 +47,7 @@ public abstract class Bullet : MonoBehaviour
     }
 
     protected void destroySelf() {
-        GameObject.Destroy(this.gameObject);
         isBeingDestroyed = true;
+        BulletInstanceHandler.Instance.DestroyBullet(this);
     }
 }

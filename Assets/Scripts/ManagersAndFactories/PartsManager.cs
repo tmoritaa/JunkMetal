@@ -152,6 +152,10 @@ public class PartsManager : MonoBehaviour
         if (bType == Bullet.BulletTypes.MissileCluster) {
             bulletInfos.Add("num_missiles", info.Value<int>("num_missiles"));
             bulletInfos.Add("missile_range", info.Value<float>("missile_range"));
+            bulletInfos.Add("missile_shoot_time", info.Value<float>("missile_shoot_time"));
+            bulletInfos.Add("missile_init_impulse", info.Value<float>("missile_init_impulse"));
+            bulletInfos.Add("missile_fire_impulse", info.Value<float>("missile_fire_impulse"));
+            bulletInfos.Add("missile_trigger_time", info.Value<float>("missile_trigger_time"));
         }
 
         return bulletInfos;

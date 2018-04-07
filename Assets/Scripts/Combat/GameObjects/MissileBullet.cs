@@ -36,8 +36,8 @@ public class MissileBullet : Bullet
     void FixedUpdate() {
         if (!isBeingDestroyed) {
             if (doInitImpulse) {
-                this.body.AddForce(initImpulse, ForceMode2D.Impulse);
-                origRotation = this.body.rotation;
+                this.Body.AddForce(initImpulse, ForceMode2D.Impulse);
+                origRotation = this.Body.rotation;
                 doInitImpulse = false;
                 doFireImpulse = true;
             } else {
@@ -47,12 +47,12 @@ public class MissileBullet : Bullet
             if (doFireImpulse) {
                 Tank opposingTank = CombatHandler.Instance.GetOpposingTank(Owner);
                 Vector2 toOpp = (opposingTank.transform.position - this.transform.position).normalized;
-                float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), toOpp);
-                this.body.rotation += angle;
+                float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.Body.rotation), toOpp);
+                this.Body.rotation += angle;
 
                 if (elapsedTime > timeToStart) {
                     Vector2 impulse = (opposingTank.transform.position - this.transform.position).normalized * fireImpulseMag;
-                    this.body.AddForce(impulse, ForceMode2D.Impulse);
+                    this.Body.AddForce(impulse, ForceMode2D.Impulse);
 
                     doFireImpulse = false;
                 }
@@ -79,7 +79,7 @@ public class MissileBullet : Bullet
         fireImpulseMag = _fireImpulseMag;
         timeToStart = _timeToStart;
 
-        this.body.transform.position = initPos;
+        this.Body.transform.position = initPos;
 
         doInitImpulse = true;
     }

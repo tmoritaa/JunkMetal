@@ -9,8 +9,6 @@ public class EnergyBullet : Bullet
 {
     private RectTransform rectTrans;
 
-    private BoxCollider2D boxCollider;
-
     private Image image;
 
     private int damage = 0;
@@ -29,7 +27,6 @@ public class EnergyBullet : Bullet
 
     protected override void Awake() {
         base.Awake();
-        boxCollider = this.GetComponent<BoxCollider2D>();
         rectTrans = this.GetComponent<RectTransform>();
         image = this.GetComponent<Image>();
     }
@@ -53,7 +50,7 @@ public class EnergyBullet : Bullet
     }
 
     void FixedUpdate() {
-        this.body.rotation = origAngle;
+        this.Body.rotation = origAngle;
 
         float extendLength = shootForce * Time.fixedDeltaTime;
 
@@ -65,8 +62,8 @@ public class EnergyBullet : Bullet
 
         rectTrans.sizeDelta = newSize;
 
-        boxCollider.size = newSize;
-        boxCollider.offset = new Vector2(0, newSize.y / 2f);
+        Collider.size = newSize;
+        Collider.offset = new Vector2(0, newSize.y / 2f);
     }
 
     public override BulletTypes GetBulletType() {
@@ -78,10 +75,10 @@ public class EnergyBullet : Bullet
         hitImpulse = (float)partSchematic.BulletInfos["hit_impulse"];
         shootForce = partSchematic.ShootImpulse;
         this.shotForwardVec = forwardVec;
-        this.body.position = Owner.transform.position + (Vector3)firePosOffset;
+        this.Body.position = Owner.transform.position + (Vector3)firePosOffset;
 
-        origAngle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), this.shotForwardVec);
-        this.body.rotation = origAngle;
+        origAngle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.Body.rotation), this.shotForwardVec);
+        this.Body.rotation = origAngle;
 
         float recoilImpulse = (float)partSchematic.BulletInfos["recoil_impulse"];
         Vector2 backVec = this.shotForwardVec.Rotate(180);
@@ -92,7 +89,7 @@ public class EnergyBullet : Bullet
         hitboxEnabled = false;
 
         timeHit = Time.time;
-        this.boxCollider.enabled = false;
+        this.Collider.enabled = false;
     }
 
     private void OnCollisionEnter2D(Collision2D collision) {

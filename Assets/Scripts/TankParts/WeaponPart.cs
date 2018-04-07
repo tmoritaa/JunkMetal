@@ -55,7 +55,7 @@ public class WeaponPart
     
     public void PerformFixedUpdate() {
         if (shouldShoot) {
-            Bullet bullet = BulletFactory.Instance.CreateBullet(Schematic.BulletType);
+            Bullet bullet = BulletInstanceHandler.Instance.CreateBullet(Schematic.BulletType);
             bullet.Init(OwningTank);
 
             Vector2 fireVec = CalculateFireVec();

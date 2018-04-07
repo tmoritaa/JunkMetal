@@ -64,6 +64,9 @@ public class CombatDebugHandler : MonoBehaviour
     private bool maneuverAwayFromWallFilter = true;
 
     [SerializeField]
+    private bool maneuverBulletFilter = true;
+
+    [SerializeField]
     private bool maneuverRunawayNodes = true;
 
     [SerializeField]
@@ -227,6 +230,18 @@ public class CombatDebugHandler : MonoBehaviour
 
                 if (maneuverDestNotObstructedFilter) {
                     object obj = getRegisterdObj("maneuver_dest_not_obstructed_filter");
+                    if (obj != null) {
+                        List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
+
+                        Gizmos.color = Color.green;
+                        foreach (LookaheadNode node in nodeList) {
+                            Gizmos.DrawWireSphere(node.TankInfo.Pos, 20);
+                        }
+                    }
+                }
+
+                if (maneuverBulletFilter) {
+                    object obj = getRegisterdObj("maneuver_bullet_filter");
                     if (obj != null) {
                         List<LookaheadNode> nodeList = (List<LookaheadNode>)obj;
 

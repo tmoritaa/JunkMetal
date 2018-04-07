@@ -15,16 +15,7 @@ public class BulletFactory : MonoBehaviour
 
     private Dictionary<Bullet.BulletTypes, Bullet> typeToBulletDict = new Dictionary<Bullet.BulletTypes, Bullet>();
 
-    private static BulletFactory instance;
-    public static BulletFactory Instance {
-        get {
-            return instance;
-        }
-    }
-
     void Awake() {
-        instance = this;
-
         foreach (Bullet bullet in bulletPrefabs.bulletPrefabs) {
             typeToBulletDict.Add(bullet.GetBulletType(), bullet);
         }

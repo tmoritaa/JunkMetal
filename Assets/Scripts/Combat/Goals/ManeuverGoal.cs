@@ -51,7 +51,6 @@ public class ManeuverGoal : Goal
     }
 
     public override void UpdateInsistence() {
-        // For now, though since AttackGoal will set insistence above 50 when it can attack, maybe this is fine.
         Insistence = 50;
     }
 
@@ -101,7 +100,7 @@ public class ManeuverGoal : Goal
 
         int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
         
-        bool runaway = diff > thresh && timeForTargetToHitSelf < 150;
+        bool runaway = diff > thresh && timeForTargetToHitSelf < 100;
 
         Debug.Log(runaway ? "running away" : "Going for it");
 
@@ -133,6 +132,9 @@ public class ManeuverGoal : Goal
 
         possibleNodes = filterByDestNotObstructed(possibleNodes);
         CombatDebugHandler.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
+
+        possibleNodes = filterByPassingBullet(possibleNodes);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_bullet_filter", possibleNodes);
 
         List<Vector2> hitWallDirs = new List<Vector2>();
         bool isCloseToWall = checkIfCloseToWall(out hitWallDirs);
@@ -380,23 +382,55 @@ public class ManeuverGoal : Goal
         return filteredNode;
     }
 
-    private List<LookaheadNode> filterByTooCloseToTarget(List<LookaheadNode> nodes) {
-        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
+    private List<LookaheadNode> filterByPassingBullet(List<LookaheadNode> nodes) {
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+        Map map = controller.Map;
 
-        Vector2 targetTankPos = controller.TargetTank.transform.position;
         foreach (LookaheadNode node in nodes) {
-            float diff = (targetTankPos - node.TankInfo.Pos).magnitude;
+            Vector2 startPos = map.NodeToPosition(node.PassedNodes[0]);
+            Vector2 endPos = node.TankInfo.Pos;
 
-            if (diff > 50f) {
-                filteredNode.Add(node);
+            bool hitSomething = false;
+            foreach (Bullet bullet in BulletInstanceHandler.Instance.BulletInstances) {
+                Vector2 bulletPos = bullet.transform.position;
+
+                if (bulletPos.x < Mathf.Min(startPos.x, endPos.x) || bulletPos.x > Mathf.Max(startPos.x, endPos.x) 
+                    || bulletPos.y < Mathf.Min(startPos.y, endPos.y) || bulletPos.y > Mathf.Max(startPos.y, endPos.y)) 
+                {
+                    continue;
+                }
+
+                BoxCollider2D bulletCollider = bullet.Collider;
+                Vector2 bulletLBPos = bulletPos + bulletCollider.offset - (bulletCollider.size / 2f);
+                Vector2 bulletRTPos = bulletPos + bulletCollider.offset + (bulletCollider.size / 2f);
+                foreach (Node mapNode in node.PassedNodes) {
+                    Vector2 mapNodePos = map.NodeToPosition(mapNode);
+
+                    if (mapNodePos.x < Mathf.Min(bulletLBPos.x, bulletRTPos.x) || mapNodePos.x > Mathf.Max(bulletLBPos.x, bulletRTPos.x)
+                    || mapNodePos.y < Mathf.Min(bulletLBPos.y, bulletRTPos.y) || mapNodePos.y > Mathf.Max(bulletLBPos.y, bulletRTPos.y))
+                    {
+                        continue;
+                    } else {
+                        hitSomething = true;
+                        break;
+                    }
+                }
+                
+                if (hitSomething) {
+                    break;
+                }
+            }
+
+            if (!hitSomething) {
+                filteredNodes.Add(node);
             }
         }
 
-        if (filteredNode.Count == 0) {
-            filteredNode = nodes;
+        if (filteredNodes.Count == 0) {
+            filteredNodes = nodes;
         }
 
-        return filteredNode;
+        return filteredNodes;
     }
 
     private bool checkIfCloseToWall(out List<Vector2> wallDirections) {

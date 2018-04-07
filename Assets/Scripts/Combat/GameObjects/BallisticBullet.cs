@@ -28,7 +28,7 @@ public class BallisticBullet : Bullet
 
     void FixedUpdate() {
         if (applyImpulseNextFrame) {
-            this.body.AddForce(impulseVector, ForceMode2D.Impulse);
+            this.Body.AddForce(impulseVector, ForceMode2D.Impulse);
             applyImpulseNextFrame = false;
         }
     }
@@ -42,12 +42,12 @@ public class BallisticBullet : Bullet
         damage = partSchematic.Damage;
         hitImpulse = (float)partSchematic.BulletInfos["hit_impulse"];
         firePos = Owner.transform.position + (Vector3)firePosOffset;
-        this.body.position = firePos;
+        this.Body.position = firePos;
         this.impulseVector = forwardVec.normalized * partSchematic.ShootImpulse;
         applyImpulseNextFrame = true;
 
-        float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), forwardVec);
-        this.body.rotation = angle;
+        float angle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.Body.rotation), forwardVec);
+        this.Body.rotation = angle;
 
         float recoilImpulse = (float)partSchematic.BulletInfos["recoil_impulse"];
         Vector2 backVec = forwardVec.Rotate(180);
