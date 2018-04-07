@@ -8,6 +8,7 @@
 		"Basic Weapon":"BasicCannon",
 		"Strong Weapon":"SniperCannon",
 		"Machine Gun Weapon":"Machinegun",
-		"Energy Weapon":"BasicCannon"
+		"Energy Weapon":"BasicCannon",
+		"Missile Weapon":"BasicCannon"
 	}
 }

@@ -168,4 +168,12 @@ public class CombatHandler : MonoBehaviour
 
         return walls;
     }
+
+    public Tank GetOpposingTank(Tank tank) {
+        if (HumanTankController.SelfTank == tank) {
+            return AITankController.SelfTank;
+        } else {
+            return HumanTankController.SelfTank;
+        }
+    }
 }

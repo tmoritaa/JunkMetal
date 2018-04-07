@@ -149,6 +149,11 @@ public class PartsManager : MonoBehaviour
         bulletInfos.Add("damage", info.Value<int>("damage"));
         bulletInfos.Add("range", info.Value<float>("range"));
 
+        if (bType == Bullet.BulletTypes.Missile) {
+            bulletInfos.Add("num_submissiles", info.Value<int>("num_submissiles"));
+            bulletInfos.Add("submissile_range", info.Value<float>("submissile_range"));
+        }
+
         return bulletInfos;
     }
 }

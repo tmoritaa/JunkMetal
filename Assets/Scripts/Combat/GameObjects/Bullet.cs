@@ -11,6 +11,8 @@ public abstract class Bullet : MonoBehaviour
     {
         Ballistic,
         Energy,
+        Missile,
+        Submissile,
     }
 
     public Tank Owner
@@ -28,6 +30,10 @@ public abstract class Bullet : MonoBehaviour
 
     protected bool isBeingDestroyed = false;
 
+    protected virtual void Awake() {
+        this.body = GetComponent<Rigidbody2D>();
+    }
+
     public abstract void Fire(Vector2 forwardVec, Vector2 firePosOffset, WeaponPartSchematic partSchematic);
 
     public abstract BulletTypes GetBulletType();
@@ -35,10 +41,6 @@ public abstract class Bullet : MonoBehaviour
     public void Init(Tank _owner) {
         Owner = _owner;
         this.gameObject.transform.position = Owner.transform.position;
-    }
-
-    protected virtual void Awake() {
-        this.body = GetComponent<Rigidbody2D>();
     }
 
     protected void destroySelf() {

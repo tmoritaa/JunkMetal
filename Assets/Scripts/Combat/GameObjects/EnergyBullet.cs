@@ -13,7 +13,6 @@ public class EnergyBullet : Bullet
 
     private Image image;
 
-    private Vector2 firePos = new Vector2();
     private int damage = 0;
 
     private float hitImpulse = 0;
@@ -78,9 +77,8 @@ public class EnergyBullet : Bullet
         damage = partSchematic.Damage;
         hitImpulse = (float)partSchematic.BulletInfos["hit_impulse"];
         shootForce = partSchematic.ShootImpulse;
-        firePos = Owner.transform.position + (Vector3)firePosOffset;
         this.shotForwardVec = forwardVec;
-        this.body.position = firePos;
+        this.body.position = Owner.transform.position + (Vector3)firePosOffset;
 
         origAngle = Vector2.SignedAngle(new Vector2(0, 1).Rotate(this.body.rotation), this.shotForwardVec);
         this.body.rotation = origAngle;
@@ -108,7 +106,7 @@ public class EnergyBullet : Bullet
                 }
                 avgContactPt /= collision.contacts.Length;
 
-                Vector2 impulseDir = (avgContactPt - firePos).normalized;
+                Vector2 impulseDir = ((Vector2)tank.transform.position - avgContactPt).normalized;
                 tank.Body.AddForceAtPosition(impulseDir * hitImpulse, avgContactPt, ForceMode2D.Impulse);
 
                 CombatAnimationHandler.Instance.InstantiatePrefab("spark", avgContactPt, 0);

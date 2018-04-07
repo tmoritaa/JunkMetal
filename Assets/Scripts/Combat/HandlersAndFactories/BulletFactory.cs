@@ -30,12 +30,11 @@ public class BulletFactory : MonoBehaviour
         }
     }
 
-    public Bullet CreateBullet(Tank owningTank, Bullet.BulletTypes bType) {
+    public Bullet CreateBullet(Bullet.BulletTypes bType) {
         Bullet prefab = typeToBulletDict[bType];
 
         Bullet bullet = GameObject.Instantiate(prefab);
         bullet.transform.SetParent(bulletsRoot, false);
-        bullet.Init(owningTank);
         return bullet;
     }
 }
