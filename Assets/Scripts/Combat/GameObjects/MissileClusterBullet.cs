@@ -12,7 +12,6 @@ public class MissileClusterBullet : Bullet
     private float range = 0;
     private int damage = 0;
     private float hitImpulse = 0;
-    private float timeToShootSubmissles = 0;
     private int numMissiles = 0;
     private float missileRange = 0;
     private float missileShootTime = 0;

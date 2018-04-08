@@ -29,6 +29,7 @@ public class MissileBullet : Bullet
         bool travelledRange = travelDistSqr > range * range;
 
         if (!isBeingDestroyed && travelledRange) {
+            CombatAnimationHandler.Instance.InstantiatePrefab("dust_cloud", this.transform.position, 0);
             destroySelf();
         }
     }
