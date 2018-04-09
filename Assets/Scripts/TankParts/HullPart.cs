@@ -186,21 +186,27 @@ public class HullPart
         bool activated = false;
 
         InputManager.KeyType[] kTypes = new InputManager.KeyType[] { InputManager.KeyType.JetLeft, InputManager.KeyType.JetRight, InputManager.KeyType.JetUp, InputManager.KeyType.JetDown };
-        Vector2[] origDirs = new Vector2[] { new Vector2(-1, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, -1) };
+        Vector2[] jetDirs = new Vector2[] { new Vector2(-1, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, -1) };
 
+        Vector2[] curDirs = new Vector2[] { owner.GetForwardVec(), owner.GetBackwardVec(), owner.GetForwardVec().Rotate(90f), owner.GetForwardVec().Rotate(-90f) };
         for (int i = 0; i < kTypes.Length; ++i) {
             InputManager.KeyType key = kTypes[i];
-            Vector2 origDir = origDirs[i];
+            Vector2 jetDir = jetDirs[i];
 
             if (jetUsageForFixedUpdate[key] && EnergyAvailableForUsage(Schematic.JetEnergyUsage)) {
-                float totalAngleDiff = Vector2.SignedAngle(new Vector2(0, 1), owner.GetForwardVec());
+                float minAngle = 9999f;
+                Vector2 minDir = new Vector2();
+                foreach (Vector2 curDir in curDirs) {
+                    float angle = Vector2.Angle(curDir, jetDir);
 
-                float angleDiff = (Mathf.Abs(totalAngleDiff) % 90f) * Mathf.Sign(totalAngleDiff);
-                Vector2 jetDir = origDir.Rotate(angleDiff);
+                    if (minAngle > angle) {
+                        minDir = curDir;
+                        minAngle = angle;
+                    }
+                }
 
+                owner.Body.AddForce(minDir.normalized * Schematic.JetImpulse, ForceMode2D.Impulse);
                 ModEnergy(-Schematic.JetEnergyUsage);
-
-                owner.Body.AddForce(jetDir.normalized * Schematic.JetImpulse, ForceMode2D.Impulse);
 
                 activated = true;
             }
