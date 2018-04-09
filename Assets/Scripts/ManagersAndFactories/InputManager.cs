@@ -26,7 +26,7 @@ public class InputManager
     private static InputManager instance = null;
 
     private Dictionary<KeyType, List<KeyCode>> keyboardBindings = new Dictionary<KeyType, List<KeyCode>>();
-    private Dictionary<KeyType, object> controllerBindings = new Dictionary<KeyType, object>();
+    private Dictionary<KeyType, List<object>> controllerBindings = new Dictionary<KeyType, List<object>>();
 
     public static InputManager Instance {
         get {
@@ -61,28 +61,59 @@ public class InputManager
     }
 
     private bool isControllerKeyTypeDown(KeyType kType, bool onlyUp) {
-        if (kType == KeyType.LeftWheelFwd || kType == KeyType.LeftWheelBack || kType == KeyType.RightWheelFwd || kType == KeyType.RightWheelBack) {
-            string keyName = (string)controllerBindings[kType];
-            float axisVal = Input.GetAxis(keyName);
+        bool valid = false;
+        if (kType == KeyType.LeftWheelFwd || kType == KeyType.LeftWheelBack || kType == KeyType.RightWheelFwd || kType == KeyType.RightWheelBack || kType == KeyType.FireWeapon0 || kType == KeyType.FireWeapon1) {
+            foreach (object binding in controllerBindings[kType]) {
+                string keyName = (string)binding;
+                float axisVal = Input.GetAxis(keyName);
 
-            if (kType == KeyType.LeftWheelFwd || kType == KeyType.RightWheelFwd) {
-                return axisVal < 0;
-            } else {
-                return axisVal > 0;
+                if (kType == KeyType.LeftWheelFwd || kType == KeyType.RightWheelFwd || kType == KeyType.FireWeapon0) {
+                    valid = axisVal < 0;
+                } else {
+                    valid = axisVal > 0;
+                }
+
+                if (valid) {
+                    break;
+                }
             }
-        } else if (kType == KeyType.FireWeapon0 || kType == KeyType.FireWeapon1) {
-            string keyName = (string)controllerBindings[kType];
-            float axisVal = Input.GetAxis(keyName);
-            
-            if (kType == KeyType.FireWeapon0) {
-                return axisVal < 0;
-            } else {
-                return axisVal > 0;
+        } else if (kType == KeyType.JetDown || kType == KeyType.JetUp || kType == KeyType.JetLeft || kType == KeyType.JetRight) {
+            foreach (object binding in controllerBindings[kType]) {
+                if (binding.GetType() == typeof(string)) {
+                    string keyName = (string)binding;
+                    float axisVal = Input.GetAxis(keyName);
+
+                    if (kType == KeyType.JetLeft || kType == KeyType.JetDown) {
+                        valid = axisVal < 0;
+                    } else {
+                        valid = axisVal > 0;
+                    }
+
+                    if (valid) {
+                        break;
+                    }
+                } else {
+                    KeyCode keyCode = (KeyCode)binding;
+                    valid = onlyUp ? Input.GetKeyUp(keyCode) : Input.GetKey(keyCode);
+
+                    if (valid) {
+                        break;
+                    }
+                }
             }
         } else {
-            KeyCode keyCode = (KeyCode)controllerBindings[kType];
-            return onlyUp ? Input.GetKeyUp(keyCode) : Input.GetKey(keyCode);            
+            foreach (object binding in controllerBindings[kType]) {
+                KeyCode keyCode = (KeyCode)binding;
+                valid = onlyUp ? Input.GetKeyUp(keyCode) : Input.GetKey(keyCode);
+
+                if (valid) {
+                    break;
+                }
+            }
+            
         }
+
+        return valid;
     }
 
     private void initKeyboardBindings() {
@@ -102,18 +133,18 @@ public class InputManager
     }
 
     private void initControllerBindings() {
-        controllerBindings[KeyType.LeftWheelFwd] = "Left Stick Y Axis";
-        controllerBindings[KeyType.LeftWheelBack] = "Left Stick Y Axis";
-        controllerBindings[KeyType.RightWheelFwd] = "Right Stick Y Axis";
-        controllerBindings[KeyType.RightWheelBack] = "Right Stick Y Axis";
-        controllerBindings[KeyType.JetLeft] = KeyCode.Joystick1Button2;
-        controllerBindings[KeyType.JetRight] = KeyCode.Joystick1Button1;
-        controllerBindings[KeyType.JetUp] = KeyCode.Joystick1Button3;
-        controllerBindings[KeyType.JetDown] = KeyCode.Joystick1Button0;
-        controllerBindings[KeyType.FireWeapon0] = "Triggers";
-        controllerBindings[KeyType.FireWeapon1] = "Triggers";
-        controllerBindings[KeyType.FireWeapon2] = KeyCode.JoystickButton5;
-        controllerBindings[KeyType.FireWeapon3] = KeyCode.JoystickButton4;
-        controllerBindings[KeyType.Cancel] = KeyCode.Joystick1Button1;
+        controllerBindings[KeyType.LeftWheelFwd] = new List<object>() { "Left Stick Y Axis" };
+        controllerBindings[KeyType.LeftWheelBack] = new List<object>() { "Left Stick Y Axis" };
+        controllerBindings[KeyType.RightWheelFwd] = new List<object>() { "Right Stick Y Axis" };
+        controllerBindings[KeyType.RightWheelBack] = new List<object>() { "Right Stick Y Axis" };
+        controllerBindings[KeyType.JetLeft] = new List<object>() { "Analog Horizontal", KeyCode.Joystick1Button2 };
+        controllerBindings[KeyType.JetRight] = new List<object>() { "Analog Horizontal", KeyCode.Joystick1Button1 };
+        controllerBindings[KeyType.JetUp] = new List<object>() { "Analog Vertical", KeyCode.Joystick1Button3 };
+        controllerBindings[KeyType.JetDown] = new List<object>() { "Analog Vertical", KeyCode.Joystick1Button0 };
+        controllerBindings[KeyType.FireWeapon0] = new List<object>() { "Triggers" };
+        controllerBindings[KeyType.FireWeapon1] = new List<object>() { "Triggers" };
+        controllerBindings[KeyType.FireWeapon2] = new List<object>() { KeyCode.JoystickButton5 };
+        controllerBindings[KeyType.FireWeapon3] = new List<object>() { KeyCode.JoystickButton4 };
+        controllerBindings[KeyType.Cancel] = new List<object>() { KeyCode.Joystick1Button1 };
     }
 }
