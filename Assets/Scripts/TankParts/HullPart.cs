@@ -27,17 +27,31 @@ public class HullPart
         get; private set;
     }
 
+    public float CurEnergy
+    {
+        get; private set;
+    }
+
+    private Dictionary<InputManager.KeyType, bool> jetUsageForFixedUpdate = new Dictionary<InputManager.KeyType, bool>();
+
     private WeaponPart[] weapons;
 
     private Tank owner;
 
-    public HullPart(HullPartSchematic _schematic) {
+    public HullPart(HullPartSchematic _schematic, Tank _owner) {
         Schematic = _schematic;
+        owner = _owner;
         LeftCurPower = 0;
         RightCurPower = 0;
+        CurEnergy = Schematic.Energy;
 
         weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
         Array.Clear(weapons, 0, weapons.Length);
+
+        jetUsageForFixedUpdate[InputManager.KeyType.JetLeft] = false;
+        jetUsageForFixedUpdate[InputManager.KeyType.JetRight] = false;
+        jetUsageForFixedUpdate[InputManager.KeyType.JetUp] = false;
+        jetUsageForFixedUpdate[InputManager.KeyType.JetDown] = false;
     }
 
     public void HandleInput() {
@@ -60,6 +74,8 @@ public class HullPart
 
         PerformPowerChange(leftChangeDir, rightChangeDir);
 
+        handleJetInput();
+
         foreach (WeaponPart weapon in GetAllWeapons()) {
             weapon.HandleInput();
         }
@@ -68,6 +84,12 @@ public class HullPart
     public void PerformFixedUpdate() {
         foreach (WeaponPart weapon in GetAllWeapons()) {
             weapon.PerformFixedUpdate();
+        }
+
+        bool activated = activateJetsIfRequested();
+
+        if (!activated) {
+            refreshEnergy(Time.fixedDeltaTime);
         }
     }
 
@@ -124,6 +146,15 @@ public class HullPart
         performPowerChangeForSide(Side.right, rightChangeDir);
     }
 
+    public void ModEnergy(float energyModVal) {
+        CurEnergy = Mathf.Clamp(CurEnergy + energyModVal, 0, Schematic.Energy);
+    }
+
+
+    public bool EnergyAvailableForUsage(float energyVal) {
+        return CurEnergy >= energyVal;
+    }
+
     private void performPowerChangeForSide(Side side, int changeDir) {
         int power = (side == Side.left) ? LeftCurPower : RightCurPower;
 
@@ -148,6 +179,55 @@ public class HullPart
             LeftCurPower = power;
         } else {
             RightCurPower = power;
+        }
+    }
+
+    private bool activateJetsIfRequested() {
+        bool activated = false;
+
+        InputManager.KeyType[] kTypes = new InputManager.KeyType[] { InputManager.KeyType.JetLeft, InputManager.KeyType.JetRight, InputManager.KeyType.JetUp, InputManager.KeyType.JetDown };
+        Vector2[] origDirs = new Vector2[] { new Vector2(-1, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, -1) };
+
+        for (int i = 0; i < kTypes.Length; ++i) {
+            InputManager.KeyType key = kTypes[i];
+            Vector2 origDir = origDirs[i];
+
+            if (jetUsageForFixedUpdate[key] && EnergyAvailableForUsage(Schematic.JetEnergyUsage)) {
+                float totalAngleDiff = Vector2.SignedAngle(new Vector2(0, 1), owner.GetForwardVec());
+
+                float angleDiff = (Mathf.Abs(totalAngleDiff) % 90f) * Mathf.Sign(totalAngleDiff);
+                Vector2 jetDir = origDir.Rotate(angleDiff);
+
+                ModEnergy(-Schematic.JetEnergyUsage);
+
+                owner.Body.AddForce(jetDir.normalized * Schematic.JetImpulse, ForceMode2D.Impulse);
+
+                activated = true;
+            }
+
+            jetUsageForFixedUpdate[key] = false;
+        }
+
+        return activated;
+    }
+
+    private void refreshEnergy(float timeDelta) {
+        float refreshRate = Schematic.EnergyRefreshPerSec * timeDelta;
+        ModEnergy(refreshRate);
+    }
+
+    private void handleJetInput() {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetLeft, true)) {
+            jetUsageForFixedUpdate[InputManager.KeyType.JetLeft] = true;
+        }
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetRight, true)) {
+            jetUsageForFixedUpdate[InputManager.KeyType.JetRight] = true;
+        }
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetUp, true)) {
+            jetUsageForFixedUpdate[InputManager.KeyType.JetUp] = true;
+        }
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetDown, true)) {
+            jetUsageForFixedUpdate[InputManager.KeyType.JetDown] = true;
         }
     }
 }

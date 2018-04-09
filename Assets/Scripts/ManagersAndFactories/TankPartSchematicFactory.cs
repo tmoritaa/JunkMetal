@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TankParSchematictFactory
 {
-    public static HullPartSchematic CreateHullPartSchematic(string name, int armour, int enginePower, Vector2 size, int weight, float angularDrag, int energy, int energyRefresh, float jetImpulse, int jetEnergyUsage, Vector2[] weaponDirs, Vector2[] weaponPos, PartSchematic.WeaponTier[] tierRestrictions) {
+    public static HullPartSchematic CreateHullPartSchematic(string name, int armour, int enginePower, Vector2 size, int weight, float angularDrag, float energy, float energyRefresh, float jetImpulse, float jetEnergyUsage, Vector2[] weaponDirs, Vector2[] weaponPos, PartSchematic.WeaponTier[] tierRestrictions) {
         return new HullPartSchematic(name, armour, enginePower, size, weight, angularDrag, energy, energyRefresh, jetImpulse, jetEnergyUsage, weaponDirs, weaponPos, tierRestrictions);
     }
 

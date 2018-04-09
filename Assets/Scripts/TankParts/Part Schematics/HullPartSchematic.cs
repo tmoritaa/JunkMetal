@@ -31,12 +31,12 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public int Energy
+    public float Energy
     {
         get; private set;
     }
 
-    public int EnergyRefreshPerSec
+    public float EnergyRefreshPerSec
     {
         get; private set;
     }
@@ -46,7 +46,7 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public int JetEnergyUsage
+    public float JetEnergyUsage
     {
         get; private set;
     }
@@ -66,10 +66,10 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public HullPartSchematic(string name, int armour, int EnginePower, Vector2 size, int weight, float angularDrag, int energy, int energyRefresh, float jetImpulse, int jetEnergyUsage, Vector2[] _weaponDirs, Vector2[] _weaponPos, WeaponTier[] _weaponWeightRestrict) : base(name, PartType.Hull) {
+    public HullPartSchematic(string name, int armour, int enginePower, Vector2 size, int weight, float angularDrag, float energy, float energyRefresh, float jetImpulse, float jetEnergyUsage, Vector2[] _weaponDirs, Vector2[] _weaponPos, WeaponTier[] _weaponWeightRestrict) : base(name, PartType.Hull) {
         Name = name;
         Armour = armour;
-        this.EnginePower = EnginePower;
+        EnginePower = enginePower;
         Weight = weight;
         Size = size;
         AngularDrag = angularDrag;

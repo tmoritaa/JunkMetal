@@ -68,10 +68,10 @@ public class PartsManager : MonoBehaviour
 
             float angularDrag = info.Value<float>("angular_drag");
 
-            int energy = info.Value<int>("energy");
-            int energyRefresh = info.Value<int>("energy_refresh");
+            float energy = info.Value<float>("energy");
+            float energyRefresh = info.Value<float>("energy_refresh");
             float jetImpulse = info.Value<float>("jet_impulse");
-            int jetEnergyUsage = info.Value<int>("jet_energy_usage");
+            float jetEnergyUsage = info.Value<float>("jet_energy_usage");
 
             List<Vector2> weaponDirs = new List<Vector2>();
             List<Vector2> weaponPos = new List<Vector2>();

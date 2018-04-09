@@ -1,8 +1,8 @@
 {
-	"Basic Hull":{"weight":550, "armor":200, "engine_pow":75000, "size_x":60, "size_y":60, "angular_drag":50, "energy":10000, "energy_refresh":2000, "jet_impulse":5000, "jet_energy_usage":5000, 
+	"Basic Hull":{"weight":550, "armor":200, "engine_pow":75000, "size_x":60, "size_y":60, "angular_drag":50, "energy":10000, "energy_refresh":2000, "jet_impulse":30000, "jet_energy_usage":5000, 
 		"weapons":[{"x_dir":0, "y_dir":1, "x_pos":0, "y_pos":10, "tier":"H"}]},
-	"Faster Hull":{"weight":500, "armor":150, "engine_pow":85000, "size_x":60, "size_y":60, "angular_drag":35, "energy":10000, "energy_refresh":2000, "jet_impulse":5000, "jet_energy_usage":5000, 
+	"Faster Hull":{"weight":500, "armor":150, "engine_pow":85000, "size_x":60, "size_y":60, "angular_drag":35, "energy":10000, "energy_refresh":2000, "jet_impulse":30000, "jet_energy_usage":5000, 
 		"weapons":[{"x_dir":0, "y_dir":1, "x_pos":0, "y_pos":10,"tier":"M"}]},
-	"Double Hull":{"weight":600, "armor":150, "engine_pow":75000, "size_x":60, "size_y":60, "angular_drag":50, "energy":10000, "energy_refresh":2000, "jet_impulse":5000, "jet_energy_usage":5000, 
+	"Double Hull":{"weight":600, "armor":150, "engine_pow":75000, "size_x":60, "size_y":60, "angular_drag":50, "energy":10000, "energy_refresh":2000, "jet_impulse":30000, "jet_energy_usage":5000, 
 		"weapons":[{"x_dir":0, "y_dir":1, "x_pos":-9, "y_pos":-6,"tier":"M"}, {"x_dir":0, "y_dir":1, "x_pos":9, "y_pos":-6,"tier":"M"}]}
 }

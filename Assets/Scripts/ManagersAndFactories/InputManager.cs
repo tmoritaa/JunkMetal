@@ -13,6 +13,10 @@ public class InputManager
         RightWheelFwd,
         RightWheelBack,
         Cancel,
+        JetLeft,
+        JetRight,
+        JetUp,
+        JetDown,
         FireWeapon0 = 100,
         FireWeapon1,
         FireWeapon2,
@@ -84,11 +88,16 @@ public class InputManager
     private void initKeyboardBindings() {
         keyboardBindings[KeyType.LeftWheelFwd] = new List<KeyCode>() { KeyCode.W };
         keyboardBindings[KeyType.LeftWheelBack] = new List<KeyCode>() { KeyCode.S };
-        keyboardBindings[KeyType.RightWheelFwd] = new List<KeyCode>() { KeyCode.U };
-        keyboardBindings[KeyType.RightWheelBack] = new List<KeyCode>() { KeyCode.J };
-        keyboardBindings[KeyType.FireWeapon0] = new List<KeyCode>() { KeyCode.P };
-        keyboardBindings[KeyType.FireWeapon1] = new List<KeyCode>() { KeyCode.O };
-        keyboardBindings[KeyType.FireWeapon2] = new List<KeyCode>() { KeyCode.I };
+        keyboardBindings[KeyType.RightWheelFwd] = new List<KeyCode>() { KeyCode.E };
+        keyboardBindings[KeyType.RightWheelBack] = new List<KeyCode>() { KeyCode.D };
+        keyboardBindings[KeyType.JetLeft] = new List<KeyCode>() { KeyCode.F };
+        keyboardBindings[KeyType.JetRight] = new List<KeyCode>() { KeyCode.H };
+        keyboardBindings[KeyType.JetUp] = new List<KeyCode>() { KeyCode.T };
+        keyboardBindings[KeyType.JetDown] = new List<KeyCode>() { KeyCode.G };
+        keyboardBindings[KeyType.FireWeapon0] = new List<KeyCode>() { KeyCode.U };
+        keyboardBindings[KeyType.FireWeapon1] = new List<KeyCode>() { KeyCode.I };
+        keyboardBindings[KeyType.FireWeapon2] = new List<KeyCode>() { KeyCode.O };
+        keyboardBindings[KeyType.FireWeapon3] = new List<KeyCode>() { KeyCode.P };
         keyboardBindings[KeyType.Cancel] = new List<KeyCode>() { KeyCode.Escape, KeyCode.Mouse1 };
     }
 
@@ -97,6 +106,10 @@ public class InputManager
         controllerBindings[KeyType.LeftWheelBack] = "Left Stick Y Axis";
         controllerBindings[KeyType.RightWheelFwd] = "Right Stick Y Axis";
         controllerBindings[KeyType.RightWheelBack] = "Right Stick Y Axis";
+        controllerBindings[KeyType.JetLeft] = KeyCode.Joystick1Button2;
+        controllerBindings[KeyType.JetRight] = KeyCode.Joystick1Button1;
+        controllerBindings[KeyType.JetUp] = KeyCode.Joystick1Button3;
+        controllerBindings[KeyType.JetDown] = KeyCode.Joystick1Button0;
         controllerBindings[KeyType.FireWeapon0] = "Triggers";
         controllerBindings[KeyType.FireWeapon1] = "Triggers";
         controllerBindings[KeyType.FireWeapon2] = KeyCode.JoystickButton5;
