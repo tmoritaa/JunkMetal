@@ -33,4 +33,17 @@ public partial class Tank
 
         return maxRange;
     }
+
+    public bool FireableWeaponExists() {
+        bool fireable = false;
+        foreach (WeaponPart part in Hull.GetAllWeapons()) {
+            fireable = part.CalcTimeToReloaded() < 0.05f;
+
+            if (fireable) {
+                break;
+            }
+        }
+
+        return fireable;
+    }
 }

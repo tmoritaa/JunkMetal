@@ -102,7 +102,7 @@ public class ManeuverGoal : Goal
         int weaponDmgDiff = selfWeapon.Schematic.Damage - targetWeapon.Schematic.Damage;
         float stepRatio = weaponDmgDiff / 10f;
 
-        int thresh = 50 + Mathf.RoundToInt(stepRatio * 25);
+        int thresh = 50 - Mathf.RoundToInt(stepRatio * 10);
         if (weaponDmgDiff > 0) {
             thresh = Math.Min(thresh, 100);
         } else {
@@ -111,9 +111,9 @@ public class ManeuverGoal : Goal
 
         int diff = timeForSelfToHitTarget - timeForTargetToHitSelf;
         
-        bool runaway = diff > thresh && timeForTargetToHitSelf < 100;
+        bool runaway = diff < thresh && timeForTargetToHitSelf < 50;
 
-        Debug.Log(runaway ? "running away" : "Going for it");
+        Debug.Log("diff=" + diff + " thresh=" + thresh + (runaway ? " Running away" : " Going for it") + "\n" + "timeForTargetToHitSelf=" + timeForTargetToHitSelf);
 
         List<TreeSearchMoveInfo> possibleMoves = new List<TreeSearchMoveInfo>();
 
@@ -130,7 +130,11 @@ public class ManeuverGoal : Goal
         }
 
         float dist = (selfTank.transform.position - targetTank.transform.position).magnitude;
-        if (!runaway && selfTank.Hull.EnergyAvailableForUsage(selfTank.Hull.Schematic.JetEnergyUsage) && selfTank.FindMaxWeaponRange() >= dist) {
+        if (!runaway 
+            && selfTank.Hull.EnergyAvailableForUsage(selfTank.Hull.Schematic.JetEnergyUsage) 
+            && selfTank.FindMaxWeaponRange() >= dist 
+            && selfTank.FireableWeaponExists())
+        {
             possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1), true));
             possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, -1), true));
             possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(90f), true));
