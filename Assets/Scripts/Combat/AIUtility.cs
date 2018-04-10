@@ -91,6 +91,39 @@ public class AIUtility
         return CalcPosInFutureWithRequestedDir(forwardVec, timeInSecs, tankInfo, out passedPos);
     }
 
+    public static TankStateInfo CalcPosInFutureWithRequestedDirJets(Vector2 _requestDir, float timeInSecs, TankStateInfo tankInfo, out List<Vector2> passedPos) {
+        TankStateInfo resultInfo = new TankStateInfo(tankInfo);
+        Vector2 requestDir = _requestDir;
+
+        float elapsedTime = 0;
+
+        float dt = Time.fixedDeltaTime;
+
+        List<Vector2> allPos = new List<Vector2>();
+        allPos.Add(resultInfo.Pos);
+
+        float jetImpulseMag = resultInfo.OwningTank.Hull.Schematic.JetImpulse;
+        resultInfo.LinearVel += requestDir.normalized * (jetImpulseMag / resultInfo.Mass);
+
+        while (elapsedTime <= timeInSecs) {
+            elapsedTime += dt;
+
+            // Pos update
+            {
+                float m = resultInfo.Mass;
+                float drag = resultInfo.LinearDrag;
+                resultInfo.LinearVel = resultInfo.LinearVel * (1f / (1f + drag * dt));
+                resultInfo.Pos += resultInfo.LinearVel * dt;
+
+                allPos.Add(resultInfo.Pos);
+            }
+        }
+
+        passedPos = allPos;
+
+        return resultInfo;
+    }
+
     public static TankStateInfo CalcPosInFutureWithRequestedDir(Vector2 _requestDir, float timeInSecs, TankStateInfo tankInfo, out List<Vector2> passedPos) {
         TankStateInfo resultInfo = new TankStateInfo(tankInfo);
         Vector2 requestDir = _requestDir;

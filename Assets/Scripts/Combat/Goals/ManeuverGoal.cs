@@ -36,6 +36,7 @@ public class ManeuverGoal : Goal
     const float LookaheadTimeStep = 0.5f;
 
     private Vector2 prevMoveDir = new Vector2();
+    private bool prevMoveIsJet = false;
 
     private Vector2 forwardVecWhenUpdate = new Vector2();
 
@@ -62,22 +63,32 @@ public class ManeuverGoal : Goal
         elapsedTimeSinceLastUpdate += Time.deltaTime;
 
         if (elapsedTimeSinceLastUpdate >= UpdatePeriod) {
-            Vector2 requestedDir = pickDirToPursue();
+            LookaheadNode requestNode = pickDirToPursue();
 
             forwardVecWhenUpdate = controller.SelfTank.GetForwardVec();
-            prevMoveDir = requestedDir;
+            prevMoveDir = requestNode.IncomingDir;
+            prevMoveIsJet = requestNode.IncomingWasJet;
+
             elapsedTimeSinceLastUpdate = 0;
         }
 
-        float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
-        actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
+        if (prevMoveIsJet) {
+            if (elapsedTimeSinceLastUpdate == 0) {
+                actions.Add(new JetInDirAction(prevMoveDir, controller));
 
-        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
+                CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir);
+            }
+        } else {
+            float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
+            actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
 
+            CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
+        }
+        
         return actions.ToArray();
     }
 
-    private Vector2 pickDirToPursue() {
+    private LookaheadNode pickDirToPursue() {
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
@@ -104,24 +115,32 @@ public class ManeuverGoal : Goal
 
         Debug.Log(runaway ? "running away" : "Going for it");
 
-        List<float> possibleRotAngles = new List<float>() {
-                0,
-                180f,
-                45f,
-                135f,
-                -45f,
-                -135f
-            };
+        List<TreeSearchMoveInfo> possibleMoves = new List<TreeSearchMoveInfo>();
+
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, -1), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(45f), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(135f), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-45f), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-135f), false));
 
         if (!runaway) {
-            possibleRotAngles.Add(90f);
-            possibleRotAngles.Add(-90f);
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(90f), false));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-90f), false));
+        }
+
+        float dist = (selfTank.transform.position - targetTank.transform.position).magnitude;
+        if (!runaway && selfTank.Hull.EnergyAvailableForUsage(selfTank.Hull.Schematic.JetEnergyUsage) && selfTank.FindMaxWeaponRange() >= dist) {
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1), true));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, -1), true));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(90f), true));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-90f), true));
         }
 
         clearManeuverBehaviourDebugObjects();
 
         LookaheadTree tree = new LookaheadTree();
-        tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, possibleRotAngles);
+        tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, possibleMoves);
 
         List<LookaheadNode> possibleNodes = tree.FindAllNodesAtSearchTime(LookaheadTime);
         CombatDebugHandler.Instance.RegisterObject("maneuver_nodes_at_searchtime", possibleNodes);
@@ -144,19 +163,19 @@ public class ManeuverGoal : Goal
         }
         CombatDebugHandler.Instance.RegisterObject("maneuver_away_from_wall_filter", possibleNodes);
 
-        Vector2 requestDir = new Vector2();
+        LookaheadNode requestNode;
         if (runaway) {
-            requestDir = runawayBehaviour(possibleNodes);
+            requestNode = runawayBehaviour(possibleNodes);
             controller.PrevManeuverBehaviour = Behaviour.Runaway;
         } else {
-            requestDir = goingForItBehaviour(possibleNodes);
+            requestNode = goingForItBehaviour(possibleNodes);
             controller.PrevManeuverBehaviour = Behaviour.GoingforIt;
         }
 
-        return requestDir;
+        return requestNode;
     }
 
-    private Vector2 goingForItBehaviour(List<LookaheadNode> possibleNodes) {
+    private LookaheadNode goingForItBehaviour(List<LookaheadNode> possibleNodes) {
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
@@ -166,22 +185,19 @@ public class ManeuverGoal : Goal
         Vector2 diffVec = targetTank.transform.position - selfTank.transform.position;
         List<bool> overlaps = new List<bool>();
 
-        // TODO: should probably change later to pick one with fastest time to hit opp.
-        if (diffVec.magnitude < selfTank.CalcAvgRange()) {
-            foreach (LookaheadNode node in possibleNodes) {
-                bool nodeOverlaps = false;
-                foreach (WeaponPart part in selfTank.Hull.GetAllWeapons()) {
-                    if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
-                        overlapNodeExists = true;
-                        nodeOverlaps = true;
-                        break;
-                    }
+        foreach (LookaheadNode node in possibleNodes) {
+            bool nodeOverlaps = false;
+            foreach (WeaponPart part in selfTank.Hull.GetAllWeapons()) {
+                if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
+                    overlapNodeExists = true;
+                    nodeOverlaps = true;
+                    break;
                 }
-
-                overlaps.Add(nodeOverlaps);
             }
-            Debug.Assert(possibleNodes.Count == overlaps.Count, "Possible nodes and overlap count don't match. Should never happen");
+
+            overlaps.Add(nodeOverlaps);
         }
+        Debug.Assert(possibleNodes.Count == overlaps.Count, "Possible nodes and overlap count don't match. Should never happen");
 
         for (int i = 0; i < possibleNodes.Count; ++i) {
             LookaheadNode node = possibleNodes[i];
@@ -215,10 +231,10 @@ public class ManeuverGoal : Goal
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
-        return bestInfo.Node.GetNodeOneStepAfterRoot().IncomingDir;
+        return bestInfo.Node.GetNodeOneStepAfterRoot();
     }
 
-    private Vector2 runawayBehaviour(List<LookaheadNode> possibleNodes) {
+    private LookaheadNode runawayBehaviour(List<LookaheadNode> possibleNodes) {
         Tank targetTank = controller.TargetTank;
         Tank selfTank = controller.SelfTank;
 
@@ -276,7 +292,7 @@ public class ManeuverGoal : Goal
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
-        return bestInfo.Node.GetNodeOneStepAfterRoot().IncomingDir;
+        return bestInfo.Node.GetNodeOneStepAfterRoot();
     }
 
     private CostInfo handleSameCostCostInfos(CostInfo bestInfo, List<CostInfo> allCostInfos) {

@@ -32,7 +32,7 @@ public class HullPart
         get; private set;
     }
 
-    private Dictionary<InputManager.KeyType, bool> jetUsageForFixedUpdate = new Dictionary<InputManager.KeyType, bool>();
+    private List<Vector2> jetUsageDirs = new List<Vector2>();
 
     private WeaponPart[] weapons;
 
@@ -47,11 +47,6 @@ public class HullPart
 
         weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
         Array.Clear(weapons, 0, weapons.Length);
-
-        jetUsageForFixedUpdate[InputManager.KeyType.JetLeft] = false;
-        jetUsageForFixedUpdate[InputManager.KeyType.JetRight] = false;
-        jetUsageForFixedUpdate[InputManager.KeyType.JetUp] = false;
-        jetUsageForFixedUpdate[InputManager.KeyType.JetDown] = false;
     }
 
     public void HandleInput() {
@@ -155,6 +150,10 @@ public class HullPart
         return CurEnergy >= energyVal;
     }
 
+    public void RequestJetDir(Vector2 dir) {
+        jetUsageDirs.Add(dir);
+    }
+
     private void performPowerChangeForSide(Side side, int changeDir) {
         int power = (side == Side.left) ? LeftCurPower : RightCurPower;
 
@@ -186,32 +185,26 @@ public class HullPart
         bool activated = false;
 
         HullPrefabInfo hullPrefabInfo = PartPrefabManager.Instance.GetHullPrefabInfoViaName(Schematic.Name);
-
-        InputManager.KeyType[] kTypes = new InputManager.KeyType[] { InputManager.KeyType.JetLeft, InputManager.KeyType.JetRight, InputManager.KeyType.JetUp, InputManager.KeyType.JetDown };
-        Vector2[] jetDirs = new Vector2[] { new Vector2(-1, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, -1) };
         
         Vector2[] curDirs = new Vector2[] { owner.GetForwardVec(), owner.GetBackwardVec(), owner.GetForwardVec().Rotate(90f), owner.GetForwardVec().Rotate(-90f) };
         string[] curDirJetOffsetNames = new string[] { "bot", "top", "right", "left" };
-        for (int i = 0; i < kTypes.Length; ++i) {
-            InputManager.KeyType key = kTypes[i];
-            Vector2 jetDir = jetDirs[i];
-
-            if (jetUsageForFixedUpdate[key] && EnergyAvailableForUsage(Schematic.JetEnergyUsage)) {
+        foreach (Vector2 jetDir in jetUsageDirs) {
+            if (EnergyAvailableForUsage(Schematic.JetEnergyUsage)) {
                 float minAngle = 9999f;
                 Vector2 minDir = new Vector2();
                 string dirJetOffsetName = "";
-                for (int j = 0; j < curDirs.Length; ++j) {
-                    Vector2 curDir = curDirs[j];
+                for (int i = 0; i < curDirs.Length; ++i) {
+                    Vector2 curDir = curDirs[i];
 
                     float angle = Vector2.Angle(curDir, jetDir);
 
                     if (minAngle > angle) {
                         minDir = curDir;
                         minAngle = angle;
-                        dirJetOffsetName = curDirJetOffsetNames[j];
+                        dirJetOffsetName = curDirJetOffsetNames[i];
                     }
                 }
-                
+
                 owner.Body.AddForce(minDir.normalized * Schematic.JetImpulse, ForceMode2D.Impulse);
 
                 Vector2 jetOffset = hullPrefabInfo.JetOffsets[dirJetOffsetName];
@@ -222,9 +215,9 @@ public class HullPart
 
                 activated = true;
             }
-
-            jetUsageForFixedUpdate[key] = false;
         }
+
+        jetUsageDirs.Clear();
 
         return activated;
     }
@@ -236,16 +229,16 @@ public class HullPart
 
     private void handleJetInput() {
         if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetLeft, true)) {
-            jetUsageForFixedUpdate[InputManager.KeyType.JetLeft] = true;
+            RequestJetDir(new Vector2(-1, 0));
         }
         if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetRight, true)) {
-            jetUsageForFixedUpdate[InputManager.KeyType.JetRight] = true;
+            RequestJetDir(new Vector2(1, 0));
         }
         if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetUp, true)) {
-            jetUsageForFixedUpdate[InputManager.KeyType.JetUp] = true;
+            RequestJetDir(new Vector2(0, 1));
         }
         if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetDown, true)) {
-            jetUsageForFixedUpdate[InputManager.KeyType.JetDown] = true;
+            RequestJetDir(new Vector2(0, -1));
         }
     }
 }
