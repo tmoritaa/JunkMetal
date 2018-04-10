@@ -23,10 +23,16 @@ public class HullPrefabInfo
         get; private set;
     }
 
-    public HullPrefabInfo(GameObject hullPrefab, GameObject wheelPrefab, float xOffset) {
+    public Dictionary<string, Vector2> JetOffsets
+    {
+        get; private set;
+    }
+
+    public HullPrefabInfo(GameObject hullPrefab, GameObject wheelPrefab, float xOffset, Dictionary<string, Vector2> jetOffsets) {
         HullPrefab = hullPrefab;
         WheelPrefab = wheelPrefab;
         WheelXOffset = xOffset;
+        JetOffsets = jetOffsets;
     }
 }
 
@@ -80,9 +86,19 @@ public class PartPrefabManager : MonoBehaviour
 
             GameObject hullPrefab = prefabDict[jObj.Value<string>("hull")];
             GameObject wheelPrefab = prefabDict[jObj.Value<string>("wheels")];
-            float offset = jObj.Value<float>("wheel_offset");
+            float wheelOffset = jObj.Value<float>("wheel_offset");
+
+            Dictionary<string, Vector2> jetOffsets = new Dictionary<string, Vector2>();
+            foreach (var val in jObj.Value<JObject>("jet_offsets")) {
+                Vector2 vec = new Vector2();
+                JArray arr = (JArray)val.Value;
+                vec.x = (float)arr.ElementAt(0);
+                vec.y = (float)arr.ElementAt(1);
+
+                jetOffsets.Add(val.Key, vec);
+            }
             
-            nameToHullPrefabInfo.Add(name, new HullPrefabInfo(hullPrefab, wheelPrefab, offset));
+            nameToHullPrefabInfo.Add(name, new HullPrefabInfo(hullPrefab, wheelPrefab, wheelOffset, jetOffsets));
         }
 
         foreach (var info in root.Value<JObject>("weapons")) {

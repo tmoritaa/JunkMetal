@@ -37,6 +37,13 @@ public partial class Tank : MonoBehaviour
         }
     }
 
+    public Transform JetRoot
+    {
+        get {
+            return TankGOConstructor.JetRoot;
+        }
+    }
+
     public HullPart Hull
     {
         get; private set;

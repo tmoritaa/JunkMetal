@@ -185,10 +185,13 @@ public class HullPart
     private bool activateJetsIfRequested() {
         bool activated = false;
 
+        HullPrefabInfo hullPrefabInfo = PartPrefabManager.Instance.GetHullPrefabInfoViaName(Schematic.Name);
+
         InputManager.KeyType[] kTypes = new InputManager.KeyType[] { InputManager.KeyType.JetLeft, InputManager.KeyType.JetRight, InputManager.KeyType.JetUp, InputManager.KeyType.JetDown };
         Vector2[] jetDirs = new Vector2[] { new Vector2(-1, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, -1) };
-
+        
         Vector2[] curDirs = new Vector2[] { owner.GetForwardVec(), owner.GetBackwardVec(), owner.GetForwardVec().Rotate(90f), owner.GetForwardVec().Rotate(-90f) };
+        string[] curDirJetOffsetNames = new string[] { "bot", "top", "right", "left" };
         for (int i = 0; i < kTypes.Length; ++i) {
             InputManager.KeyType key = kTypes[i];
             Vector2 jetDir = jetDirs[i];
@@ -196,16 +199,25 @@ public class HullPart
             if (jetUsageForFixedUpdate[key] && EnergyAvailableForUsage(Schematic.JetEnergyUsage)) {
                 float minAngle = 9999f;
                 Vector2 minDir = new Vector2();
-                foreach (Vector2 curDir in curDirs) {
+                string dirJetOffsetName = "";
+                for (int j = 0; j < curDirs.Length; ++j) {
+                    Vector2 curDir = curDirs[j];
+
                     float angle = Vector2.Angle(curDir, jetDir);
 
                     if (minAngle > angle) {
                         minDir = curDir;
                         minAngle = angle;
+                        dirJetOffsetName = curDirJetOffsetNames[j];
                     }
                 }
-
+                
                 owner.Body.AddForce(minDir.normalized * Schematic.JetImpulse, ForceMode2D.Impulse);
+
+                Vector2 jetOffset = hullPrefabInfo.JetOffsets[dirJetOffsetName];
+                float jetAngle = Vector2.SignedAngle(owner.GetForwardVec(), minDir);
+                CombatAnimationHandler.Instance.InstantiatePrefab("jet_cloud", jetOffset, jetAngle, owner.JetRoot, true);
+
                 ModEnergy(-Schematic.JetEnergyUsage);
 
                 activated = true;
