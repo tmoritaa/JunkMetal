@@ -61,6 +61,7 @@ public class AITankController : TankController
         // TODO: for now, just manually fill up goals list.
         goals.Add(new AttackGoal(this));
         goals.Add(new ManeuverGoal(this));
+        goals.Add(new DodgeGoal(this));
         curGoal = null;
     }
 

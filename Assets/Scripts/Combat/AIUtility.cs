@@ -312,4 +312,182 @@ public class AIUtility
             path.RemoveRange(0, removeCount);
         }
     }
+
+    public static List<LookaheadNode> FilterByPathNotObstructed(List<LookaheadNode> nodes) {
+        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
+
+        foreach (LookaheadNode node in nodes) {
+            if (node.PathNotObstructed()) {
+                filteredNode.Add(node);
+            }
+        }
+
+        if (filteredNode.Count == 0) {
+            filteredNode = nodes;
+        }
+
+        return filteredNode;
+    }
+
+    public static List<LookaheadNode> FilterByDestNotObstructed(List<LookaheadNode> nodes, Map map) {
+        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
+
+        foreach (LookaheadNode node in nodes) {
+            if (map.PositionToNode(node.TankInfo.Pos).NodeTraversable()) {
+                filteredNode.Add(node);
+            }
+        }
+
+        if (filteredNode.Count == 0) {
+            filteredNode = nodes;
+        }
+
+        return filteredNode;
+    }
+
+    public static List<LookaheadNode> FilterByPassingBullet(List<LookaheadNode> nodes, Map map) {
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+
+        foreach (LookaheadNode node in nodes) {
+            Vector2 startPos = map.NodeToPosition(node.PassedNodes[0]);
+            Vector2 endPos = node.TankInfo.Pos;
+
+            bool hitSomething = false;
+            foreach (Bullet bullet in BulletInstanceHandler.Instance.BulletInstances) {
+                Vector2 bulletPos = bullet.transform.position;
+
+                if (bulletPos.x < Mathf.Min(startPos.x, endPos.x) || bulletPos.x > Mathf.Max(startPos.x, endPos.x)
+                    || bulletPos.y < Mathf.Min(startPos.y, endPos.y) || bulletPos.y > Mathf.Max(startPos.y, endPos.y)) {
+                    continue;
+                }
+
+                BoxCollider2D bulletCollider = bullet.Collider;
+                Vector2 bulletLBPos = bulletPos + bulletCollider.offset - (bulletCollider.size / 2f);
+                Vector2 bulletRTPos = bulletPos + bulletCollider.offset + (bulletCollider.size / 2f);
+                foreach (Node mapNode in node.PassedNodes) {
+                    Vector2 mapNodePos = map.NodeToPosition(mapNode);
+
+                    if (mapNodePos.x < Mathf.Min(bulletLBPos.x, bulletRTPos.x) || mapNodePos.x > Mathf.Max(bulletLBPos.x, bulletRTPos.x)
+                    || mapNodePos.y < Mathf.Min(bulletLBPos.y, bulletRTPos.y) || mapNodePos.y > Mathf.Max(bulletLBPos.y, bulletRTPos.y)) {
+                        continue;
+                    } else {
+                        hitSomething = true;
+                        break;
+                    }
+                }
+
+                if (hitSomething) {
+                    break;
+                }
+            }
+
+            if (!hitSomething) {
+                filteredNodes.Add(node);
+            }
+        }
+
+        if (filteredNodes.Count == 0) {
+            filteredNodes = nodes;
+        }
+
+        return filteredNodes;
+    }
+
+    public static bool IsInOpponentFireVec(TankStateInfo selfTank, TankStateInfo oppTank, List<WeaponPart> oppWeapons) {
+        bool canBeHit = false;
+
+        foreach (WeaponPart weapon in oppWeapons) {
+            if (weapon.CalcTimeToReloaded() > 0.25f) {
+                continue;
+            }
+
+            Vector2 targetPos = selfTank.Pos;
+            Vector2 curFireVec = weapon.CalculateFireVec();
+            Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
+            float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
+            bool canHitIfFired = shortestDist < oppTank.Size.x;
+
+            Vector2 targetVec = targetPos - weapon.CalculateFirePos();
+
+            bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
+            bool inRange = targetVec.magnitude < weapon.Schematic.Range;
+            if (inRange && canHitIfFired && fireVecFacingTarget) {
+                canBeHit = true;
+                break;
+            }
+        }
+
+        return canBeHit;
+    }
+
+    public static List<LookaheadNode> FilterByAwayFromWall(List<LookaheadNode> nodes, TankStateInfo selfTankInfo) {
+        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
+
+        List<Vector2> hitWallDirs;
+        bool closeToWall = checkIfCloseToWall(selfTankInfo, out hitWallDirs);
+
+        if (closeToWall) {
+            foreach (LookaheadNode node in nodes) {
+                Vector2 dir = node.GetNodeOneStepAfterRoot().IncomingDir;
+
+                bool isHitWallDir = false;
+                foreach (Vector2 hitWallDir in hitWallDirs) {
+                    float angle = Vector2.Angle(dir, hitWallDir);
+
+                    if (angle < 90f) {
+                        isHitWallDir = true;
+                        break;
+                    }
+                }
+
+                if (!isHitWallDir) {
+                    filteredNodes.Add(node);
+                }
+            }
+        }
+
+        if (filteredNodes.Count == 0) {
+            filteredNodes = nodes;
+        }
+
+        return filteredNodes;
+    }
+
+    public static int CalcMinTimeForAimerToHitAimee(TankStateInfo aimingTankInfo, TankStateInfo aimeeTankInfo, List<WeaponPart> aimerWeapons, out WeaponPart outWeapon) {
+        int minTime = 99999;
+        outWeapon = null;
+        foreach (WeaponPart weapon in aimerWeapons) {
+            Vector2 fireVec = weapon.OwningTank.Hull.Schematic.OrigWeaponDirs[weapon.EquipIdx].Rotate(aimingTankInfo.Rot);
+            int time = convertFloatSecondToIntCentiSecond(AIUtility.CalcTimeToHitPos(aimingTankInfo.Pos, fireVec, aimingTankInfo, weapon.Schematic, aimeeTankInfo.Pos) + weapon.CalcTimeToReloaded());
+
+            if (time < minTime) {
+                minTime = time;
+                outWeapon = weapon;
+            }
+        }
+
+        return minTime;
+    }
+
+    private static int convertFloatSecondToIntCentiSecond(float time) {
+        return Mathf.RoundToInt(time * 100);
+    }
+
+    private static bool checkIfCloseToWall(TankStateInfo selfTankInfo, out List<Vector2> wallDirections) {
+        wallDirections = new List<Vector2>();
+
+        Vector2 centerPt = selfTankInfo.Pos;
+
+        Vector2[] checkDirs = new Vector2[] { new Vector2(0, 1), new Vector2(0, -1), new Vector2(1, 0), new Vector2(-1, 0) };
+
+        foreach (Vector2 dir in checkDirs) {
+            RaycastHit2D hitResult = Physics2D.Raycast(centerPt, dir, selfTankInfo.TerminalVel / 2f);
+
+            if (hitResult.collider != null) {
+                wallDirections.Add(dir);
+            }
+        }
+
+        return wallDirections.Count > 0;
+    }
 }
