@@ -131,7 +131,7 @@ public class AIUtility
                 float rotDiff = resultInfo.AngularVel * dt;
                 resultInfo.Rot += rotDiff;
 
-                //requestDir = requestDir.Rotate(rotDiff);
+                requestDir = requestDir.Rotate(rotDiff);
             }
         }
 

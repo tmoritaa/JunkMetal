@@ -70,9 +70,9 @@ public class ManeuverGoal : Goal
         }
 
         float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
-        actions.Add(new GoInDirAction(prevMoveDir/*.Rotate(angleDiffSinceUpdate)*/, controller));
+        actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
 
-        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir/*.Rotate(angleDiffSinceUpdate)*/);
+        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
 
         return actions.ToArray();
     }
