@@ -42,15 +42,21 @@ public class WeaponPartSchematic : PartSchematic
         }
     }
 
+    public int EnergyUsage
+    {
+        get; private set;
+    }
+
     public Dictionary<string, object> BulletInfos
     {
         get; private set;
     }
 
-    public WeaponPartSchematic(string name, float _reloadTime, WeaponTier _tier, Bullet.BulletTypes _bulletType, Dictionary<string, object> bulletInfos) : base(name, PartType.Weapon) {
+    public WeaponPartSchematic(string name, float _reloadTime, int energyUsage, WeaponTier _tier, Bullet.BulletTypes _bulletType, Dictionary<string, object> bulletInfos) : base(name, PartType.Weapon) {
         Name = name;
         BulletInfos = bulletInfos;
         ReloadTimeInSec = _reloadTime;
+        EnergyUsage = energyUsage;
         Tier = _tier;
         BulletType = _bulletType;
     }

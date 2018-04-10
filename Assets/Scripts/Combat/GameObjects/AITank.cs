@@ -19,14 +19,18 @@ public partial class Tank
         Hull.PerformPowerChange(powerChange[0], powerChange[1]);
     }
 
-    public float CalcAvgRange() {
-        float totalRange = 0;
-        int count = 0;
+    public void PerformJet(Vector2 dir) {
+        this.Hull.RequestJetDir(dir);
+    }
+
+    public float FindMaxWeaponRange() {
+        float maxRange = 0;
         foreach (WeaponPart part in Hull.GetAllWeapons()) {
-            totalRange += part.Schematic.Range;
-            count += 1;
+            if (maxRange < part.Schematic.Range) {
+                maxRange = part.Schematic.Range;
+            }
         }
 
-        return totalRange / count;
+        return maxRange;
     }
 }

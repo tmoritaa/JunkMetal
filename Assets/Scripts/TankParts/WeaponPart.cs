@@ -54,7 +54,7 @@ public class WeaponPart
     }
     
     public void PerformFixedUpdate() {
-        if (shouldShoot) {
+        if (shouldShoot && OwningTank.Hull.EnergyAvailableForUsage(Schematic.EnergyUsage)) {
             Bullet bullet = BulletInstanceHandler.Instance.CreateBullet(Schematic.BulletType);
             bullet.Init(OwningTank);
 
@@ -67,9 +67,11 @@ public class WeaponPart
 
             OwningTank.DisableMovementForSeconds(OwningTank.StopMoveInSecondsWhenFired);
 
+            OwningTank.Hull.ModEnergy(-Schematic.EnergyUsage);
+
             lastShotTime = Time.time;
-            shouldShoot = false;
         }
+        shouldShoot = false;
     }
 
     public Vector2 CalculateFireVec() {

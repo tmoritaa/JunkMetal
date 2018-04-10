@@ -27,14 +27,23 @@ public class HullPart
         get; private set;
     }
 
+    public float CurEnergy
+    {
+        get; private set;
+    }
+
+    private List<Vector2> jetUsageDirs = new List<Vector2>();
+
     private WeaponPart[] weapons;
 
     private Tank owner;
 
-    public HullPart(HullPartSchematic _schematic) {
+    public HullPart(HullPartSchematic _schematic, Tank _owner) {
         Schematic = _schematic;
+        owner = _owner;
         LeftCurPower = 0;
         RightCurPower = 0;
+        CurEnergy = Schematic.Energy;
 
         weapons = new WeaponPart[Schematic.OrigWeaponDirs.Length];
         Array.Clear(weapons, 0, weapons.Length);
@@ -60,6 +69,8 @@ public class HullPart
 
         PerformPowerChange(leftChangeDir, rightChangeDir);
 
+        handleJetInput();
+
         foreach (WeaponPart weapon in GetAllWeapons()) {
             weapon.HandleInput();
         }
@@ -68,6 +79,12 @@ public class HullPart
     public void PerformFixedUpdate() {
         foreach (WeaponPart weapon in GetAllWeapons()) {
             weapon.PerformFixedUpdate();
+        }
+
+        bool activated = activateJetsIfRequested();
+
+        if (!activated) {
+            refreshEnergy(Time.fixedDeltaTime);
         }
     }
 
@@ -124,6 +141,19 @@ public class HullPart
         performPowerChangeForSide(Side.right, rightChangeDir);
     }
 
+    public void ModEnergy(float energyModVal) {
+        CurEnergy = Mathf.Clamp(CurEnergy + energyModVal, 0, Schematic.Energy);
+    }
+
+
+    public bool EnergyAvailableForUsage(float energyVal) {
+        return CurEnergy >= energyVal;
+    }
+
+    public void RequestJetDir(Vector2 dir) {
+        jetUsageDirs.Add(dir);
+    }
+
     private void performPowerChangeForSide(Side side, int changeDir) {
         int power = (side == Side.left) ? LeftCurPower : RightCurPower;
 
@@ -148,6 +178,67 @@ public class HullPart
             LeftCurPower = power;
         } else {
             RightCurPower = power;
+        }
+    }
+
+    private bool activateJetsIfRequested() {
+        bool activated = false;
+
+        HullPrefabInfo hullPrefabInfo = PartPrefabManager.Instance.GetHullPrefabInfoViaName(Schematic.Name);
+        
+        Vector2[] curDirs = new Vector2[] { owner.GetForwardVec(), owner.GetBackwardVec(), owner.GetForwardVec().Rotate(90f), owner.GetForwardVec().Rotate(-90f) };
+        string[] curDirJetOffsetNames = new string[] { "bot", "top", "right", "left" };
+        foreach (Vector2 jetDir in jetUsageDirs) {
+            if (EnergyAvailableForUsage(Schematic.JetEnergyUsage)) {
+                float minAngle = 9999f;
+                Vector2 minDir = new Vector2();
+                string dirJetOffsetName = "";
+                for (int i = 0; i < curDirs.Length; ++i) {
+                    Vector2 curDir = curDirs[i];
+
+                    float angle = Vector2.Angle(curDir, jetDir);
+
+                    if (minAngle > angle) {
+                        minDir = curDir;
+                        minAngle = angle;
+                        dirJetOffsetName = curDirJetOffsetNames[i];
+                    }
+                }
+
+                owner.Body.AddForce(minDir.normalized * Schematic.JetImpulse, ForceMode2D.Impulse);
+
+                Vector2 jetOffset = hullPrefabInfo.JetOffsets[dirJetOffsetName];
+                float jetAngle = Vector2.SignedAngle(owner.GetForwardVec(), minDir);
+                CombatAnimationHandler.Instance.InstantiatePrefab("jet_cloud", jetOffset, jetAngle, owner.JetRoot, true);
+
+                ModEnergy(-Schematic.JetEnergyUsage);
+
+                activated = true;
+            }
+        }
+
+        jetUsageDirs.Clear();
+
+        return activated;
+    }
+
+    private void refreshEnergy(float timeDelta) {
+        float refreshRate = Schematic.EnergyRefreshPerSec * timeDelta;
+        ModEnergy(refreshRate);
+    }
+
+    private void handleJetInput() {
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetLeft, true)) {
+            RequestJetDir(new Vector2(-1, 0));
+        }
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetRight, true)) {
+            RequestJetDir(new Vector2(1, 0));
+        }
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetUp, true)) {
+            RequestJetDir(new Vector2(0, 1));
+        }
+        if (InputManager.Instance.IsKeyTypeDown(InputManager.KeyType.JetDown, true)) {
+            RequestJetDir(new Vector2(0, -1));
         }
     }
 }

@@ -16,7 +16,7 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public int EnergyPower
+    public int EnginePower
     {
         get; private set;
     }
@@ -27,6 +27,26 @@ public class HullPartSchematic : PartSchematic
     }
 
     public float AngularDrag
+    {
+        get; private set;
+    }
+
+    public float Energy
+    {
+        get; private set;
+    }
+
+    public float EnergyRefreshPerSec
+    {
+        get; private set;
+    }
+
+    public float JetImpulse
+    {
+        get; private set;
+    }
+
+    public float JetEnergyUsage
     {
         get; private set;
     }
@@ -46,13 +66,17 @@ public class HullPartSchematic : PartSchematic
         get; private set;
     }
 
-    public HullPartSchematic(string name, int armour, int energyPower, Vector2 size, int weight, float angularDrag, Vector2[] _weaponDirs, Vector2[] _weaponPos, WeaponTier[] _weaponWeightRestrict) : base(name, PartType.Hull) {
+    public HullPartSchematic(string name, int armour, int enginePower, Vector2 size, int weight, float angularDrag, float energy, float energyRefresh, float jetImpulse, float jetEnergyUsage, Vector2[] _weaponDirs, Vector2[] _weaponPos, WeaponTier[] _weaponWeightRestrict) : base(name, PartType.Hull) {
         Name = name;
         Armour = armour;
-        EnergyPower = energyPower;
+        EnginePower = enginePower;
         Weight = weight;
         Size = size;
         AngularDrag = angularDrag;
+        Energy = energy;
+        EnergyRefreshPerSec = energyRefresh;
+        JetImpulse = jetImpulse;
+        JetEnergyUsage = jetEnergyUsage;
         OrigWeaponDirs = _weaponDirs;
         OrigWeaponPos = _weaponPos;
         WeaponTierRestrictions = _weaponWeightRestrict;
@@ -70,7 +94,7 @@ public class HullPartSchematic : PartSchematic
             string weightRestrictStr = "(" + String.Join(", ", new List<WeaponTier>(WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
 
             string armorStr = string.Format("Armour:\n{0} => {2}{1}</color>", diffHull.Armour, Armour, getColorBasedChangeInVal(diffHull.Armour, Armour));
-            string energyPowerStr = string.Format("Move Force:\n{0} => {2}{1}</color>", diffHull.EnergyPower, EnergyPower, getColorBasedChangeInVal(diffHull.EnergyPower, EnergyPower));
+            string energyPowerStr = string.Format("Move Force:\n{0} => {2}{1}</color>", diffHull.EnginePower, EnginePower, getColorBasedChangeInVal(diffHull.EnginePower, EnginePower));
             string weightStr = string.Format("Weight:\n{0} => {2}{1}</color>", diffHull.Weight, Weight, getColorBasedChangeInVal(diffHull.Weight, Weight, false));
             string angularDragStr = string.Format("Angular Drag:\n{0} => {2}{1}</color>", diffHull.AngularDrag, AngularDrag, getColorBasedChangeInVal(diffHull.AngularDrag, AngularDrag, false));
 
@@ -79,7 +103,7 @@ public class HullPartSchematic : PartSchematic
         } else {
             string weightRestrictStr = "(" + String.Join(", ", new List<WeaponTier>(WeaponTierRestrictions).ConvertAll(i => i.ToString()).ToArray()) + ")";
             retStr = string.Format("Armour:\n{0}\nEnergy Power:\n{1}\n Weight:\n{2}\nAngular Drag:\n{3}\nWeapon Weight Restrictions:\n{4}",
-                Armour, EnergyPower, Weight, AngularDrag, weightRestrictStr);
+                Armour, EnginePower, Weight, AngularDrag, weightRestrictStr);
         }
 
         return retStr;

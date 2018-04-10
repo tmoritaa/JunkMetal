@@ -23,8 +23,6 @@ public class EnergyBullet : Bullet
 
     private float origAngle = 0;
 
-    private bool hitboxEnabled = true;
-
     protected override void Awake() {
         base.Awake();
         rectTrans = this.GetComponent<RectTransform>();
@@ -86,8 +84,6 @@ public class EnergyBullet : Bullet
     }
 
     private void disableHitbox() {
-        hitboxEnabled = false;
-
         timeHit = Time.time;
         this.Collider.enabled = false;
     }

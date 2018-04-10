@@ -26,6 +26,11 @@ public class LookaheadNode
         get; private set;
     }
 
+    public bool IncomingWasJet
+    {
+        get; private set;
+    }
+
     public List<Node> PassedNodes
     {
         get; private set;
@@ -36,42 +41,30 @@ public class LookaheadNode
         get; private set;
     }
 
-    public LookaheadNode(LookaheadNode _parentNode, Vector2 _incomingDir, TankStateInfo _stateInfo, float _elapsedTimeFromParent, List<Node> _passedNodes) {
-        ParentNode = _parentNode;
-        IncomingDir = _incomingDir;
-        TankInfo = _stateInfo;
-        ElapsedTimeFromParent = _elapsedTimeFromParent;
-        PassedNodes = _passedNodes;
+    public LookaheadNode(LookaheadNode parentNode, Vector2 incomingDir, bool incomingWasJet, TankStateInfo stateInfo, float elapsedTimeFromParent, List<Node> passedNodes) {
+        ParentNode = parentNode;
+        IncomingDir = incomingDir;
+        IncomingWasJet = incomingWasJet;
+        TankInfo = stateInfo;
+        ElapsedTimeFromParent = elapsedTimeFromParent;
+        PassedNodes = passedNodes;
         ChildNodes = new List<LookaheadNode>();
     }
 
-    public void PopulateChildren(Map map, float searchStepTime, List<float> possibleRots) {
-        List<Vector2> possibleDirs = new List<Vector2>();
-        foreach (float rot in possibleRots) {
-            possibleDirs.Add(TankInfo.ForwardVec.Rotate(rot));
-        }
+    public void PopulateChildren(Map map, float searchStepTime, List<TreeSearchMoveInfo> possibleMoves) {
+        // TODO: if we ever want to do searches more than 1 layer, we should re-implement opposite direction filtering
 
-        // Remove the largest angle difference which should correspond to the opposite direction of the incoming direction
-        if (IncomingDir.magnitude > 0) {
-            float biggestAngDiff = 0;
-            int biggestVecIdx = -1;
+        foreach (TreeSearchMoveInfo moveInfo in possibleMoves) {
+            Vector2 vec = moveInfo.BaseDir.Rotate(TankInfo.Rot);
 
-            for (int i = 0; i < possibleDirs.Count; ++i) {
-                Vector2 vec = possibleDirs[i];
-
-                float angle = Vector2.Angle(IncomingDir, vec);
-                if (angle > biggestAngDiff) {
-                    biggestAngDiff = angle;
-                    biggestVecIdx = i;
-                }
-            }
-
-            possibleDirs.RemoveAt(biggestVecIdx);
-        }
-
-        foreach (Vector2 vec in possibleDirs) {
             List<Vector2> passedPos = new List<Vector2>();
-            TankStateInfo newStateInfo = AIUtility.CalcPosInFutureWithRequestedDir(vec, searchStepTime, TankInfo, out passedPos);
+
+            TankStateInfo newStateInfo;
+            if (!moveInfo.IsJet) {
+                newStateInfo = AIUtility.CalcPosInFutureWithRequestedDir(vec, searchStepTime, TankInfo, out passedPos);
+            } else {
+                newStateInfo = AIUtility.CalcPosInFutureWithRequestedDirJets(vec, searchStepTime, TankInfo, out passedPos);
+            }
 
             HashSet<Node> passedNodes = new HashSet<Node>();
             bool passedOutOfBounds = false;
@@ -85,7 +78,7 @@ public class LookaheadNode
             }
 
             if (!passedOutOfBounds) {
-                ChildNodes.Add(new LookaheadNode(this, vec, newStateInfo, searchStepTime, passedNodes.ToList()));
+                ChildNodes.Add(new LookaheadNode(this, vec, moveInfo.IsJet, newStateInfo, searchStepTime, passedNodes.ToList()));
             }
         }
     }

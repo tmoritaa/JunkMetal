@@ -37,6 +37,13 @@ public partial class Tank : MonoBehaviour
         }
     }
 
+    public Transform JetRoot
+    {
+        get {
+            return TankGOConstructor.JetRoot;
+        }
+    }
+
     public HullPart Hull
     {
         get; private set;
@@ -76,7 +83,7 @@ public partial class Tank : MonoBehaviour
     public void Init(TankSchematic tankSchematic) {
         tankGOConstructor.Init(tankSchematic);
 
-        Hull = new HullPart(tankSchematic.HullSchematic);
+        Hull = new HullPart(tankSchematic.HullSchematic, this);
         
         int count = 0;
         int validCount = 0;

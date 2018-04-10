@@ -1,8 +1,8 @@
 {
 	"hulls": {
-		"Basic Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":23},
-		"Faster Hull":{"hull":"FasterHull", "wheels":"Wheels", "wheel_offset":23},
-		"Double Hull":{"hull":"DoubleHull", "wheels":"Wheels", "wheel_offset":23}
+		"Basic Hull":{"hull":"BasicHull", "wheels":"Wheels", "wheel_offset":23, "jet_offsets":{"top":[0, 20], "bot":[0, -20], "left":[-20, 0], "right":[20, 0]}},
+		"Faster Hull":{"hull":"FasterHull", "wheels":"Wheels", "wheel_offset":23, "jet_offsets":{"top":[0, 20], "bot":[0, -20], "left":[-20, 0], "right":[20, 0]}},
+		"Double Hull":{"hull":"DoubleHull", "wheels":"Wheels", "wheel_offset":23, "jet_offsets":{"top":[0, 20], "bot":[0, -20], "left":[-20, 0], "right":[20, 0]}}
 	},
 	"weapons": {
 		"Basic Weapon":"BasicCannon",

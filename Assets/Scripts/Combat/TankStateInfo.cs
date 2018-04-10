@@ -79,7 +79,7 @@ public class TankStateInfo
         AngularDrag = tank.Body.angularDrag;
         Rot = tank.Body.rotation;
         Inertia = tank.Body.inertia;
-        EnergyPower = tank.Hull.Schematic.EnergyPower;
+        EnergyPower = tank.Hull.Schematic.EnginePower;
         Size = tank.Hull.Schematic.Size;
     }
 

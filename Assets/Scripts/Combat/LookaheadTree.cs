@@ -8,8 +8,8 @@ public class LookaheadTree
 {
     private LookaheadNode root = null;
 
-    public void PopulateTree(Tank tank, Map map, float searchTime, float timeStep, List<float> possibleRotAngles) {
-        root = new LookaheadNode(null, new Vector2(), tank.StateInfo, 0, new List<Node>());
+    public void PopulateTree(Tank tank, Map map, float searchTime, float timeStep, List<TreeSearchMoveInfo> possibleMoves) {
+        root = new LookaheadNode(null, new Vector2(), false, tank.StateInfo, 0, new List<Node>());
 
         float elapsedTime = 0;
         List<LookaheadNode> nodesToPopulate = new List<LookaheadNode>();
@@ -19,7 +19,7 @@ public class LookaheadTree
 
             List<LookaheadNode> populatedChildren = new List<LookaheadNode>();
             foreach (LookaheadNode node in nodesToPopulate) {
-                node.PopulateChildren(map, timeStep, possibleRotAngles);
+                node.PopulateChildren(map, timeStep, possibleMoves);
                 foreach (LookaheadNode childNode in node.ChildNodes) {
                     populatedChildren.Add(childNode);
                 }

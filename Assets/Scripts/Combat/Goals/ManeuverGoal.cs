@@ -31,11 +31,12 @@ public class ManeuverGoal : Goal
         Notset,
     }
 
-    const float UpdatePeriod = 0.1f;
-    const float LookaheadTime = 0.5f;
-    const float LookaheadTimeStep = 0.5f;
+    private const float UpdatePeriod = 0.1f;
+    private const float LookaheadTime = 0.5f;
+    private const float LookaheadTimeStep = 0.5f;
 
     private Vector2 prevMoveDir = new Vector2();
+    private bool prevMoveIsJet = false;
 
     private Vector2 forwardVecWhenUpdate = new Vector2();
 
@@ -62,22 +63,32 @@ public class ManeuverGoal : Goal
         elapsedTimeSinceLastUpdate += Time.deltaTime;
 
         if (elapsedTimeSinceLastUpdate >= UpdatePeriod) {
-            Vector2 requestedDir = pickDirToPursue();
+            LookaheadNode requestNode = pickDirToPursue();
 
             forwardVecWhenUpdate = controller.SelfTank.GetForwardVec();
-            prevMoveDir = requestedDir;
+            prevMoveDir = requestNode.IncomingDir;
+            prevMoveIsJet = requestNode.IncomingWasJet;
+
             elapsedTimeSinceLastUpdate = 0;
         }
 
-        float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
-        actions.Add(new GoInDirAction(prevMoveDir/*.Rotate(angleDiffSinceUpdate)*/, controller));
+        if (prevMoveIsJet) {
+            if (elapsedTimeSinceLastUpdate == 0) {
+                actions.Add(new JetInDirAction(prevMoveDir, controller));
 
-        CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir/*.Rotate(angleDiffSinceUpdate)*/);
+                CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir);
+            }
+        } else {
+            float angleDiffSinceUpdate = Vector2.SignedAngle(forwardVecWhenUpdate, controller.SelfTank.GetForwardVec());
+            actions.Add(new GoInDirAction(prevMoveDir.Rotate(angleDiffSinceUpdate), controller));
 
+            CombatDebugHandler.Instance.RegisterObject("maneuver_move_dir", prevMoveDir.Rotate(angleDiffSinceUpdate));
+        }
+        
         return actions.ToArray();
     }
 
-    private Vector2 pickDirToPursue() {
+    private LookaheadNode pickDirToPursue() {
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
@@ -85,8 +96,8 @@ public class ManeuverGoal : Goal
 
         WeaponPart targetWeapon;
         WeaponPart selfWeapon;
-        int timeForTargetToHitSelf = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Hull.GetAllWeapons(), out targetWeapon);
-        int timeForSelfToHitTarget = calcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons(), out selfWeapon);
+        int timeForTargetToHitSelf = AIUtility.CalcMinTimeForAimerToHitAimee(targetTank.StateInfo, selfTank.StateInfo, targetTank.Hull.GetAllWeapons(), out targetWeapon);
+        int timeForSelfToHitTarget = AIUtility.CalcMinTimeForAimerToHitAimee(selfTank.StateInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons(), out selfWeapon);
 
         int weaponDmgDiff = selfWeapon.Schematic.Damage - targetWeapon.Schematic.Damage;
         float stepRatio = weaponDmgDiff / 10f;
@@ -104,59 +115,62 @@ public class ManeuverGoal : Goal
 
         Debug.Log(runaway ? "running away" : "Going for it");
 
-        List<float> possibleRotAngles = new List<float>() {
-                0,
-                180f,
-                45f,
-                135f,
-                -45f,
-                -135f
-            };
+        List<TreeSearchMoveInfo> possibleMoves = new List<TreeSearchMoveInfo>();
+
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, -1), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(45f), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(135f), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-45f), false));
+        possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-135f), false));
 
         if (!runaway) {
-            possibleRotAngles.Add(90f);
-            possibleRotAngles.Add(-90f);
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(90f), false));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-90f), false));
+        }
+
+        float dist = (selfTank.transform.position - targetTank.transform.position).magnitude;
+        if (!runaway && selfTank.Hull.EnergyAvailableForUsage(selfTank.Hull.Schematic.JetEnergyUsage) && selfTank.FindMaxWeaponRange() >= dist) {
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1), true));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, -1), true));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(90f), true));
+            possibleMoves.Add(new TreeSearchMoveInfo(new Vector2(0, 1).Rotate(-90f), true));
         }
 
         clearManeuverBehaviourDebugObjects();
 
         LookaheadTree tree = new LookaheadTree();
-        tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, possibleRotAngles);
+        tree.PopulateTree(selfTank, map, LookaheadTime, LookaheadTimeStep, possibleMoves);
 
         List<LookaheadNode> possibleNodes = tree.FindAllNodesAtSearchTime(LookaheadTime);
         CombatDebugHandler.Instance.RegisterObject("maneuver_nodes_at_searchtime", possibleNodes);
 
         // First perform general filter
-        possibleNodes = filterByPathNotObstructed(possibleNodes);
+        possibleNodes = AIUtility.FilterByPathNotObstructed(possibleNodes);
         CombatDebugHandler.Instance.RegisterObject("maneuver_path_unobstructed_filter", possibleNodes);
 
-        possibleNodes = filterByDestNotObstructed(possibleNodes);
+        possibleNodes = AIUtility.FilterByDestNotObstructed(possibleNodes, map);
         CombatDebugHandler.Instance.RegisterObject("maneuver_dest_not_obstructed_filter", possibleNodes);
 
-        possibleNodes = filterByPassingBullet(possibleNodes);
+        possibleNodes = AIUtility.FilterByPassingBullet(possibleNodes, map);
         CombatDebugHandler.Instance.RegisterObject("maneuver_bullet_filter", possibleNodes);
 
-        List<Vector2> hitWallDirs = new List<Vector2>();
-        bool isCloseToWall = checkIfCloseToWall(out hitWallDirs);
-
-        if (isCloseToWall) {
-            possibleNodes = filterByAwayFromWall(possibleNodes, hitWallDirs);
-        }
+        possibleNodes = AIUtility.FilterByAwayFromWall(possibleNodes, selfTank.StateInfo);
         CombatDebugHandler.Instance.RegisterObject("maneuver_away_from_wall_filter", possibleNodes);
 
-        Vector2 requestDir = new Vector2();
+        LookaheadNode requestNode;
         if (runaway) {
-            requestDir = runawayBehaviour(possibleNodes);
+            requestNode = runawayBehaviour(possibleNodes);
             controller.PrevManeuverBehaviour = Behaviour.Runaway;
         } else {
-            requestDir = goingForItBehaviour(possibleNodes);
+            requestNode = goingForItBehaviour(possibleNodes);
             controller.PrevManeuverBehaviour = Behaviour.GoingforIt;
         }
 
-        return requestDir;
+        return requestNode;
     }
 
-    private Vector2 goingForItBehaviour(List<LookaheadNode> possibleNodes) {
+    private LookaheadNode goingForItBehaviour(List<LookaheadNode> possibleNodes) {
         Tank selfTank = controller.SelfTank;
         Tank targetTank = controller.TargetTank;
 
@@ -166,29 +180,26 @@ public class ManeuverGoal : Goal
         Vector2 diffVec = targetTank.transform.position - selfTank.transform.position;
         List<bool> overlaps = new List<bool>();
 
-        // TODO: should probably change later to pick one with fastest time to hit opp.
-        if (diffVec.magnitude < selfTank.CalcAvgRange()) {
-            foreach (LookaheadNode node in possibleNodes) {
-                bool nodeOverlaps = false;
-                foreach (WeaponPart part in selfTank.Hull.GetAllWeapons()) {
-                    if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
-                        overlapNodeExists = true;
-                        nodeOverlaps = true;
-                        break;
-                    }
+        foreach (LookaheadNode node in possibleNodes) {
+            bool nodeOverlaps = false;
+            foreach (WeaponPart part in selfTank.Hull.GetAllWeapons()) {
+                if (node.HasOverlappedTargetWithWeapon(targetTank.transform.position, part)) {
+                    overlapNodeExists = true;
+                    nodeOverlaps = true;
+                    break;
                 }
-
-                overlaps.Add(nodeOverlaps);
             }
-            Debug.Assert(possibleNodes.Count == overlaps.Count, "Possible nodes and overlap count don't match. Should never happen");
+
+            overlaps.Add(nodeOverlaps);
         }
+        Debug.Assert(possibleNodes.Count == overlaps.Count, "Possible nodes and overlap count don't match. Should never happen");
 
         for (int i = 0; i < possibleNodes.Count; ++i) {
             LookaheadNode node = possibleNodes[i];
 
             WeaponPart notUsed;
-            int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
-            int selfTime = calcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons(), out notUsed);
+            int targetTime = AIUtility.CalcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
+            int selfTime = AIUtility.CalcMinTimeForAimerToHitAimee(node.TankInfo, targetTank.StateInfo, selfTank.Hull.GetAllWeapons(), out notUsed);
 
             int cost = targetTime - selfTime;
 
@@ -215,10 +226,10 @@ public class ManeuverGoal : Goal
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
-        return bestInfo.Node.GetNodeOneStepAfterRoot().IncomingDir;
+        return bestInfo.Node.GetNodeOneStepAfterRoot();
     }
 
-    private Vector2 runawayBehaviour(List<LookaheadNode> possibleNodes) {
+    private LookaheadNode runawayBehaviour(List<LookaheadNode> possibleNodes) {
         Tank targetTank = controller.TargetTank;
         Tank selfTank = controller.SelfTank;
 
@@ -234,26 +245,11 @@ public class ManeuverGoal : Goal
         while (nodeCosts.Count == 0) {
             foreach (LookaheadNode node in possibleNodes) {
                 WeaponPart notUsed;
-                int targetTime = calcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
+                int targetTime = AIUtility.CalcMinTimeForAimerToHitAimee(targetTank.StateInfo, node.TankInfo, targetTank.Hull.GetAllWeapons(), out notUsed);
 
                 Vector2 incomingDir = node.GetNodeOneStepAfterRoot().IncomingDir;
 
                 int cost = targetTime;
-                //if (isOpposingDir(incomingDir, prevMoveDir)) {
-                //    cost -= 20;
-
-                //    if (isInOpponentFireVec()) {
-                //        cost -= 30;
-                //    }
-                //}
-
-                //float angle = Vector2.Angle(incomingDir, selfTank.GetForwardVec());
-                //float ratio = angle / 45f;
-                //double decimalPoint = ratio - Math.Truncate(ratio);
-                //if (decimalPoint < 0.25f && Math.Truncate(ratio) == 1 || Math.Truncate(ratio) == 3) {
-                //    cost -= 10;
-                //}
-
                 float futureDist = ((Vector2)targetTank.transform.position - node.TankInfo.Pos).magnitude;
                 if (!withFilter || ((onlyCloser && dist > futureDist) || (!onlyCloser && futureDist < maxRange) || allWeaponsReloading)) {
                     nodeCosts.Add(new CostInfo(node, cost));
@@ -276,7 +272,7 @@ public class ManeuverGoal : Goal
 
         CombatDebugHandler.Instance.RegisterObject("maneuver_best_node", bestInfo.Node);
 
-        return bestInfo.Node.GetNodeOneStepAfterRoot().IncomingDir;
+        return bestInfo.Node.GetNodeOneStepAfterRoot();
     }
 
     private CostInfo handleSameCostCostInfos(CostInfo bestInfo, List<CostInfo> allCostInfos) {
@@ -303,194 +299,6 @@ public class ManeuverGoal : Goal
         }
 
         return pickedInfo;
-    }
-
-    private int calcMinTimeForAimerToHitAimee(TankStateInfo aimingTankInfo, TankStateInfo aimeeTankInfo, List<WeaponPart> aimerWeapons, out WeaponPart outWeapon) {
-        int minTime = 99999;
-        outWeapon = null;
-        foreach (WeaponPart weapon in aimerWeapons) {
-            Vector2 fireVec = weapon.OwningTank.Hull.Schematic.OrigWeaponDirs[weapon.EquipIdx].Rotate(aimingTankInfo.Rot);
-            int time = convertFloatSecondToIntCentiSecond(AIUtility.CalcTimeToHitPos(aimingTankInfo.Pos, fireVec, aimingTankInfo, weapon.Schematic, aimeeTankInfo.Pos) + weapon.CalcTimeToReloaded());
-
-            if (time < minTime) {
-                minTime = time;
-                outWeapon = weapon;
-            }
-        }
-
-        return minTime;
-    }
-
-    private List<LookaheadNode> filterByAwayFromWall(List<LookaheadNode> nodes, List<Vector2> hitWallDirs) {
-        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
-
-        foreach (LookaheadNode node in nodes) {
-            Vector2 dir = node.GetNodeOneStepAfterRoot().IncomingDir;
-
-            bool isHitWallDir = false;
-            foreach (Vector2 hitWallDir in hitWallDirs) {
-                float angle = Vector2.Angle(dir, hitWallDir);
-
-                if (angle < 90f) {
-                    isHitWallDir = true;
-                    break;
-                }
-            }
-
-            if (!isHitWallDir) {
-                filteredNodes.Add(node);
-            }
-        }
-
-        if (filteredNodes.Count == 0) {
-            filteredNodes = nodes;
-        }
-
-        return filteredNodes;
-    }
-
-    private List<LookaheadNode> filterByPathNotObstructed(List<LookaheadNode> nodes) {
-        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
-
-        foreach (LookaheadNode node in nodes) {
-            if (node.PathNotObstructed()) {
-                filteredNode.Add(node);
-            }
-        }
-
-        if (filteredNode.Count == 0) {
-            filteredNode = nodes;
-        }
-
-        return filteredNode;
-    }
-    
-    private List<LookaheadNode> filterByDestNotObstructed(List<LookaheadNode> nodes) {
-        List<LookaheadNode> filteredNode = new List<LookaheadNode>();
-        Map map = controller.Map;
-
-        foreach (LookaheadNode node in nodes) {
-            if (map.PositionToNode(node.TankInfo.Pos).NodeTraversable()) {
-                filteredNode.Add(node);
-            }
-        }
-
-        if (filteredNode.Count == 0) {
-            filteredNode = nodes;
-        }
-
-        return filteredNode;
-    }
-
-    private List<LookaheadNode> filterByPassingBullet(List<LookaheadNode> nodes) {
-        List<LookaheadNode> filteredNodes = new List<LookaheadNode>();
-        Map map = controller.Map;
-
-        foreach (LookaheadNode node in nodes) {
-            Vector2 startPos = map.NodeToPosition(node.PassedNodes[0]);
-            Vector2 endPos = node.TankInfo.Pos;
-
-            bool hitSomething = false;
-            foreach (Bullet bullet in BulletInstanceHandler.Instance.BulletInstances) {
-                Vector2 bulletPos = bullet.transform.position;
-
-                if (bulletPos.x < Mathf.Min(startPos.x, endPos.x) || bulletPos.x > Mathf.Max(startPos.x, endPos.x) 
-                    || bulletPos.y < Mathf.Min(startPos.y, endPos.y) || bulletPos.y > Mathf.Max(startPos.y, endPos.y)) 
-                {
-                    continue;
-                }
-
-                BoxCollider2D bulletCollider = bullet.Collider;
-                Vector2 bulletLBPos = bulletPos + bulletCollider.offset - (bulletCollider.size / 2f);
-                Vector2 bulletRTPos = bulletPos + bulletCollider.offset + (bulletCollider.size / 2f);
-                foreach (Node mapNode in node.PassedNodes) {
-                    Vector2 mapNodePos = map.NodeToPosition(mapNode);
-
-                    if (mapNodePos.x < Mathf.Min(bulletLBPos.x, bulletRTPos.x) || mapNodePos.x > Mathf.Max(bulletLBPos.x, bulletRTPos.x)
-                    || mapNodePos.y < Mathf.Min(bulletLBPos.y, bulletRTPos.y) || mapNodePos.y > Mathf.Max(bulletLBPos.y, bulletRTPos.y))
-                    {
-                        continue;
-                    } else {
-                        hitSomething = true;
-                        break;
-                    }
-                }
-                
-                if (hitSomething) {
-                    break;
-                }
-            }
-
-            if (!hitSomething) {
-                filteredNodes.Add(node);
-            }
-        }
-
-        if (filteredNodes.Count == 0) {
-            filteredNodes = nodes;
-        }
-
-        return filteredNodes;
-    }
-
-    private bool checkIfCloseToWall(out List<Vector2> wallDirections) {
-        wallDirections = new List<Vector2>();
-
-        TankStateInfo stateInfo = controller.SelfTank.StateInfo;
-        Vector2 centerPt = stateInfo.Pos;
-
-        Vector2[] checkDirs = new Vector2[] { new Vector2(0, 1), new Vector2(0, -1), new Vector2(1, 0), new Vector2(-1, 0) };
-
-        foreach (Vector2 dir in checkDirs) {
-            RaycastHit2D hitResult = Physics2D.Raycast(centerPt, dir, stateInfo.TerminalVel / 2f);
-
-            if (hitResult.collider != null) {
-                wallDirections.Add(dir);
-            }
-        }
-
-        return wallDirections.Count > 0;
-    }
-
-    private bool isOpposingDir(Vector2 dir, Vector2 prevDir) {
-        double angle = Vector2.Angle(prevDir, dir);
-
-        double decimalPoint = angle / 45f - Math.Truncate(angle / 45);
-        return decimalPoint < 0.25f && angle >= 90f;
-    }
-
-    private bool isInOpponentFireVec() {
-        TankStateInfo selfTank = controller.SelfTank.StateInfo;
-        TankStateInfo targetTank = controller.TargetTank.StateInfo;
-
-        bool canBeHit = false;
-
-        foreach (WeaponPart weapon in controller.TargetTank.Hull.GetAllWeapons()) {
-            if (weapon.CalcTimeToReloaded() > 0.25f) {
-                continue;
-            }
-
-            Vector2 targetPos = selfTank.Pos;
-            Vector2 curFireVec = weapon.CalculateFireVec();
-            Ray ray = new Ray(weapon.CalculateFirePos(), curFireVec);
-            float shortestDist = Vector3.Cross(ray.direction, (Vector3)(targetPos) - ray.origin).magnitude;
-            bool canHitIfFired = shortestDist < targetTank.Size.x;
-
-            Vector2 targetVec = targetPos - weapon.CalculateFirePos();
-
-            bool fireVecFacingTarget = Vector2.Angle(curFireVec, targetVec) < 90f;
-            bool inRange = targetVec.magnitude < weapon.Schematic.Range;
-            if (inRange && canHitIfFired && fireVecFacingTarget) {
-                canBeHit = true;
-                break;
-            }
-        }
-
-        return canBeHit;
-    }
-
-    private int convertFloatSecondToIntCentiSecond(float time) {
-        return Mathf.RoundToInt(time * 100);
     }
 
     private void clearManeuverBehaviourDebugObjects() {

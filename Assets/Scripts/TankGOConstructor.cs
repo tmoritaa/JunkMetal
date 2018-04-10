@@ -27,6 +27,11 @@ public class TankGOConstructor : MonoBehaviour
         get; private set;
     }
 
+    public Transform JetRoot
+    {
+        get; private set;
+    }
+
     private bool initialized = false;
 
     public void Init(TankSchematic tankSchematic) {
@@ -41,6 +46,7 @@ public class TankGOConstructor : MonoBehaviour
         HullGO = Instantiate(hullPrefabInfo.HullPrefab, this.transform, false);
 
         Transform weaponRoot = HullGO.transform.Find("Turret");
+        JetRoot = HullGO.transform.Find("Jets");
 
         weaponGOs = new List<GameObject>();
         int count = 0;

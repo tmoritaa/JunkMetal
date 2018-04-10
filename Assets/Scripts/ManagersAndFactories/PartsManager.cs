@@ -60,13 +60,18 @@ public class PartsManager : MonoBehaviour
             JObject info = (JObject)partInfo.Value;
             int weight = info.Value<int>("weight");
             int armour = info.Value<int>("armor");
-            int power = info.Value<int>("engine_pow");
+            int enginePower = info.Value<int>("engine_pow");
 
             Vector2 size = new Vector2();
             size.x = info.Value<float>("size_x");
             size.y = info.Value<float>("size_y");
 
             float angularDrag = info.Value<float>("angular_drag");
+
+            float energy = info.Value<float>("energy");
+            float energyRefresh = info.Value<float>("energy_refresh");
+            float jetImpulse = info.Value<float>("jet_impulse");
+            float jetEnergyUsage = info.Value<float>("jet_energy_usage");
 
             List<Vector2> weaponDirs = new List<Vector2>();
             List<Vector2> weaponPos = new List<Vector2>();
@@ -95,7 +100,7 @@ public class PartsManager : MonoBehaviour
                 tierRestrictions.Add(tier);
             }
 
-            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, power, size, weight, angularDrag, weaponDirs.ToArray(), weaponPos.ToArray(), tierRestrictions.ToArray());
+            HullPartSchematic part = TankParSchematictFactory.CreateHullPartSchematic(name, armour, enginePower, size, weight, angularDrag, energy, energyRefresh, jetImpulse, jetEnergyUsage, weaponDirs.ToArray(), weaponPos.ToArray(), tierRestrictions.ToArray());
 
             schematics.Add(part.Name, part);
         }
@@ -116,6 +121,7 @@ public class PartsManager : MonoBehaviour
             JObject info = (JObject)partInfo.Value;
             
             float reloadTime = info.Value<float>("reload_time");
+            int energyUsage = info.Value<int>("energy_usage");
             string tierStr = info.Value<string>("tier");
             PartSchematic.WeaponTier tier = PartSchematic.WeaponTier.Light;
             if (tierStr.Equals("L")) {
@@ -128,11 +134,9 @@ public class PartsManager : MonoBehaviour
 
             Bullet.BulletTypes bType = (Bullet.BulletTypes)Enum.Parse(typeof(Bullet.BulletTypes), info.Value<string>("bullet_type"));
 
-            
-
             Dictionary<string, object> bulletInfoDict = parseBulletInfoJson(bType, info.Value<JObject>("bullet_info"));
 
-            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, reloadTime, tier, bType, bulletInfoDict);
+            WeaponPartSchematic part = TankParSchematictFactory.CreateWeaponPartSchematic(name, reloadTime, energyUsage, tier, bType, bulletInfoDict);
 
             schematics.Add(part.Name, part);
         }

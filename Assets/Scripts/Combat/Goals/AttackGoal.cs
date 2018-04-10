@@ -49,7 +49,7 @@ public class AttackGoal : Goal
                     const int WallBit = 8;
                     const int LayerMask = 1 << WallBit;
 
-                    RaycastHit2D hit = Physics2D.Raycast(aiTank.transform.position, weapon.CalculateFireVec(), checkDist, WallBit);
+                    RaycastHit2D hit = Physics2D.Raycast(aiTank.transform.position, weapon.CalculateFireVec(), checkDist, LayerMask);
                     
                     if (hit.collider == null && distFromTarget <= weapon.Schematic.Range) {
                         weaponsThatCanHit.Add(weapon);
