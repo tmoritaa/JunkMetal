@@ -2,43 +2,43 @@
 	"John Doe":{
 		"Tank":{
 			"Hull":"Basic Hull",
-			"Weapons":["Basic Weapon"]
+			"Weapons":["Std Cannon"]
 		}
 	},
 	"John Fast":{
 		"Tank":{
 			"Hull":"Faster Hull",
-			"Weapons":["Basic Weapon"]
+			"Weapons":["Std Cannon"]
 		}
 	},
 	"John Double":{
 		"Tank":{
 			"Hull":"Double Hull",
-			"Weapons":["Basic Weapon", "Basic Weapon"]
+			"Weapons":["Std Cannon", "Std Cannon"]
 		}
 	},
 	"Strong Man":{
 		"Tank":{
 			"Hull":"Basic Hull",
-			"Weapons":["Strong Weapon"]
+			"Weapons":["Long Range Sniper"]
 		}	
 	},
 	"Machine Gun Jimmy":{
 		"Tank":{
 			"Hull":"Faster Hull",
-			"Weapons":["Machine Gun Weapon"]
+			"Weapons":["Std Machine Gun"]
 		}
 	},
 	"Energy Fella":{
 		"Tank":{
 			"Hull":"Faster Hull",
-			"Weapons":["Energy Weapon"]
+			"Weapons":["Std Energy"]
 		}
 	},
 	"Missile Doe":{
 		"Tank":{
 			"Hull":"Basic Hull",
-			"Weapons":["Missile Weapon"]
+			"Weapons":["Std Missile"]
 		}	
 	}
 }

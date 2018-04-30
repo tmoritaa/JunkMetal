@@ -1,6 +1,6 @@
 {
 	"Tank":{
 		"Hull":"Basic Hull",
-		"Weapons":["Basic Weapon"]
+		"Weapons":["Std Cannon"]
 	}
 }

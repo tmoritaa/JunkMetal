@@ -5,10 +5,10 @@
 		"Double Hull":{"hull":"DoubleHull", "wheels":"Wheels", "wheel_offset":23, "jet_offsets":{"top":[0, 20], "bot":[0, -20], "left":[-20, 0], "right":[20, 0]}}
 	},
 	"weapons": {
-		"Basic Weapon":"BasicCannon",
-		"Strong Weapon":"SniperCannon",
-		"Machine Gun Weapon":"Machinegun",
-		"Energy Weapon":"BasicCannon",
-		"Missile Weapon":"BasicCannon"
+		"Std Cannon":"BasicCannon",
+		"Std Energy":"BasicCannon",
+		"Std Missile":"BasicCannon",
+		"Long Range Sniper":"SniperCannon",
+		"Std Machine Gun":"Machinegun"
 	}
 }
