@@ -9,6 +9,9 @@
 		"Std Energy":"BasicCannon",
 		"Std Missile":"BasicCannon",
 		"Long Range Sniper":"SniperCannon",
-		"Std Machine Gun":"Machinegun"
+		"Std Machine Gun":"Machinegun",
+		"Large Long Range Sniper":"SniperCannon",
+		"Heavy Cannon":"BasicCannon",
+		"Heavy Missile":"BasicCannon"
 	}
 }

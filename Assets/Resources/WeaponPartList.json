@@ -9,8 +9,17 @@
 		"bullet_info":{"shoot_impulse":500, "recoil_impulse":25000, "hit_impulse":5000, "range":500, "damage":5, "num_missiles":5, "missile_range":500, "missile_shoot_time":0.25, "missile_init_impulse":300, "missile_fire_impulse":3000, "missile_trigger_time":0.5}},
 
 	"Long Range Sniper":{"tier":"M", "reload_time":5, "bullet_type":"Ballistic", "energy_usage":1000,
-		"bullet_info":{"shoot_impulse":3000, "recoil_impulse":20000, "hit_impulse":20000, "range":500, "damage":30}},
+		"bullet_info":{"shoot_impulse":3000, "recoil_impulse":20000, "hit_impulse":25000, "range":500, "damage":30}},
 
 	"Std Machine Gun":{"tier":"L", "reload_time":0.25, "bullet_type":"Ballistic", "energy_usage":0,
-		"bullet_info":{"shoot_impulse":2500, "recoil_impulse":5000, "hit_impulse":5000, "range":300, "damage":5}}
+		"bullet_info":{"shoot_impulse":2500, "recoil_impulse":5000, "hit_impulse":5000, "range":300, "damage":5}},
+
+	"Large Long Range Sniper":{"tier":"H", "reload_time":10, "bullet_type":"Ballistic", "energy_usage":2500,
+		"bullet_info":{"shoot_impulse":4000, "recoil_impulse":30000, "hit_impulse":25000, "range":800, "damage":40}},
+
+	"Heavy Cannon":{"tier":"M", "reload_time":4, "bullet_type":"Ballistic", "energy_usage":0,
+		"bullet_info":{"shoot_impulse":3000, "recoil_impulse":20000, "hit_impulse":20000, "range":400, "damage":25}},
+
+	"Heavy Missile":{"tier":"H", "reload_time":7, "bullet_type":"MissileCluster", "energy_usage":2500,
+		"bullet_info":{"shoot_impulse":500, "recoil_impulse":25000, "hit_impulse":5000, "range":500, "damage":5, "num_missiles":10, "missile_range":500, "missile_shoot_time":0.25, "missile_init_impulse":300, "missile_fire_impulse":3000, "missile_trigger_time":0.5}}
 }
