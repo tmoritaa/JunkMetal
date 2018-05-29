@@ -121,10 +121,10 @@ public class InputManager
         keyboardBindings[KeyType.LeftWheelBack] = new List<KeyCode>() { KeyCode.S };
         keyboardBindings[KeyType.RightWheelFwd] = new List<KeyCode>() { KeyCode.E };
         keyboardBindings[KeyType.RightWheelBack] = new List<KeyCode>() { KeyCode.D };
-        keyboardBindings[KeyType.JetLeft] = new List<KeyCode>() { KeyCode.F };
-        keyboardBindings[KeyType.JetRight] = new List<KeyCode>() { KeyCode.H };
-        keyboardBindings[KeyType.JetUp] = new List<KeyCode>() { KeyCode.T };
-        keyboardBindings[KeyType.JetDown] = new List<KeyCode>() { KeyCode.G };
+        keyboardBindings[KeyType.JetLeft] = new List<KeyCode>() { KeyCode.G };
+        keyboardBindings[KeyType.JetRight] = new List<KeyCode>() { KeyCode.J };
+        keyboardBindings[KeyType.JetUp] = new List<KeyCode>() { KeyCode.Y };
+        keyboardBindings[KeyType.JetDown] = new List<KeyCode>() { KeyCode.H };
         keyboardBindings[KeyType.FireWeapon0] = new List<KeyCode>() { KeyCode.U };
         keyboardBindings[KeyType.FireWeapon1] = new List<KeyCode>() { KeyCode.I };
         keyboardBindings[KeyType.FireWeapon2] = new List<KeyCode>() { KeyCode.O };
